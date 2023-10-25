@@ -3,7 +3,7 @@ package com.kniazkov.json;
 /**
  * JSON element representing a number.
  */
-public class JsonNumber extends JsonElement {
+public final class JsonNumber extends JsonElement {
     /**
      * Value of the number.
      */
