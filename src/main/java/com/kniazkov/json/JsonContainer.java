@@ -16,5 +16,5 @@ public abstract class JsonContainer extends JsonElement {
      * Returns the number of elements in the container.
      * @return The number of elements
      */
-    abstract int size();
+    public abstract int size();
 }

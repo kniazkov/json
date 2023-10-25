@@ -3,9 +3,12 @@ package com.kniazkov.json;
 import org.junit.Assert;
 import org.junit.Test;
 
+/**
+ * Tests covering {@link JsonNumber} class.
+ */
 public class JsonNumberTest {
     @Test
-    public void integerTest() {
+    public void integer() {
         JsonNumber elem = new JsonNumber(null, 13);
         Assert.assertTrue(elem.isInteger());
         Assert.assertTrue(elem.isLongInteger());
@@ -17,7 +20,7 @@ public class JsonNumberTest {
     }
 
     @Test
-    public void longIntegerTest() {
+    public void longInteger() {
         JsonNumber elem = new JsonNumber(null, 10000000000L);
         Assert.assertFalse(elem.isInteger());
         Assert.assertTrue(elem.isLongInteger());
@@ -28,7 +31,7 @@ public class JsonNumberTest {
     }
 
     @Test
-    public void realNumberTest() {
+    public void realNumber() {
         JsonNumber elem = new JsonNumber(null, 13.01);
         Assert.assertFalse(elem.isInteger());
         Assert.assertFalse(elem.isLongInteger());

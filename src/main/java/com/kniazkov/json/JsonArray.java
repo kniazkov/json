@@ -10,7 +10,7 @@ public final class JsonArray extends JsonContainer {
     /**
      * List of elements.
      */
-    private final List<JsonElement> elements;
+    private final List<JsonElement> list;
 
     /**
      * Constructor.
@@ -18,7 +18,7 @@ public final class JsonArray extends JsonContainer {
      */
     public JsonArray(JsonContainer parent) {
         super(parent);
-        elements = new ArrayList<>();
+        list = new ArrayList<>();
     }
 
     @Override
@@ -26,7 +26,7 @@ public final class JsonArray extends JsonContainer {
         final StringBuilder builder = new StringBuilder();
         builder.append('[');
         boolean flag = false;
-        for (JsonElement element : elements) {
+        for (JsonElement element : list) {
             if (flag) {
                 builder.append(", ");
             }
@@ -38,7 +38,28 @@ public final class JsonArray extends JsonContainer {
     }
 
     @Override
-    int size() {
-        return elements.size();
+    public int size() {
+        return list.size();
+    }
+
+    /**
+     * Returns a child element by its index.
+     * @param index Index
+     * @return Child element
+     * @throws IndexOutOfBoundsException If the index goes out of bounds
+     */
+    public JsonElement getElement(int index) throws IndexOutOfBoundsException {
+        return list.get(index);
+    }
+
+    /**
+     * Creates a child element of the "Number" type and adds it to the end of the array.
+     * @param value Value of the number
+     * @return Created element
+     */
+    JsonNumber addNumber(double value) {
+        JsonNumber element = new JsonNumber(this, value);
+        list.add(element);
+        return element;
     }
 }
