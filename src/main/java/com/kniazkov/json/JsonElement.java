@@ -43,7 +43,7 @@ public abstract class JsonElement {
     }
 
     /**
-     * Checks if the element is a 32-bit number.
+     * Checks if the element is a 32-bit integer.
      * @return Checking result
      */
     public boolean isInteger() {
@@ -51,10 +51,45 @@ public abstract class JsonElement {
     }
 
     /**
-     * Checks if the element is a 64-bit number.
+     * Checks if the element is a 64-bit integer.
      * @return Checking result
      */
     public boolean isLongInteger() {
         return false;
+    }
+
+    /**
+     * Checks if the element is a number.
+     * @return Checking result
+     */
+    public boolean isNumber() {
+        return false;
+    }
+
+    /**
+     * Tries to convert the value of an element to a 32-bit integer.
+     * @return The value of the element converted to a 32-bit integer,
+     *   or 0 if no such conversion is possible
+     */
+    public int getIntValue() {
+        return 0;
+    }
+
+    /**
+     * Tries to convert the value of an element to a 64-bit integer.
+     * @return The value of the element converted to a 64-bit integer,
+     *   or 0 if no such conversion is possible
+     */
+    public long getLongValue() {
+        return 0;
+    }
+
+    /**
+     * Tries to convert the value of an element to a double-precision real number.
+     * @return The value of the element converted to a double-precision real number,
+     *   or 0 if no such conversion is possible.
+     */
+    public double getDoubleValue() {
+        return 0;
     }
 }

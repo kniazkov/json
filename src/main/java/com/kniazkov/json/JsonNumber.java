@@ -35,4 +35,24 @@ public class JsonNumber extends JsonElement {
     public boolean isLongInteger() {
         return value == (long)value;
     }
+
+    @Override
+    public boolean isNumber() {
+        return true;
+    }
+
+    @Override
+    public int getIntValue() {
+        return (int)value;
+    }
+
+    @Override
+    public long getLongValue() {
+        return (long)value;
+    }
+
+    @Override
+    public double getDoubleValue() {
+        return (double)value;
+    }
 }
