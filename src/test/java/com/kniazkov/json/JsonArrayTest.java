@@ -9,14 +9,14 @@ import org.junit.Test;
 public class JsonArrayTest {
     @Test
     public void emptyArray() {
-        JsonArray array = new JsonArray(null);
+        JsonArray array = new JsonArray();
         Assert.assertEquals(0, array.size());
         Assert.assertEquals("[]", array.toString());
     }
 
     @Test
     public void arrayOfIntegers() {
-        JsonArray array = new JsonArray(null);
+        JsonArray array = new JsonArray();
         array.addNumber(1);
         array.addNumber(2);
         array.addNumber(3);
@@ -26,7 +26,7 @@ public class JsonArrayTest {
 
     @Test
     public void getElementByIndex() {
-        JsonArray array = new JsonArray(null);
+        JsonArray array = new JsonArray();
         array.addNumber(13);
         array.addNumber(666);
         Assert.assertEquals(2, array.size());

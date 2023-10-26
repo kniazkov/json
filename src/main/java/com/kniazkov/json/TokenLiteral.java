@@ -1,0 +1,14 @@
+package com.kniazkov.json;
+
+/**
+ * A token representing a literal, that is, some value.
+ * A JSON element can be generated directly from such a token.
+ */
+abstract class TokenLiteral extends Token {
+    /**
+     * Generates a JSON element from this literal.
+     * @param parent The container that will contain the generated element
+     * @return JSON element
+     */
+    abstract JsonElement toElement(JsonContainer parent);
+}

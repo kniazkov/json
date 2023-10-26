@@ -1,9 +1,9 @@
 package com.kniazkov.json;
 
 /**
- * Token representing a number
+ * Token representing a number.
  */
-class TokenNumber extends Token {
+class TokenNumber extends TokenLiteral {
     /**
      * Value of the number.
      */
@@ -20,5 +20,10 @@ class TokenNumber extends Token {
     @Override
     public String toString() {
         return Utils.doubleToString(value);
+    }
+
+    @Override
+    JsonElement toElement(JsonContainer parent) {
+        return new JsonNumber(parent, value);
     }
 }

@@ -11,7 +11,7 @@ public final class JsonParser {
      */
     public static JsonElement parseString(String source) {
         JsonParser parser = new JsonParser(new Source(source));
-        return parser.parse();
+        return parser.parse(null);
     }
 
     /**
@@ -29,9 +29,14 @@ public final class JsonParser {
 
     /**
      * Parses the next JSON element from the current position.
+     * @param parent The container that will contain the parsed element
      * @return JSON element
      */
-    private JsonElement parse() {
+    private JsonElement parse(JsonContainer parent) {
+        Token token = lexer.getToken();
+        if (token instanceof TokenLiteral) {
+            return ((TokenLiteral) token).toElement(parent);
+        }
         return null;
     }
 }

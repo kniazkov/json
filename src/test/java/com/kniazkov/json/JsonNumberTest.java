@@ -9,7 +9,7 @@ import org.junit.Test;
 public class JsonNumberTest {
     @Test
     public void integer() {
-        JsonNumber elem = new JsonNumber(null, 13);
+        JsonNumber elem = new JsonNumber(13);
         Assert.assertTrue(elem.isInteger());
         Assert.assertTrue(elem.isLongInteger());
         Assert.assertTrue(elem.isNumber());
@@ -21,7 +21,7 @@ public class JsonNumberTest {
 
     @Test
     public void longInteger() {
-        JsonNumber elem = new JsonNumber(null, 10000000000L);
+        JsonNumber elem = new JsonNumber( 10000000000L);
         Assert.assertFalse(elem.isInteger());
         Assert.assertTrue(elem.isLongInteger());
         Assert.assertTrue(elem.isNumber());
@@ -32,7 +32,7 @@ public class JsonNumberTest {
 
     @Test
     public void realNumber() {
-        JsonNumber elem = new JsonNumber(null, 13.01);
+        JsonNumber elem = new JsonNumber(13.01);
         Assert.assertFalse(elem.isInteger());
         Assert.assertFalse(elem.isLongInteger());
         Assert.assertTrue(elem.isNumber());

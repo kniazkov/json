@@ -11,9 +11,18 @@ public final class JsonNumber extends JsonElement {
 
     /**
      * Constructor.
-     * @param parent The parent of this element
+     * @param value Value of the number.
      */
-    public JsonNumber(JsonContainer parent, double value) {
+    public JsonNumber(double value) {
+        this(null, value);
+    }
+
+    /**
+     * Constructor (for internal use).
+     * @param parent The parent of this element
+     * @param value Value of the number.
+     */
+    JsonNumber(JsonContainer parent, double value) {
         super(parent);
         this.value = value;
     }

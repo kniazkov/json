@@ -14,9 +14,16 @@ public final class JsonArray extends JsonContainer {
 
     /**
      * Constructor.
+     */
+    public JsonArray() {
+        this(null);
+    }
+
+    /**
+     * Constructor (for internal use).
      * @param parent The parent of this element
      */
-    public JsonArray(JsonContainer parent) {
+    JsonArray(JsonContainer parent) {
         super(parent);
         list = new ArrayList<>();
     }
