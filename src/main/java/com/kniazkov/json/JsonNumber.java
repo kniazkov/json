@@ -20,10 +20,7 @@ public final class JsonNumber extends JsonElement {
 
     @Override
     public String toString() {
-        if (isLongInteger()) {
-            return String.valueOf((long)value);
-        }
-        return String.valueOf(value);
+        return Utils.doubleToString(value);
     }
 
     @Override

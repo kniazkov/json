@@ -15,16 +15,16 @@ public final class JsonParser {
     }
 
     /**
-     * Object containing JSON document for parsing.
+     * Lexer that splits JSON documents into separate tokens.
      */
-    private final Source src;
+    private final Lexer lexer;
 
     /**
      * Constructor.
      * @param src Object containing JSON document for parsing
      */
     private JsonParser(Source src) {
-        this.src = src;
+        this.lexer = new Lexer(src);
     }
 
     /**
