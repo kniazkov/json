@@ -21,14 +21,14 @@ final class Lexer {
      * Returns the next token from a sequence.
      * @return A token.
      */
-    public Token getToken() {
+    public Token getToken() throws JsonException {
         char ch = source.getChar();
 
         while(isWhiteSpace(ch)) {
             ch = source.nextChar();
         }
 
-        Location loc = source.getLocation();
+        JsonLocation loc = source.getLocation();
 
         if (isDigit(ch)) {
             return parseNumber(loc, ch, false);
@@ -39,6 +39,7 @@ final class Lexer {
             if (isDigit(ch)) {
                 return parseNumber(loc, ch, true);
             }
+            throw new JsonException(new JsonError.ExpectedNumberAfterMinus(source.getLocation()));
         }
 
         return null;
@@ -69,7 +70,7 @@ final class Lexer {
      * @param negative Is the number negative
      * @return A token representing a number
      */
-    private TokenNumber parseNumber(Location loc, char firstDigit, boolean negative) {
+    private TokenNumber parseNumber(JsonLocation loc, char firstDigit, boolean negative) {
         char ch = firstDigit;
         long intPart = 0;
         do {

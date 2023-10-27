@@ -14,7 +14,7 @@ final class TokenNumber extends TokenLiteral {
      * @param loc Location of the first character of the token
      * @param value Value of the number
      */
-    TokenNumber(Location loc, double value) {
+    TokenNumber(JsonLocation loc, double value) {
         super(loc);
         this.value = value;
     }

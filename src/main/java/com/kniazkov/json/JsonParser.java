@@ -9,7 +9,7 @@ public final class JsonParser {
      * @param source String containing JSON document
      * @return JSON element
      */
-    public static JsonElement parseString(String source) {
+    public static JsonElement parseString(String source) throws JsonException {
         JsonParser parser = new JsonParser(new Source(source));
         return parser.parse(null);
     }
@@ -32,7 +32,7 @@ public final class JsonParser {
      * @param parent The container that will contain the parsed element
      * @return JSON element
      */
-    private JsonElement parse(JsonContainer parent) {
+    private JsonElement parse(JsonContainer parent) throws JsonException {
         Token token = lexer.getToken();
         if (token instanceof TokenLiteral) {
             return ((TokenLiteral) token).toElement(parent);

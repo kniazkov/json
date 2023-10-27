@@ -3,7 +3,7 @@ package com.kniazkov.json;
 /**
  * Specifies the location of a character in the JSON document.
  */
-public final class Location {
+public final class JsonLocation {
     /**
      * Row.
      */
@@ -19,7 +19,7 @@ public final class Location {
      * @param row The row number.
      * @param column The column number.
      */
-    Location(int row, int column) {
+    JsonLocation(int row, int column) {
         this.row = row;
         this.column = column;
     }
@@ -28,7 +28,7 @@ public final class Location {
      * Constructor.
      * @param loc Other instance.
      */
-    Location(Location loc) {
+    JsonLocation(JsonLocation loc) {
         this.row = loc.row;
         this.column = loc.column;
     }

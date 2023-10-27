@@ -9,7 +9,7 @@ abstract class TokenLiteral extends Token {
      * Constructor.
      * @param loc Location of the first character of the token
      */
-    TokenLiteral(Location loc) {
+    TokenLiteral(JsonLocation loc) {
         super(loc);
     }
 

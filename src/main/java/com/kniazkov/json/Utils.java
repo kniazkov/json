@@ -3,7 +3,7 @@ package com.kniazkov.json;
 /**
  * Some auxiliary procedures.
  */
-class Utils {
+final class Utils {
     /**
      * Converts a number to a string.
      * @param value A number

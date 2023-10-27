@@ -7,14 +7,14 @@ abstract class Token {
     /**
      * Location of the first character of the token.
      */
-    private final Location loc;
+    private final JsonLocation loc;
 
 
     /**
      * Constructor.
      * @param loc Location of the first character of the token
      */
-    Token(Location loc) {
+    Token(JsonLocation loc) {
         this.loc = loc;
     }
 
@@ -29,7 +29,7 @@ abstract class Token {
      * Returns the location of the first character of the token.
      * @return Location
      */
-    Location getLocation() {
+    JsonLocation getLocation() {
         return loc;
     }
 }

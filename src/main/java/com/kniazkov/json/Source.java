@@ -22,7 +22,7 @@ final class Source {
     /**
      * Specifies the location of the current character in the JSON document.
      */
-    private final Location loc;
+    private final JsonLocation loc;
 
     /**
      * Flag that indicates that the lexer has encountered a newline character.
@@ -37,7 +37,7 @@ final class Source {
         this.data = data;
         this.index = 0;
         this.lastIndex = data.length();
-        this.loc = new Location(1, 1);
+        this.loc = new JsonLocation(1, 1);
         this.newLine = false;
     }
 
@@ -47,7 +47,11 @@ final class Source {
      */
     char getChar() {
         if (index < lastIndex) {
-            return data.charAt(index);
+            char ch = data.charAt(index);
+            if (ch == '\n') {
+                newLine = true;
+            }
+            return ch;
         }
         return 0;
     }
@@ -79,7 +83,7 @@ final class Source {
      * Returns the location of the current character in the JSON document.
      * @return Location instance
      */
-    Location getLocation() {
-        return new Location(loc);
+    JsonLocation getLocation() {
+        return new JsonLocation(loc);
     }
 }

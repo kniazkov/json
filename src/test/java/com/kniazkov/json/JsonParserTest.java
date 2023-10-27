@@ -9,7 +9,14 @@ import org.junit.Test;
 public class JsonParserTest {
     @Test
     public void integer() {
-        JsonElement elem = JsonParser.parseString("  13");
+        boolean oops = false;
+        JsonElement elem = null;
+        try {
+            elem = JsonParser.parseString("  13");
+        } catch (JsonException exception) {
+            oops = true;
+        }
+        Assert.assertFalse(oops);
         Assert.assertNotNull(elem);
         Assert.assertTrue(elem.isInteger());
         Assert.assertEquals(13, elem.getIntValue());
@@ -17,7 +24,14 @@ public class JsonParserTest {
 
     @Test
     public void longInteger() {
-        JsonElement elem = JsonParser.parseString("666000000000");
+        boolean oops = false;
+        JsonElement elem = null;
+        try {
+            elem = JsonParser.parseString("666000000000");
+        } catch (JsonException exception) {
+            oops = true;
+        }
+        Assert.assertFalse(oops);
         Assert.assertNotNull(elem);
         Assert.assertFalse(elem.isInteger());
         Assert.assertTrue(elem.isLongInteger());
@@ -26,7 +40,14 @@ public class JsonParserTest {
 
     @Test
     public void negativeInteger() {
-        JsonElement elem = JsonParser.parseString("  -13");
+        boolean oops = false;
+        JsonElement elem = null;
+        try {
+            elem = JsonParser.parseString("-13");
+        } catch (JsonException exception) {
+            oops = true;
+        }
+        Assert.assertFalse(oops);
         Assert.assertNotNull(elem);
         Assert.assertTrue(elem.isInteger());
         Assert.assertEquals(-13, elem.getIntValue());
