@@ -14,4 +14,20 @@ public class LexerTest {
         Assert.assertTrue(token instanceof TokenNumber);
         Assert.assertEquals("13", token.toString());
     }
+
+    @Test
+    public void longInteger() {
+        Lexer lexer = new Lexer(new Source("666000000000"));
+        Token token = lexer.getToken();
+        Assert.assertTrue(token instanceof TokenNumber);
+        Assert.assertEquals("666000000000", token.toString());
+    }
+
+    @Test
+    public void negativeInteger() {
+        Lexer lexer = new Lexer(new Source("  -13"));
+        Token token = lexer.getToken();
+        Assert.assertTrue(token instanceof TokenNumber);
+        Assert.assertEquals("-13", token.toString());
+    }
 }

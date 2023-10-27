@@ -28,13 +28,15 @@ final class Lexer {
             ch = source.nextChar();
         }
 
-        long intPart = 0;
         if (isDigit(ch)) {
-            do {
-                intPart = intPart * 10 + (ch - '0');
-                ch = source.nextChar();
-            } while(isDigit(ch));
-            return new TokenNumber(intPart);
+            return parseNumber(ch, false);
+        }
+
+        if (ch == '-') {
+            ch = source.nextChar();
+            if (isDigit(ch)) {
+                return parseNumber(ch, true);
+            }
         }
 
         return null;
@@ -56,5 +58,24 @@ final class Lexer {
      */
     private static boolean isDigit(char ch) {
         return ch >= '0' && ch <= '9';
+    }
+
+    /**
+     * Parses the character sequence as a number.
+     * @param firstDigit First digit
+     * @param negative Is the number negative
+     * @return A token representing a number
+     */
+    private TokenNumber parseNumber(char firstDigit, boolean negative) {
+        char ch = firstDigit;
+        long intPart = 0;
+        do {
+            intPart = intPart * 10 + (ch - '0');
+            ch = source.nextChar();
+        } while(isDigit(ch));
+        if (negative) {
+            intPart = -intPart;
+        }
+        return new TokenNumber(intPart);
     }
 }
