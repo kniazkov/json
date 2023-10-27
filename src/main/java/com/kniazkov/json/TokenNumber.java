@@ -3,7 +3,7 @@ package com.kniazkov.json;
 /**
  * Token representing a number.
  */
-class TokenNumber extends TokenLiteral {
+final class TokenNumber extends TokenLiteral {
     /**
      * Value of the number.
      */
@@ -11,9 +11,11 @@ class TokenNumber extends TokenLiteral {
 
     /**
      * Constructor.
+     * @param loc Location of the first character of the token
      * @param value Value of the number
      */
-    TokenNumber(double value) {
+    TokenNumber(Location loc, double value) {
+        super(loc);
         this.value = value;
     }
 

@@ -6,6 +6,14 @@ package com.kniazkov.json;
  */
 abstract class TokenLiteral extends Token {
     /**
+     * Constructor.
+     * @param loc Location of the first character of the token
+     */
+    TokenLiteral(Location loc) {
+        super(loc);
+    }
+
+    /**
      * Generates a JSON element from this literal.
      * @param parent The container that will contain the generated element
      * @return JSON element

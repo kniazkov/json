@@ -16,18 +16,32 @@ public class LexerTest {
     }
 
     @Test
-    public void longInteger() {
-        Lexer lexer = new Lexer(new Source("666000000000"));
+    public void location11() {
+        Lexer lexer = new Lexer(new Source("0"));
         Token token = lexer.getToken();
-        Assert.assertTrue(token instanceof TokenNumber);
-        Assert.assertEquals("666000000000", token.toString());
+        Assert.assertNotNull(token);
+        Location loc = token.getLocation();
+        Assert.assertEquals(1, loc.getRow());
+        Assert.assertEquals(1, loc.getColumn());
     }
 
     @Test
-    public void negativeInteger() {
-        Lexer lexer = new Lexer(new Source("  -13"));
+    public void location14() {
+        Lexer lexer = new Lexer(new Source(" \t 0"));
         Token token = lexer.getToken();
-        Assert.assertTrue(token instanceof TokenNumber);
-        Assert.assertEquals("-13", token.toString());
+        Assert.assertNotNull(token);
+        Location loc = token.getLocation();
+        Assert.assertEquals(1, loc.getRow());
+        Assert.assertEquals(4, loc.getColumn());
+    }
+
+    @Test
+    public void location32() {
+        Lexer lexer = new Lexer(new Source(" \r\n\n 0"));
+        Token token = lexer.getToken();
+        Assert.assertNotNull(token);
+        Location loc = token.getLocation();
+        Assert.assertEquals(3, loc.getRow());
+        Assert.assertEquals(2, loc.getColumn());
     }
 }

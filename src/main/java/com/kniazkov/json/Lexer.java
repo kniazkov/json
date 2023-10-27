@@ -28,14 +28,16 @@ final class Lexer {
             ch = source.nextChar();
         }
 
+        Location loc = source.getLocation();
+
         if (isDigit(ch)) {
-            return parseNumber(ch, false);
+            return parseNumber(loc, ch, false);
         }
 
         if (ch == '-') {
             ch = source.nextChar();
             if (isDigit(ch)) {
-                return parseNumber(ch, true);
+                return parseNumber(loc, ch, true);
             }
         }
 
@@ -48,7 +50,7 @@ final class Lexer {
      * @return Checking result
      */
     private static boolean isWhiteSpace(char ch) {
-        return ch == ' ' || ch == '\r' || ch == '\n' || ch == '\b';
+        return ch == ' ' || ch == '\r' || ch == '\n' || ch == '\t';
     }
 
     /**
@@ -62,11 +64,12 @@ final class Lexer {
 
     /**
      * Parses the character sequence as a number.
+     * @param loc Location of the first character of the token
      * @param firstDigit First digit
      * @param negative Is the number negative
      * @return A token representing a number
      */
-    private TokenNumber parseNumber(char firstDigit, boolean negative) {
+    private TokenNumber parseNumber(Location loc, char firstDigit, boolean negative) {
         char ch = firstDigit;
         long intPart = 0;
         do {
@@ -76,6 +79,6 @@ final class Lexer {
         if (negative) {
             intPart = -intPart;
         }
-        return new TokenNumber(intPart);
+        return new TokenNumber(loc, intPart);
     }
 }
