@@ -42,7 +42,7 @@ public abstract class JsonError {
 
     @Override
     public String toString() {
-        return String.format("%d.%d: %s", loc.row, loc.column, getMessage());
+        return String.format("%d.%d, %s", loc.row, loc.column, getMessage());
     }
 
     /**
@@ -63,6 +63,54 @@ public abstract class JsonError {
                 return "После знака минуса должно быть число";
             }
             return "A number after the minus sign is expected";
+        }
+    }
+
+    /**
+     * Error 'A number after the plus sign is expected'.
+     */
+    public final static class ExpectedNumberAfterPlus extends JsonError {
+        /**
+         * Constructor.
+         * @param loc Position in the document where the error was found
+         */
+        ExpectedNumberAfterPlus(JsonLocation loc) {
+            super(loc);
+        }
+
+        @Override
+        public String getLocalizedMessage(String lang) {
+            if ("ru".equals(lang)) {
+                return "После знака плюса должно быть число";
+            }
+            return "A number after the plus sign is expected";
+        }
+    }
+
+    /**
+     * Error 'Invalid character'.
+     */
+    public final static class InvalidCharacter extends JsonError {
+        /**
+         * The symbol.
+         */
+        private final char ch;
+        /**
+         * Constructor.
+         * @param ch The symbol
+         * @param loc Position in the document where the error was found
+         */
+        InvalidCharacter(JsonLocation loc, char ch) {
+            super(loc);
+            this.ch = ch;
+        }
+
+        @Override
+        public String getLocalizedMessage(String lang) {
+            if ("ru".equals(lang)) {
+                return "Недопустимый символ: '" + ch + '\'';
+            }
+            return "Invalid character: '" + ch + '\'';
         }
     }
 }

@@ -19,9 +19,10 @@ final class Lexer {
 
     /**
      * Returns the next token from a sequence.
+     * @param mode Parsing mode
      * @return A token.
      */
-    public Token getToken() throws JsonException {
+    public Token getToken(JsonParsingMode mode) throws JsonException {
         char ch = source.getChar();
 
         while(isWhiteSpace(ch)) {
@@ -40,6 +41,17 @@ final class Lexer {
                 return parseNumber(loc, ch, true);
             }
             throw new JsonException(new JsonError.ExpectedNumberAfterMinus(source.getLocation()));
+        }
+
+        if (ch == '+') {
+            if (mode == JsonParsingMode.STRICT) {
+                throw new JsonException(new JsonError.InvalidCharacter(loc, '+'));
+            }
+            ch = source.nextChar();
+            if (isDigit(ch)) {
+                return parseNumber(loc, ch, false);
+            }
+            throw new JsonException(new JsonError.ExpectedNumberAfterPlus(source.getLocation()));
         }
 
         return null;

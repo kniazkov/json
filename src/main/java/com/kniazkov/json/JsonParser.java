@@ -10,7 +10,17 @@ public final class JsonParser {
      * @return JSON element
      */
     public static JsonElement parseString(String source) throws JsonException {
-        JsonParser parser = new JsonParser(new Source(source));
+        return parseString(source, JsonParsingMode.ENHANCED);
+    }
+
+    /**
+     * Parses a string containing JSON document into a JSON element.
+     * @param source String containing JSON document
+     * @param mode Parsing mode
+     * @return JSON element
+     */
+    public static JsonElement parseString(String source, JsonParsingMode mode) throws JsonException {
+        JsonParser parser = new JsonParser(new Source(source), mode);
         return parser.parse(null);
     }
 
@@ -20,11 +30,17 @@ public final class JsonParser {
     private final Lexer lexer;
 
     /**
+     * Parsing mode.
+     */
+    private final JsonParsingMode mode;
+
+    /**
      * Constructor.
      * @param src Object containing JSON document for parsing
      */
-    private JsonParser(Source src) {
+    private JsonParser(Source src, JsonParsingMode mode) {
         this.lexer = new Lexer(src);
+        this.mode = mode;
     }
 
     /**
@@ -33,7 +49,7 @@ public final class JsonParser {
      * @return JSON element
      */
     private JsonElement parse(JsonContainer parent) throws JsonException {
-        Token token = lexer.getToken();
+        Token token = lexer.getToken(mode);
         if (token instanceof TokenLiteral) {
             return ((TokenLiteral) token).toElement(parent);
         }

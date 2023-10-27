@@ -28,13 +28,13 @@ public final class JsonException extends Exception {
     @Override
     public String getMessage() {
         JsonLocation loc = error.getLocation();
-        return String.format("%d.%d: %s", loc.row, loc.column, error.getMessage());
+        return String.format("%d.%d, %s", loc.row, loc.column, error.getMessage());
     }
 
     @Override
     public String getLocalizedMessage() {
         JsonLocation loc = error.getLocation();
         String lang = System.getProperty("user.language");
-        return String.format("%d.%d: %s", loc.row, loc.column, error.getLocalizedMessage(lang));
+        return String.format("%d.%d, %s", loc.row, loc.column, error.getLocalizedMessage(lang));
     }
 }

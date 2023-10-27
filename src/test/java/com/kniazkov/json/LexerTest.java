@@ -13,7 +13,7 @@ public class LexerTest {
         boolean oops = false;
         Token token = null;
         try {
-            token = lexer.getToken();
+            token = lexer.getToken(JsonParsingMode.STRICT);
         } catch (JsonException exception) {
             oops = true;
         }
@@ -28,7 +28,7 @@ public class LexerTest {
         boolean oops = false;
         Token token = null;
         try {
-            token = lexer.getToken();
+            token = lexer.getToken(JsonParsingMode.STRICT);
         } catch (JsonException exception) {
             oops = true;
         }
@@ -45,7 +45,7 @@ public class LexerTest {
         boolean oops = false;
         Token token = null;
         try {
-            token = lexer.getToken();
+            token = lexer.getToken(JsonParsingMode.STRICT);
         } catch (JsonException exception) {
             oops = true;
         }
@@ -62,7 +62,7 @@ public class LexerTest {
         boolean oops = false;
         Token token = null;
         try {
-            token = lexer.getToken();
+            token = lexer.getToken(JsonParsingMode.STRICT);
         } catch (JsonException exception) {
             oops = true;
         }
@@ -78,7 +78,7 @@ public class LexerTest {
         Lexer lexer = new Lexer(new Source("\n\n\n\n\n\n\n\n\n\n   -abc"));
         JsonError error = null;
         try {
-            lexer.getToken();
+            lexer.getToken(JsonParsingMode.STRICT);
         } catch (JsonException exception) {
             error = exception.getError();
         }
