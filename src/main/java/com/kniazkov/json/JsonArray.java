@@ -45,6 +45,11 @@ public final class JsonArray extends JsonContainer {
     }
 
     @Override
+    public JsonArray toArray() {
+        return this;
+    }
+
+    @Override
     public int size() {
         return list.size();
     }
@@ -62,11 +67,17 @@ public final class JsonArray extends JsonContainer {
     /**
      * Creates a child element of the "Number" type and adds it to the end of the array.
      * @param value Value of the number
-     * @return Created element
      */
-    JsonNumber addNumber(double value) {
-        JsonNumber element = new JsonNumber(this, value);
-        list.add(element);
-        return element;
+    public void addNumber(double value) {
+        list.add(new JsonNumber(this, value));
+    }
+
+    /**
+     * Adds a child element (for internal use).
+     * @param elem Element
+     */
+    void addChild(JsonElement elem) {
+        assert elem.getParent() == this;
+        list.add(elem);
     }
 }

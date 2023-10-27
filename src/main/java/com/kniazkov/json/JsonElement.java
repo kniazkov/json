@@ -92,4 +92,12 @@ public abstract class JsonElement {
     public double getDoubleValue() {
         return 0;
     }
+
+    /**
+     * Safely casts an element to the "array" type.
+     * @return JSON array or {@code null} if the element is not an array.
+     */
+    public JsonArray toArray() {
+        return null;
+    }
 }

@@ -77,4 +77,20 @@ public class JsonParserTest {
         String message = error.getMessage();
         Assert.assertEquals("Invalid character: '+'", message);
     }
+
+    @Test
+    public void emptyArray() {
+        boolean oops = false;
+        JsonElement elem = null;
+        try {
+            elem = JsonParser.parseString("[ ]");
+        } catch (JsonException exception) {
+            oops = true;
+        }
+        Assert.assertFalse(oops);
+        Assert.assertNotNull(elem);
+        JsonArray array = elem.toArray();
+        Assert.assertNotNull(array);
+        Assert.assertEquals(0, array.size());
+    }
 }

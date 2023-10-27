@@ -61,7 +61,7 @@ final class Source {
      * @return A symbol
      */
     char nextChar() {
-        if (index + 1 < lastIndex) {
+        if (index < lastIndex) {
             index++;
             if (newLine) {
                 loc.row++;
@@ -70,11 +70,13 @@ final class Source {
             } else {
                 loc.column++;
             }
-            char ch = data.charAt(index);
-            if (ch == '\n') {
-                newLine = true;
+            if (index < lastIndex) {
+                char ch = data.charAt(index);
+                if (ch == '\n') {
+                    newLine = true;
+                }
+                return ch;
             }
-            return ch;
         }
         return 0;
     }

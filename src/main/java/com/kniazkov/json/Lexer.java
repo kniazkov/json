@@ -21,12 +21,17 @@ final class Lexer {
      * Returns the next token from a sequence.
      * @param mode Parsing mode
      * @return A token.
+     * @throws JsonException If parsing fails
      */
     public Token getToken(JsonParsingMode mode) throws JsonException {
         char ch = source.getChar();
 
         while(isWhiteSpace(ch)) {
             ch = source.nextChar();
+        }
+
+        if (ch == 0) {
+            return null;
         }
 
         JsonLocation loc = source.getLocation();
@@ -54,7 +59,22 @@ final class Lexer {
             throw new JsonException(new JsonError.ExpectedNumberAfterPlus(source.getLocation()));
         }
 
-        return null;
+        if (ch == '[') {
+            source.nextChar();
+            return new TokenOpeningSquareBracket(loc);
+        }
+
+        if (ch == ']') {
+            source.nextChar();
+            return new TokenClosingSquareBracket(loc);
+        }
+
+        if (ch == ',') {
+            source.nextChar();
+            return new TokenComma(loc);
+        }
+
+        throw new JsonException(new JsonError.InvalidCharacter(loc, ch));
     }
 
     /**
