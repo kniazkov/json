@@ -3,7 +3,7 @@ package com.kniazkov.json;
 /**
  * Some JSON element, which can be an object, array, string, number, or literal.
  */
-public abstract class JsonElement {
+public abstract class JsonElement implements Cloneable {
     /**
      * The parent of this element, that is, the element that contains this element.
      */
@@ -31,6 +31,11 @@ public abstract class JsonElement {
      * @return A clone of this element
      */
     abstract JsonElement clone(JsonContainer anotherParent);
+
+    @Override
+    public JsonElement clone() {
+        return clone(null);
+    }
 
     /**
      * Represents the element as a string.

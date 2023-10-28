@@ -111,7 +111,7 @@ final class Lexer {
      * @return Checking result
      */
     private static boolean isLetter(char ch) {
-        return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || ch == '_';
+        return ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z' || ch == '_';
     }
 
     /**
