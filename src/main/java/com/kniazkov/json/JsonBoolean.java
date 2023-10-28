@@ -11,12 +11,25 @@ public class JsonBoolean extends JsonElement {
 
     /**
      * Constructor.
+     * @param value Boolean value
+     */
+    public JsonBoolean(boolean value) {
+        this(null, value);
+    }
+
+    /**
+     * Constructor (for internal use).
      * @param parent The parent of this element
      * @param value Boolean value
      */
-    public JsonBoolean(JsonContainer parent, boolean value) {
+    JsonBoolean(JsonContainer parent, boolean value) {
         super(parent);
         this.value = value;
+    }
+
+    @Override
+    JsonElement clone(JsonContainer anotherParent) {
+        return new JsonBoolean(anotherParent, value);
     }
 
     @Override

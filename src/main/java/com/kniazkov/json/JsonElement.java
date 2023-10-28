@@ -26,6 +26,13 @@ public abstract class JsonElement {
     }
 
     /**
+     * Makes a clone (copy) of this element with a different parent.
+     * @param anotherParent Another parent
+     * @return A clone of this element
+     */
+    abstract JsonElement clone(JsonContainer anotherParent);
+
+    /**
      * Represents the element as a string.
      * @return String representation of the element
      */

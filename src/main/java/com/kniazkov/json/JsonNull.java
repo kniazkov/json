@@ -18,6 +18,11 @@ public class JsonNull extends JsonElement {
     }
 
     @Override
+    JsonElement clone(JsonContainer anotherParent) {
+        return new JsonNull(anotherParent);
+    }
+
+    @Override
     public String toString() {
         return "null";
     }

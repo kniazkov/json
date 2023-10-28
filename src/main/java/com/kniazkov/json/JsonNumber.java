@@ -28,6 +28,11 @@ public final class JsonNumber extends JsonElement {
     }
 
     @Override
+    JsonElement clone(JsonContainer anotherParent) {
+        return new JsonNumber(anotherParent, value);
+    }
+
+    @Override
     public String toString() {
         return Utils.doubleToString(value);
     }

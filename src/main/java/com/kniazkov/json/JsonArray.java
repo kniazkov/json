@@ -29,6 +29,15 @@ public final class JsonArray extends JsonContainer {
     }
 
     @Override
+    JsonElement clone(JsonContainer anotherParent) {
+        JsonArray copy = new JsonArray(anotherParent);
+        for (JsonElement elem : list) {
+            copy.addElement(elem);
+        }
+        return copy;
+    }
+
+    @Override
     public String toString() {
         final StringBuilder builder = new StringBuilder();
         builder.append('[');
@@ -65,10 +74,27 @@ public final class JsonArray extends JsonContainer {
     }
 
     /**
+     * Makes a copy of the JSON element and appends this copy to the end of the array.
+     * @param elem Element
+     */
+    public void addElement(JsonElement elem) {
+        JsonElement copy = elem.clone(this);
+        list.add(copy);
+    }
+
+    /**
      * Creates a child element of the 'null' type and adds it to the end of the array.
      */
     public void addNull() {
         list.add(new JsonNull(this));
+    }
+
+    /**
+     * Creates a child element of the 'boolean' type and adds it to the end of the array.
+     * @param value Boolean value
+     */
+    public void addNull(boolean value) {
+        list.add(new JsonBoolean(this, value));
     }
 
     /**
@@ -77,6 +103,17 @@ public final class JsonArray extends JsonContainer {
      */
     public void addNumber(double value) {
         list.add(new JsonNumber(this, value));
+    }
+
+    /**
+     * Creates an empty array as a child of this array.
+     * The child is then added to the end of the parent array.
+     * @return The empty array created, so that it can be filled.
+     */
+    public JsonArray createArray() {
+        JsonArray child = new JsonArray(this);
+        list.add(child);
+        return child;
     }
 
     /**
