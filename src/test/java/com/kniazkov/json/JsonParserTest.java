@@ -93,4 +93,42 @@ public class JsonParserTest {
         Assert.assertNotNull(array);
         Assert.assertEquals(0, array.size());
     }
+
+    @Test
+    public void arrayOfIntegers() {
+        boolean oops = false;
+        JsonElement elem = null;
+        try {
+            elem = JsonParser.parseString("[1, 2, 3]");
+        } catch (JsonException exception) {
+            oops = true;
+        }
+        Assert.assertFalse(oops);
+        Assert.assertNotNull(elem);
+        JsonArray array = elem.toArray();
+        Assert.assertNotNull(array);
+        Assert.assertEquals(3, array.size());
+        Assert.assertEquals("[1, 2, 3]", array.toString());
+    }
+
+    @Test
+    public void arrayContainingOtherArrays() {
+        Assert.assertTrue(commonTest("[1, [2, 3], []]"));
+    }
+
+    /**
+     * A common test for JSON parser. First parses a JSON document,
+     * then converts the resulting element into a string, the results should match.
+     * @param json JSON document
+     * @return Testing result ({@code true} = success)
+     */
+    private static boolean commonTest(String json) {
+        try {
+            JsonElement elem = JsonParser.parseString(json);
+            String json2 = elem.toString();
+            return json.equals(json2);
+        } catch (JsonException ignored) {
+        }
+        return false;
+    }
 }

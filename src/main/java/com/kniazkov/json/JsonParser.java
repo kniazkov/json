@@ -23,7 +23,7 @@ public final class JsonParser {
      */
     public static JsonElement parseString(String source, JsonParsingMode mode) throws JsonException {
         JsonParser parser = new JsonParser(new Source(source), mode);
-        return parser.parse(null);
+        return parser.parseElement(null);
     }
 
     /**
@@ -51,12 +51,22 @@ public final class JsonParser {
      * @return JSON element
      * @throws JsonException If parsing fails
      */
-    private JsonElement parse(JsonContainer parent) throws JsonException {
-        Token token = lexer.getToken(mode);
-        if (token instanceof TokenLiteral) {
-            return ((TokenLiteral) token).toElement(parent);
+    private JsonElement parseElement(JsonContainer parent) throws JsonException {
+        return parseElement(parent, lexer.getToken(mode));
+    }
+
+    /**
+     * Parses the next JSON element from the current position.
+     * @param parent The container that will contain the parsed element
+     * @param firstToken The first token in the token sequence
+     * @return JSON element
+     * @throws JsonException If parsing fails
+     */
+    private JsonElement parseElement(JsonContainer parent, Token firstToken) throws JsonException {
+        if (firstToken instanceof TokenLiteral) {
+            return ((TokenLiteral) firstToken).toElement(parent);
         }
-        if (token instanceof TokenOpeningSquareBracket) {
+        if (firstToken instanceof TokenOpeningSquareBracket) {
             return parseArray(parent);
         }
         return null;
@@ -69,14 +79,23 @@ public final class JsonParser {
      * @throws JsonException If parsing fails
      */
     private JsonArray parseArray(JsonContainer parent) throws JsonException {
-        JsonArray array = new JsonArray(parent);
+        final JsonArray array = new JsonArray(parent);
         Token token = lexer.getToken(mode);
-        while (token != null) {
+        boolean expectedElement = false;
+        do {
             if (token instanceof TokenClosingSquareBracket) {
                 return array;
             }
-            token = lexer.getToken(mode);
-        }
+            JsonElement child = parseElement(array, token);
+            if (child != null) {
+                array.addChild(child);
+                token = lexer.getToken(mode);
+                if (token instanceof TokenComma) {
+                    expectedElement = true;
+                    token = lexer.getToken(mode);
+                }
+            }
+        } while(expectedElement);
         return array;
     }
 }
