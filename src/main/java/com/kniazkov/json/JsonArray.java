@@ -65,7 +65,14 @@ public final class JsonArray extends JsonContainer {
     }
 
     /**
-     * Creates a child element of the "Number" type and adds it to the end of the array.
+     * Creates a child element of the 'null' type and adds it to the end of the array.
+     */
+    public void addNull() {
+        list.add(new JsonNull(this));
+    }
+
+    /**
+     * Creates a child element of the 'number' type and adds it to the end of the array.
      * @param value Value of the number
      */
     public void addNumber(double value) {

@@ -43,6 +43,14 @@ public abstract class JsonElement {
     }
 
     /**
+     * Checks if the element is a null literal.
+     * @return Checking result
+     */
+    public boolean isNull() {
+        return false;
+    }
+
+    /**
      * Checks if the element is a 32-bit integer.
      * @return Checking result
      */

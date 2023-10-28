@@ -138,6 +138,11 @@ public class JsonParserTest {
         Assert.assertTrue(error instanceof JsonError.ExpectedElementAfterComma);
     }
 
+    @Test
+    public void nullElement() {
+        Assert.assertTrue(commonTest("null"));
+    }
+
     /**
      * A common test for JSON parser. First parses a JSON document,
      * then converts the resulting element into a string, the results should match.

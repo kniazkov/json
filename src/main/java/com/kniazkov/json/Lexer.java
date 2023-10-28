@@ -36,6 +36,19 @@ final class Lexer {
 
         JsonLocation loc = source.getLocation();
 
+        if (isLetter(ch)) {
+            StringBuilder builder = new StringBuilder();
+            do {
+                builder.append(ch);
+                ch = source.nextChar();
+            } while(isLetter(ch) || isDigit(ch));
+            String identifier = builder.toString();
+            if ("null".equals(identifier)) {
+                return new TokenNull(loc);
+            }
+            return new TokenIdentifier(loc, identifier);
+        }
+
         if (isDigit(ch)) {
             return parseNumber(loc, ch, false);
         }
@@ -84,6 +97,15 @@ final class Lexer {
      */
     private static boolean isWhiteSpace(char ch) {
         return ch == ' ' || ch == '\r' || ch == '\n' || ch == '\t';
+    }
+
+    /**
+     * Checks if the character is a letter.
+     * @param ch Character
+     * @return Checking result
+     */
+    private static boolean isLetter(char ch) {
+        return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || ch == '_';
     }
 
     /**

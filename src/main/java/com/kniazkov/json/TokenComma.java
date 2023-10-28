@@ -3,7 +3,7 @@ package com.kniazkov.json;
 /**
  * A token representing a comma.
  */
-class TokenComma extends Token {
+final class TokenComma extends Token {
     /**
      * Constructor.
      * @param loc Location of the first character of the token

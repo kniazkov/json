@@ -3,7 +3,7 @@ package com.kniazkov.json;
 /**
  * A token representing an opening square bracket.
  */
-class TokenOpeningSquareBracket extends Token {
+final class TokenOpeningSquareBracket extends Token {
     /**
      * Constructor.
      * @param loc Location of the first character of the token
