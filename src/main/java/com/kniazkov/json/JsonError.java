@@ -113,4 +113,25 @@ public abstract class JsonError {
             return "Invalid character: '" + ch + '\'';
         }
     }
+
+    /**
+     * Error 'Some element after the comma is expected'.
+     */
+    public final static class ExpectedElementAfterComma extends JsonError {
+        /**
+         * Constructor.
+         * @param loc Position in the document where the error was found
+         */
+        ExpectedElementAfterComma(JsonLocation loc) {
+            super(loc);
+        }
+
+        @Override
+        public String getLocalizedMessage(String lang) {
+            if ("ru".equals(lang)) {
+                return "После запятой должен быть элемент";
+            }
+            return "An element after the comma is expected";
+        }
+    }
 }

@@ -116,6 +116,28 @@ public class JsonParserTest {
         Assert.assertTrue(commonTest("[1, [2, 3], []]"));
     }
 
+    @Test
+    public void arrayWithExtraComma() {
+        boolean oops = false;
+        JsonElement elem = null;
+        try {
+            elem = JsonParser.parseString("[1, 2,]");
+        } catch (JsonException exception) {
+            oops = true;
+        }
+        Assert.assertFalse(oops);
+        Assert.assertNotNull(elem);
+        Assert.assertEquals("[1, 2]", elem.toString());
+
+        JsonError error = null;
+        try {
+            JsonParser.parseString("[1, 2,]", JsonParsingMode.STRICT);
+        } catch (JsonException exception) {
+            error = exception.getError();
+        }
+        Assert.assertTrue(error instanceof JsonError.ExpectedElementAfterComma);
+    }
+
     /**
      * A common test for JSON parser. First parses a JSON document,
      * then converts the resulting element into a string, the results should match.

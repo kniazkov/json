@@ -23,7 +23,7 @@ public final class JsonParser {
      */
     public static JsonElement parseString(String source, JsonParsingMode mode) throws JsonException {
         JsonParser parser = new JsonParser(new Source(source), mode);
-        return parser.parseElement(null);
+        return parser.parseRoot();
     }
 
     /**
@@ -46,13 +46,12 @@ public final class JsonParser {
     }
 
     /**
-     * Parses the next JSON element from the current position.
-     * @param parent The container that will contain the parsed element
+     * Parses the root element from the first position.
      * @return JSON element
      * @throws JsonException If parsing fails
      */
-    private JsonElement parseElement(JsonContainer parent) throws JsonException {
-        return parseElement(parent, lexer.getToken(mode));
+    private JsonElement parseRoot() throws JsonException {
+        return parseElement(null, lexer.getToken(mode));
     }
 
     /**
@@ -84,11 +83,18 @@ public final class JsonParser {
         boolean expectedElement = false;
         do {
             if (token instanceof TokenClosingSquareBracket) {
+                if (expectedElement && mode == JsonParsingMode.STRICT) {
+                    throw new JsonException(
+                            new JsonError.ExpectedElementAfterComma(token.getLocation())
+                    );
+                }
                 return array;
             }
+
             JsonElement child = parseElement(array, token);
             if (child != null) {
                 array.addChild(child);
+                expectedElement = false;
                 token = lexer.getToken(mode);
                 if (token instanceof TokenComma) {
                     expectedElement = true;
