@@ -46,6 +46,12 @@ final class Lexer {
             if ("null".equals(identifier)) {
                 return new TokenNull(loc);
             }
+            if ("true".equals(identifier)) {
+                return new TokenBoolean(loc, true);
+            }
+            if ("false".equals(identifier)) {
+                return new TokenBoolean(loc, false);
+            }
             return new TokenIdentifier(loc, identifier);
         }
 

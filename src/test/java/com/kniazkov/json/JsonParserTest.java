@@ -143,6 +143,16 @@ public class JsonParserTest {
         Assert.assertTrue(commonTest("null"));
     }
 
+    @Test
+    public void trueElement() {
+        Assert.assertTrue(commonTest("true"));
+    }
+
+    @Test
+    public void falseElement() {
+        Assert.assertTrue(commonTest("false"));
+    }
+
     /**
      * A common test for JSON parser. First parses a JSON document,
      * then converts the resulting element into a string, the results should match.

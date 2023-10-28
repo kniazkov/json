@@ -51,6 +51,23 @@ public abstract class JsonElement {
     }
 
     /**
+     * Checks if the element contains boolean value.
+     * @return Checking result
+     */
+    public boolean isBoolean() {
+        return false;
+    }
+
+    /**
+     * Tries to represent the value of an element as a boolean.
+     * @return The value of the element represented as a boolean,
+     *   or {@code false} if the element is not boolean
+     */
+    public boolean getBooleanValue() {
+        return false;
+    }
+
+    /**
      * Checks if the element is a 32-bit integer.
      * @return Checking result
      */
@@ -93,8 +110,8 @@ public abstract class JsonElement {
     }
 
     /**
-     * Tries to convert the value of an element to a double-precision real number.
-     * @return The value of the element converted to a double-precision real number,
+     * Tries to represent the value of an element as a double-precision real number.
+     * @return The value of the element represented as a double-precision real number,
      *   or 0 if no such conversion is possible.
      */
     public double getDoubleValue() {
