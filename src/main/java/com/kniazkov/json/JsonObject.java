@@ -1,5 +1,7 @@
 package com.kniazkov.json;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -11,6 +13,11 @@ public class JsonObject extends JsonContainer {
      * Collection of elements.
      */
     private final Map<String, JsonElement> elements;
+
+    /**
+     * Keys (in ordered list).
+     */
+    private final List<String> keys;
 
     /**
      * Constructor.
@@ -26,11 +33,12 @@ public class JsonObject extends JsonContainer {
     JsonObject(JsonContainer parent) {
         super(parent);
         elements = new TreeMap<>();
+        keys = new ArrayList<>();
     }
 
     @Override
     public int size() {
-        return elements.size();
+        return keys.size();
     }
 
     @Override
