@@ -78,6 +78,17 @@ final class Lexer {
             throw new JsonException(new JsonError.ExpectedNumberAfterPlus(source.getLocation()));
         }
 
+        if (ch == '"') {
+            return parseString(loc, '"');
+        }
+
+        if (ch == '\'') {
+            if (mode == JsonParsingMode.STRICT) {
+                throw new JsonException(new JsonError.InvalidCharacter(loc, '\''));
+            }
+            return parseString(loc, '\'');
+        }
+
         if (ch == '[') {
             source.nextChar();
             return new TokenOpeningSquareBracket(loc);
@@ -124,6 +135,15 @@ final class Lexer {
     }
 
     /**
+     * Checks if the character is a hexadecimal digit.
+     * @param ch Character
+     * @return Checking result
+     */
+    private static boolean isHexDigit(char ch) {
+        return ch >= '0' && ch <= '9' || ch >= 'a' && ch <= 'f' || ch >= 'A' && ch <= 'F' ;
+    }
+
+    /**
      * Parses the character sequence as a number.
      * @param loc Location of the first character of the token
      * @param firstDigit First digit
@@ -141,5 +161,89 @@ final class Lexer {
             intPart = -intPart;
         }
         return new TokenNumber(loc, intPart);
+    }
+
+    /**
+     * Parses the character sequence as a string.
+     * @param loc Location of the first character of the token
+     * @param quote The quote character that opened the string
+     * @return A token representing a string
+     * @throws JsonException If parsing fails
+     */
+    private TokenString parseString(JsonLocation loc, char quote) throws JsonException {
+        StringBuilder value = new StringBuilder();
+        char ch = source.nextChar();
+        while(ch != quote) {
+            if (ch == '\\') {
+                ch = source.nextChar();
+                switch (ch) {
+                    case '"':
+                    case '\'':
+                    case '\\':
+                    case '/':
+                        value.append(ch);
+                        break;
+                    case 'b':
+                        value.append('\b');
+                        break;
+                    case 'f':
+                        value.append('\f');
+                        break;
+                    case 'n':
+                        value.append('\n');
+                        break;
+                    case 'r':
+                        value.append('\r');
+                        break;
+                    case 't':
+                        value.append('\t');
+                        break;
+                    case 'u':
+                        char hex0 = source.nextChar();
+                        char hex1 = source.nextChar();
+                        char hex2 = source.nextChar();
+                        char hex3 = source.nextChar();
+                        if (!isHexDigit(hex0) || !isHexDigit(hex1) || !isHexDigit(hex2) || !isHexDigit(hex3)) {
+                            String errorSequence = "u" + (hex0 > ' ' ? hex0 : '?') + (hex1 > ' ' ? hex1 : '?')
+                                    + (hex2 > ' ' ? hex2 : '?') + (hex3 > ' ' ? hex3 : '?');
+                            throw new JsonException(new JsonError.IncorrectStringSequence(
+                                    source.getLocation(),
+                                    errorSequence
+                            ));
+                        }
+                        value.append((char)(hexToDecimal(hex0) * 0x1000 + hexToDecimal(hex1) * 0x100
+                                + hexToDecimal(hex2) * 0x10 + hexToDecimal(hex3)));
+                        break;
+                    default:
+                        throw new JsonException(new JsonError.IncorrectStringSequence(
+                                source.getLocation(),
+                                ch > ' ' ? "" + ch : "?"
+                        ));
+                }
+            } else {
+                value.append(ch);
+            }
+            ch = source.nextChar();
+        }
+        source.nextChar();
+        return new TokenString(loc, value.toString());
+    }
+
+    /**
+     * Converts hexadecimal number to decimal
+     * @param ch Hexadecimal number
+     * @return Decimal number
+     */
+    private static int hexToDecimal(char ch) {
+        if (ch >= '0' && ch <= '9') {
+            return ch - '0';
+        }
+        if (ch >= 'a' && ch <= 'f') {
+            return ch - 'a' + 10;
+        }
+        if (ch >= 'A' && ch <= 'F') {
+            return ch - 'A' + 10;
+        }
+        throw new IllegalArgumentException();
     }
 }

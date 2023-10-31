@@ -153,6 +153,62 @@ public class JsonParserTest {
         Assert.assertTrue(commonTest("false"));
     }
 
+    @Test
+    public void simpleString() {
+        Assert.assertTrue(commonTest("\"hello\""));
+    }
+
+    @Test
+    public void stringWithEntities() {
+        Assert.assertTrue(commonTest("\"test\\n\\rtest\\u0001\""));
+    }
+
+    @Test
+    public void stringInSingleQuotes() {
+        boolean oops = false;
+        JsonElement elem = null;
+        try {
+            elem = JsonParser.parseString("'hello'");
+        } catch (JsonException exception) {
+            oops = true;
+        }
+        Assert.assertFalse(oops);
+        Assert.assertNotNull(elem);
+        Assert.assertEquals("\"hello\"", elem.toString());
+
+        JsonError error = null;
+        try {
+            JsonParser.parseString("'hello'", JsonParsingMode.STRICT);
+        } catch (JsonException exception) {
+            error = exception.getError();
+        }
+        Assert.assertTrue(error instanceof JsonError.InvalidCharacter);
+    }
+
+    @Test
+    public void stringWithIncorrectSequence() {
+        JsonError error = null;
+        try {
+            JsonParser.parseString("\"abc\\d\"");
+        } catch (JsonException exception) {
+            error = exception.getError();
+        }
+        Assert.assertTrue(error instanceof JsonError.IncorrectStringSequence);
+        Assert.assertEquals("Incorrect string sequence: '\\d'", error.getMessage());
+    }
+
+    @Test
+    public void stringWithIncorrectHexadecimalSequence() {
+        JsonError error = null;
+        try {
+            JsonParser.parseString("\"abc\\ujh\"");
+        } catch (JsonException exception) {
+            error = exception.getError();
+        }
+        Assert.assertTrue(error instanceof JsonError.IncorrectStringSequence);
+        Assert.assertEquals("Incorrect string sequence: '\\ujh\"?'", error.getMessage());
+    }
+
     /**
      * A common test for JSON parser. First parses a JSON document,
      * then converts the resulting element into a string, the results should match.

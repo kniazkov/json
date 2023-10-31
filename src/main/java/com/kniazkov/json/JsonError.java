@@ -134,4 +134,31 @@ public abstract class JsonError {
             return "An element after the comma is expected";
         }
     }
+
+    /**
+     * Error 'Incorrect string sequence'.
+     */
+    public final static class IncorrectStringSequence extends JsonError {
+        /**
+         * The sequence.
+         */
+        private final String sequence;
+        /**
+         * Constructor.
+         * @param sequence The sequence.
+         * @param loc Position in the document where the error was found
+         */
+        IncorrectStringSequence(JsonLocation loc, String sequence) {
+            super(loc);
+            this.sequence = sequence;
+        }
+
+        @Override
+        public String getLocalizedMessage(String lang) {
+            if ("ru".equals(lang)) {
+                return "Неправильная строковая последовательность: '\\" + sequence + '\'';
+            }
+            return "Incorrect string sequence: '\\" + sequence + '\'';
+        }
+    }
 }
