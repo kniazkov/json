@@ -1,9 +1,5 @@
 package com.kniazkov.json;
 
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 /**
  * Some auxiliary procedures.
  */

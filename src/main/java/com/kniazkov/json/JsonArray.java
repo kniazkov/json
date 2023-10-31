@@ -93,7 +93,7 @@ public final class JsonArray extends JsonContainer {
      * Creates a child element of the 'boolean' type and adds it to the end of the array.
      * @param value Boolean value
      */
-    public void addNull(boolean value) {
+    public void addBoolean(boolean value) {
         list.add(new JsonBoolean(this, value));
     }
 
@@ -106,12 +106,31 @@ public final class JsonArray extends JsonContainer {
     }
 
     /**
+     * Creates a child element of the 'string' type and adds it to the end of the array.
+     * @param value Value of the string
+     */
+    public void addString(String value) {
+        list.add(new JsonString(this, value));
+    }
+
+    /**
      * Creates an empty array as a child of this array.
      * The child is then added to the end of the parent array.
      * @return The empty array created, so that it can be filled.
      */
     public JsonArray createArray() {
         JsonArray child = new JsonArray(this);
+        list.add(child);
+        return child;
+    }
+
+    /**
+     * Creates an empty object as a child of this array.
+     * The child is then added to the end of the array.
+     * @return The empty object created, so that it can be filled.
+     */
+    public JsonObject createObject() {
+        JsonObject child = new JsonObject(this);
         list.add(child);
         return child;
     }
