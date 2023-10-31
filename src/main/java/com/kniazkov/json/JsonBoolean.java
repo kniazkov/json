@@ -46,4 +46,9 @@ public class JsonBoolean extends JsonElement {
     public boolean getBooleanValue() {
         return value;
     }
+
+    @Override
+    public String getStringValue() {
+        return value ? "true" : "false";
+    }
 }

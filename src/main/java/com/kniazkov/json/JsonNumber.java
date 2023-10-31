@@ -66,4 +66,9 @@ public final class JsonNumber extends JsonElement {
     public double getDoubleValue() {
         return (double)value;
     }
+
+    @Override
+    public String getStringValue() {
+        return Utils.doubleToString(value);
+    }
 }

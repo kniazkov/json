@@ -17,6 +17,7 @@ public class JsonNumberTest {
         Assert.assertEquals(13L, elem.getLongValue());
         Assert.assertEquals(13, elem.getDoubleValue(), 0);
         Assert.assertEquals("13", elem.toString());
+        Assert.assertEquals("13", elem.getStringValue());
     }
 
     @Test

@@ -71,7 +71,7 @@ public abstract class JsonElement implements Cloneable {
     }
 
     /**
-     * Tries to represent the value of an element as a boolean.
+     * Tries to represent the value of the element as a boolean.
      * @return The value of the element represented as a boolean,
      *   or {@code false} if the element is not boolean
      */
@@ -104,7 +104,7 @@ public abstract class JsonElement implements Cloneable {
     }
 
     /**
-     * Tries to convert the value of an element to a 32-bit integer.
+     * Tries to convert the value of the element to a 32-bit integer.
      * @return The value of the element converted to a 32-bit integer,
      *   or 0 if no such conversion is possible
      */
@@ -113,7 +113,7 @@ public abstract class JsonElement implements Cloneable {
     }
 
     /**
-     * Tries to convert the value of an element to a 64-bit integer.
+     * Tries to convert the value of the element to a 64-bit integer.
      * @return The value of the element converted to a 64-bit integer,
      *   or 0 if no such conversion is possible
      */
@@ -122,7 +122,7 @@ public abstract class JsonElement implements Cloneable {
     }
 
     /**
-     * Tries to represent the value of an element as a double-precision real number.
+     * Tries to represent the value of the element as a double-precision real number.
      * @return The value of the element represented as a double-precision real number,
      *   or 0 if no such conversion is possible.
      */
@@ -136,5 +136,22 @@ public abstract class JsonElement implements Cloneable {
      */
     public JsonArray toArray() {
         return null;
+    }
+
+    /**
+     * Checks if the element is a string.
+     * @return Checking result
+     */
+    public boolean isString() {
+        return false;
+    }
+
+    /**
+     * Tries to represent the value of the element as a string.
+     * @return The value of the element represented as a string,
+     *   or empty string if no such conversion is possible
+     */
+    public String getStringValue() {
+        return "";
     }
 }
