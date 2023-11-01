@@ -1,14 +1,11 @@
 package com.kniazkov.json;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * JSON object.
  */
-public class JsonObject extends JsonContainer {
+public class JsonObject extends JsonContainer implements Map<String, JsonElement> {
     /**
      * Collection of elements.
      */
@@ -39,6 +36,61 @@ public class JsonObject extends JsonContainer {
     @Override
     public int size() {
         return keys.size();
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return false;
+    }
+
+    @Override
+    public boolean containsKey(Object key) {
+        return false;
+    }
+
+    @Override
+    public boolean containsValue(Object value) {
+        return false;
+    }
+
+    @Override
+    public JsonElement get(Object key) {
+        return null;
+    }
+
+    @Override
+    public JsonElement put(String key, JsonElement value) {
+        return null;
+    }
+
+    @Override
+    public JsonElement remove(Object key) {
+        return null;
+    }
+
+    @Override
+    public void putAll(Map<? extends String, ? extends JsonElement> m) {
+
+    }
+
+    @Override
+    public void clear() {
+
+    }
+
+    @Override
+    public Set<String> keySet() {
+        return null;
+    }
+
+    @Override
+    public Collection<JsonElement> values() {
+        return null;
+    }
+
+    @Override
+    public Set<Entry<String, JsonElement>> entrySet() {
+        return null;
     }
 
     @Override
