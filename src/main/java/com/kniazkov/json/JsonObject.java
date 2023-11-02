@@ -118,9 +118,10 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
         result.append('{');
         boolean flag = false;
         for (String key : keys) {
-            if (!flag) {
+            if (flag) {
                 result.append(", ");
             }
+            flag = true;
             result.append('"').append(Utils.escapeEntities(key)).append("\": ")
                     .append(elements.get(key).toString());
         }
