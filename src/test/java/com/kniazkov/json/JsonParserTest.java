@@ -89,7 +89,7 @@ public class JsonParserTest {
         }
         Assert.assertFalse(oops);
         Assert.assertNotNull(elem);
-        JsonArray array = elem.toArray();
+        JsonArray array = elem.toJsonArray();
         Assert.assertNotNull(array);
         Assert.assertEquals(0, array.size());
     }
@@ -105,7 +105,7 @@ public class JsonParserTest {
         }
         Assert.assertFalse(oops);
         Assert.assertNotNull(elem);
-        JsonArray array = elem.toArray();
+        JsonArray array = elem.toJsonArray();
         Assert.assertNotNull(array);
         Assert.assertEquals(3, array.size());
         Assert.assertEquals("[1, 2, 3]", array.toString());

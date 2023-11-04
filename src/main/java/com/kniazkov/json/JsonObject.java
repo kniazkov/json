@@ -215,4 +215,9 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
         }
         elements.put(key, elem);
     }
+
+    @Override
+    public JsonObject toJsonObject() {
+        return this;
+    }
 }

@@ -131,14 +131,6 @@ public abstract class JsonElement implements Cloneable {
     }
 
     /**
-     * Safely casts an element to the "array" type.
-     * @return JSON array or {@code null} if the element is not an array.
-     */
-    public JsonArray toArray() {
-        return null;
-    }
-
-    /**
      * Checks if the element is a string.
      * @return Checking result
      */
@@ -153,5 +145,21 @@ public abstract class JsonElement implements Cloneable {
      */
     public String getStringValue() {
         return "";
+    }
+
+    /**
+     * Safely casts an element to the "array" type.
+     * @return JSON array or {@code null} if the element is not an array.
+     */
+    public JsonArray toJsonArray() {
+        return null;
+    }
+
+    /**
+     * Safely casts an element to the "object" type.
+     * @return JSON object or {@code null} if the element is not an object.
+     */
+    public JsonObject toJsonObject() {
+        return null;
     }
 }
