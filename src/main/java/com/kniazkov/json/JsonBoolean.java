@@ -38,6 +38,11 @@ public class JsonBoolean extends JsonElement {
     }
 
     @Override
+    public Object toObject() {
+        return value;
+    }
+
+    @Override
     public boolean isBoolean() {
         return true;
     }

@@ -45,6 +45,12 @@ public abstract class JsonElement implements Cloneable {
     public abstract String toString();
 
     /**
+     * Represents the element as a Java object.
+     * @return Object containing element data
+     */
+    public abstract Object toObject();
+
+    /**
      * Represents the element as text with line breaks and indentation of nested elements,
      * making it easier to read.
      * @param indentation Symbols forming an indentation

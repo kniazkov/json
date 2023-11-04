@@ -28,6 +28,11 @@ public class JsonNull extends JsonElement {
     }
 
     @Override
+    public Object toObject() {
+        return null;
+    }
+
+    @Override
     public boolean isNull() {
         return true;
     }

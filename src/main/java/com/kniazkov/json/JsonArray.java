@@ -53,6 +53,15 @@ public final class JsonArray extends JsonContainer implements List<JsonElement> 
     }
 
     @Override
+    public Object toObject() {
+        List<Object> result = new ArrayList<>(list.size());
+        for (JsonElement elem : list) {
+            result.add(elem.toObject());
+        }
+        return Collections.unmodifiableList(result);
+    }
+
+    @Override
     public <T> T[] toArray(T[] a) {
         return list.toArray(a);
     }

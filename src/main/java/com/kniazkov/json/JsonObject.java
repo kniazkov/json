@@ -129,6 +129,15 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
         return result.toString();
     }
 
+    @Override
+    public Object toObject() {
+        Map<String, Object> result = new TreeMap<>();
+        for (String key : keys) {
+            result.put(key, elements.get(key).toObject());
+        }
+        return Collections.unmodifiableMap(result);
+    }
+
     /**
      * Returns a child element by its key.
      * @param key Key

@@ -38,6 +38,11 @@ public class JsonString extends JsonElement {
     }
 
     @Override
+    public Object toObject() {
+        return value;
+    }
+
+    @Override
     public boolean isString() {
         return true;
     }
