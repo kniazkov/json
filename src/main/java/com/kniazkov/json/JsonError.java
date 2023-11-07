@@ -182,4 +182,67 @@ public abstract class JsonError {
             return "A key:value pair after the comma is expected";
         }
     }
+
+    /**
+     * Error 'A key (string) is expected'.
+     */
+    public final static class ExpectedKey extends JsonError {
+        /**
+         * Constructor.
+         * @param loc Position in the document where the error was found
+         */
+        ExpectedKey(JsonLocation loc) {
+            super(loc);
+        }
+
+        @Override
+        public String getLocalizedMessage(String lang) {
+            if ("ru".equals(lang)) {
+                return "Ожижается ключ (строка)";
+            }
+            return "A key (string) is expected";
+        }
+    }
+
+    /**
+     * Error 'A colon as a separator after the key is expected'.
+     */
+    public final static class ExpectedSeparator extends JsonError {
+        /**
+         * Constructor.
+         * @param loc Position in the document where the error was found
+         */
+        ExpectedSeparator(JsonLocation loc) {
+            super(loc);
+        }
+
+        @Override
+        public String getLocalizedMessage(String lang) {
+            if ("ru".equals(lang)) {
+                return "После ключа должно быть двоеточие в качестве разделителя";
+            }
+            return "A colon as a separator after the key is expected";
+        }
+    }
+
+    /**
+     * Error 'Some element after the separator is expected'.
+     */
+    public final static class ExpectedElementAfterSeparator extends JsonError {
+        /**
+         * Constructor.
+         * @param loc Position in the document where the error was found
+         */
+        ExpectedElementAfterSeparator(JsonLocation loc) {
+            super(loc);
+        }
+
+        @Override
+        public String getLocalizedMessage(String lang) {
+            if ("ru".equals(lang)) {
+                return "После разделителя должен быть элемент";
+            }
+            return "An element after the separator is expected";
+        }
+    }
 }

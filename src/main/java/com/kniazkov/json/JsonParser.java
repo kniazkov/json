@@ -131,8 +131,30 @@ public final class JsonParser {
             if (token instanceof TokenString) {
                 key = ((TokenString)token).getValue();
             }
-            else if (token instanceof TokenIdentifier) {
+            else if (token instanceof TokenIdentifier && mode != JsonParsingMode.STRICT) {
                 key = ((TokenIdentifier)token).getIdentifier();
+            }
+            if (key == null) {
+                throw new JsonException(new JsonError.ExpectedKey(token.getLocation()));
+            }
+
+            token = lexer.getToken(mode);
+            if (!(token instanceof TokenColon)) {
+                throw new JsonException(new JsonError.ExpectedSeparator(token.getLocation()));
+            }
+
+            token = lexer.getToken(mode);
+            JsonElement value = parseElement(obj, token);
+            if (value != null) {
+                obj.addChild(key, value);
+                expectedElement = false;
+                token = lexer.getToken(mode);
+                if (token instanceof TokenComma) {
+                    expectedElement = true;
+                    token = lexer.getToken(mode);
+                }
+            } else {
+                throw new JsonException(new JsonError.ExpectedElementAfterSeparator(token.getLocation()));
             }
         } while(expectedElement);
         return obj;
