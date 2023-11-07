@@ -1,5 +1,6 @@
 package com.kniazkov.json;
 
+import java.lang.reflect.Field;
 import java.util.*;
 
 /**
@@ -146,6 +147,33 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
                 result.put(key, elements.get(key).toObject());
             }
             return (T) Collections.unmodifiableMap(result);
+        } else if (!type.isPrimitive() && !type.isInterface()) {
+            T result = null;
+            try {
+                result = type.newInstance();
+            } catch (InstantiationException | IllegalAccessException ignored) {
+                return null;
+            }
+            Field[] fields = type.getDeclaredFields();
+            for (int i = 0; i < fields.length; i++) {
+                Field field = fields[i];
+                String fieldName = field.getName();
+                if (elements.containsKey(fieldName)) {
+                    String fieldTypeName = field.getType().getTypeName();
+                    try {
+                        field.setAccessible(true);
+                        if (fieldTypeName.equals("int")) {
+                            field.setInt(result, elements.get(fieldName).getIntValue());
+                        }
+                        if (fieldTypeName.equals("boolean")) {
+                            field.setBoolean(result, elements.get(fieldName).getBooleanValue());
+                        }
+                    } catch (IllegalAccessException ignored) {
+                        return null;
+                    }
+                }
+            }
+            return result;
         }
         return null;
     }

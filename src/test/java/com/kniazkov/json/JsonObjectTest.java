@@ -26,7 +26,7 @@ public class JsonObjectTest {
     }
 
     @Test
-    public void objectToJavaObject() {
+    public void objectToJavaGenericObject() {
         Object obj = createTestObject().toObject();
         Assert.assertTrue(obj instanceof Map);
         Map<String, Object> map = (Map<String, Object>) obj;
@@ -38,6 +38,20 @@ public class JsonObjectTest {
         Map map = createTestObject().toObject(TreeMap.class);
         Assert.assertNotNull(map);
         Assert.assertTrue(map.get("number") instanceof Number);
+    }
+
+    public static class TestClass {
+        private boolean bool;
+        private int number;
+
+        public TestClass() {
+        }
+    }
+
+    @Test
+    public void objectToJavaClass() {
+        TestClass obj = createTestObject().toObject(TestClass.class);
+        Assert.assertNotNull(obj);
     }
 
     /**
