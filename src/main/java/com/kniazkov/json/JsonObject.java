@@ -138,6 +138,18 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
         return Collections.unmodifiableMap(result);
     }
 
+    public <T> T toObject(Class<T> type) {
+        String typeName = type.getTypeName();
+        if (typeName.equals("java.util.TreeMap")) {
+            Map<String, Object> result = new TreeMap<>();
+            for (String key : keys) {
+                result.put(key, elements.get(key).toObject());
+            }
+            return (T) Collections.unmodifiableMap(result);
+        }
+        return null;
+    }
+
     /**
      * Returns a child element by its key.
      * @param key Key

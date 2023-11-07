@@ -1,5 +1,6 @@
 package com.kniazkov.json;
 
+import java.util.TreeMap;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -30,6 +31,13 @@ public class JsonObjectTest {
         Assert.assertTrue(obj instanceof Map);
         Map<String, Object> map = (Map<String, Object>) obj;
         Assert.assertTrue(map.get("array") instanceof List);
+    }
+
+    @Test
+    public void objectToJavaMap() {
+        Map map = createTestObject().toObject(TreeMap.class);
+        Assert.assertNotNull(map);
+        Assert.assertTrue(map.get("number") instanceof Number);
     }
 
     /**
