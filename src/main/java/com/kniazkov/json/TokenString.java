@@ -28,4 +28,12 @@ final class TokenString extends TokenLiteral {
     JsonElement toElement(JsonContainer parent) {
         return new JsonString(parent, value);
     }
+
+    /**
+     * Returns value of the string.
+     * @return Value of the string
+     */
+    String getValue() {
+        return value;
+    }
 }

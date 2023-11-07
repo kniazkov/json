@@ -99,9 +99,24 @@ final class Lexer {
             return new TokenClosingSquareBracket(loc);
         }
 
+        if (ch == '{') {
+            source.nextChar();
+            return new TokenOpeningCurlyBracket(loc);
+        }
+
+        if (ch == '}') {
+            source.nextChar();
+            return new TokenClosingCurlyBracket(loc);
+        }
+
         if (ch == ',') {
             source.nextChar();
             return new TokenComma(loc);
+        }
+
+        if (ch == ':') {
+            source.nextChar();
+            return new TokenColon(loc);
         }
 
         throw new JsonException(new JsonError.InvalidCharacter(loc, ch));

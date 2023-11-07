@@ -161,4 +161,25 @@ public abstract class JsonError {
             return "Incorrect string sequence: '\\" + sequence + '\'';
         }
     }
+
+    /**
+     * Error 'A key:value pair after the comma is expected'.
+     */
+    public final static class ExpectedPairAfterComma extends JsonError {
+        /**
+         * Constructor.
+         * @param loc Position in the document where the error was found
+         */
+        ExpectedPairAfterComma(JsonLocation loc) {
+            super(loc);
+        }
+
+        @Override
+        public String getLocalizedMessage(String lang) {
+            if ("ru".equals(lang)) {
+                return "После запятой должна быть пара ключ:значение";
+            }
+            return "A key:value pair after the comma is expected";
+        }
+    }
 }

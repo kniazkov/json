@@ -68,6 +68,9 @@ public final class JsonParser {
         if (firstToken instanceof TokenOpeningSquareBracket) {
             return parseArray(parent);
         }
+        if (firstToken instanceof TokenOpeningCurlyBracket) {
+            return parseObject(parent);
+        }
         return null;
     }
 
@@ -103,5 +106,35 @@ public final class JsonParser {
             }
         } while(expectedElement);
         return array;
+    }
+
+    /**
+     * Parses a sequence of tokens as a JSON object.
+     * @param parent The container that will contain the parsed object
+     * @return JSON object
+     * @throws JsonException If parsing fails
+     */
+    private JsonObject parseObject(JsonContainer parent) throws JsonException {
+        final JsonObject obj = new JsonObject();
+        Token token = lexer.getToken(mode);
+        boolean expectedElement = false;
+        do {
+            if (token instanceof TokenClosingCurlyBracket) {
+                if (expectedElement && mode == JsonParsingMode.STRICT) {
+                    throw new JsonException(
+                            new JsonError.ExpectedPairAfterComma(token.getLocation())
+                    );
+                }
+                return obj;
+            }
+            String key = null;
+            if (token instanceof TokenString) {
+                key = ((TokenString)token).getValue();
+            }
+            else if (token instanceof TokenIdentifier) {
+                key = ((TokenIdentifier)token).getIdentifier();
+            }
+        } while(expectedElement);
+        return obj;
     }
 }
