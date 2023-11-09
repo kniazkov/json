@@ -210,6 +210,16 @@ public class JsonParserTest {
     }
 
     @Test
+    public void notClosedString() {
+        Assert.assertTrue(commonTestError(
+                "\n  \"test",
+                JsonError.UnclosedString.class,
+                2,
+                3
+        ));
+    }
+
+    @Test
     public void emptyObject() {
         boolean oops = false;
         JsonElement elem = null;
@@ -264,6 +274,30 @@ public class JsonParserTest {
             String json2 = elem.toString();
             return json.equals(json2);
         } catch (JsonException ignored) {
+        }
+        return false;
+    }
+
+    /**
+     * A common test for JSON parser where expected an error.
+     * @param json JSON document
+     * @param errorType Type of object representing an error
+     * @param row Expected row where error should be
+     * @param column Expected column where error should be
+     * @return Testing result ({@code true} = success)
+     */
+    private static boolean commonTestError(String json, Class<? extends JsonError> errorType,
+                                           int row, int column) {
+        JsonError error = null;
+        try {
+            JsonParser.parseString(json);
+        } catch (JsonException exception) {
+            error = exception.getError();
+        }
+        if (error != null) {
+            JsonLocation loc = error.getLocation();
+            return errorType.isInstance(error) &&
+                    loc.getRow() == row && loc.getColumn() == column;
         }
         return false;
     }

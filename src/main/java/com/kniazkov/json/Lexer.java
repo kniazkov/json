@@ -226,7 +226,7 @@ final class Lexer {
                                     errorSequence
                             ));
                         }
-                        value.append((char)(hexToDecimal(hex0) * 0x1000 + hexToDecimal(hex1) * 0x100
+                        value.append((char) (hexToDecimal(hex0) * 0x1000 + hexToDecimal(hex1) * 0x100
                                 + hexToDecimal(hex2) * 0x10 + hexToDecimal(hex3)));
                         break;
                     default:
@@ -235,6 +235,8 @@ final class Lexer {
                                 ch > ' ' ? "" + ch : "?"
                         ));
                 }
+            } else if (ch == 0) {
+                throw new JsonException(new JsonError.UnclosedString(loc));
             } else {
                 value.append(ch);
             }

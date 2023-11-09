@@ -136,6 +136,27 @@ public abstract class JsonError {
     }
 
     /**
+     * Error 'Unclosed string'.
+     */
+    public final static class UnclosedString extends JsonError {
+        /**
+         * Constructor.
+         * @param loc Position in the document where the error was found
+         */
+        UnclosedString(JsonLocation loc) {
+            super(loc);
+        }
+
+        @Override
+        public String getLocalizedMessage(String lang) {
+            if ("ru".equals(lang)) {
+                return "Пропущена закрывающая кавычка";
+            }
+            return "Unclosed string";
+        }
+    }
+
+    /**
      * Error 'Incorrect string sequence'.
      */
     public final static class IncorrectStringSequence extends JsonError {
