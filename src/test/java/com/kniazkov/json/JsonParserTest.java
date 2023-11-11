@@ -118,24 +118,13 @@ public class JsonParserTest {
 
     @Test
     public void arrayWithExtraComma() {
-        boolean oops = false;
-        JsonElement elem = null;
-        try {
-            elem = JsonParser.parseString("[1, 2,]");
-        } catch (JsonException exception) {
-            oops = true;
-        }
-        Assert.assertFalse(oops);
-        Assert.assertNotNull(elem);
-        Assert.assertEquals("[1, 2]", elem.toString());
-
-        JsonError error = null;
-        try {
-            JsonParser.parseString("[1, 2,]", JsonParsingMode.STRICT);
-        } catch (JsonException exception) {
-            error = exception.getError();
-        }
-        Assert.assertTrue(error instanceof JsonError.ExpectedElementAfterComma);
+        Assert.assertTrue(commonTestErrorIfStrict(
+                "[1, 2,]",
+                "[1, 2]",
+                JsonError.ExpectedElementAfterComma.class,
+                1,
+                7
+        ));
     }
 
     @Test
@@ -165,24 +154,13 @@ public class JsonParserTest {
 
     @Test
     public void stringInSingleQuotes() {
-        boolean oops = false;
-        JsonElement elem = null;
-        try {
-            elem = JsonParser.parseString("'hello'");
-        } catch (JsonException exception) {
-            oops = true;
-        }
-        Assert.assertFalse(oops);
-        Assert.assertNotNull(elem);
-        Assert.assertEquals("\"hello\"", elem.toString());
-
-        JsonError error = null;
-        try {
-            JsonParser.parseString("'hello'", JsonParsingMode.STRICT);
-        } catch (JsonException exception) {
-            error = exception.getError();
-        }
-        Assert.assertTrue(error instanceof JsonError.InvalidCharacter);
+        Assert.assertTrue(commonTestErrorIfStrict(
+                "'hello'",
+                "\"hello\"",
+                JsonError.InvalidCharacter.class,
+                1,
+                1
+        ));
     }
 
     @Test
@@ -242,24 +220,24 @@ public class JsonParserTest {
 
     @Test
     public void objectWithExtraComma() {
-        boolean oops = false;
-        JsonElement elem = null;
-        try {
-            elem = JsonParser.parseString("{\"data\":\"test\",}");
-        } catch (JsonException exception) {
-            oops = true;
-        }
-        Assert.assertFalse(oops);
-        Assert.assertNotNull(elem);
-        Assert.assertEquals("{\"data\": \"test\"}", elem.toString());
+        Assert.assertTrue(commonTestErrorIfStrict(
+                "{\"data\":\"test\",}",
+                "{\"data\": \"test\"}",
+                JsonError.ExpectedPairAfterComma.class,
+                1,
+                16
+        ));
+    }
 
-        JsonError error = null;
-        try {
-            JsonParser.parseString("{\"data\":\"test\",}", JsonParsingMode.STRICT);
-        } catch (JsonException exception) {
-            error = exception.getError();
-        }
-        Assert.assertTrue(error instanceof JsonError.ExpectedPairAfterComma);
+    @Test
+    public void objectWithIdentifiersAsKeys() {
+        Assert.assertTrue(commonTestErrorIfStrict(
+                "{data0:\"test\"}",
+                "{\"data0\": \"test\"}",
+                JsonError.ExpectedKey.class,
+                1,
+                2
+        ));
     }
 
     /**
@@ -291,6 +269,42 @@ public class JsonParserTest {
         JsonError error = null;
         try {
             JsonParser.parseString(json);
+        } catch (JsonException exception) {
+            error = exception.getError();
+        }
+        if (error != null) {
+            JsonLocation loc = error.getLocation();
+            return errorType.isInstance(error) &&
+                    loc.getRow() == row && loc.getColumn() == column;
+        }
+        return false;
+    }
+
+    /**
+     * A common test for JSON parser where expected an error if parsed
+     *   in STRICT mode, and success otherwise
+     * @param json JSON document
+     * @param json2 expected JSON document after transformation
+     * @param errorType Type of object representing an error
+     * @param row Expected row where error should be
+     * @param column Expected column where error should be
+     * @return Testing result ({@code true} = success)
+     */
+    private static boolean commonTestErrorIfStrict(String json, String json2,
+               Class<? extends JsonError> errorType,
+               int row, int column) {
+        try {
+            JsonElement elem = JsonParser.parseString(json);
+            if (!elem.toString().equals(json2)) {
+                return false;
+            }
+        } catch (JsonException ignored) {
+            return false;
+        }
+
+        JsonError error = null;
+        try {
+            JsonParser.parseString(json, JsonParsingMode.STRICT);
         } catch (JsonException exception) {
             error = exception.getError();
         }
