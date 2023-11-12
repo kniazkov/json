@@ -1,6 +1,7 @@
 package com.kniazkov.json;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -139,24 +140,21 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
         return Collections.unmodifiableMap(result);
     }
 
+    @Override
     public <T> T toObject(Class<T> type) {
         String typeName = type.getTypeName();
-        if (typeName.equals("java.util.TreeMap")) {
-            Map<String, Object> result = new TreeMap<>();
-            for (String key : keys) {
-                result.put(key, elements.get(key).toObject());
-            }
-            return (T) Collections.unmodifiableMap(result);
-        } else if (!type.isPrimitive() && !type.isInterface()) {
+        if (typeName.equals("java.util.Map")) {
+            return (T) toObject();
+        }
+        if (!type.isPrimitive() && !type.isInterface()) {
             T result = null;
             try {
-                result = type.newInstance();
-            } catch (InstantiationException | IllegalAccessException ignored) {
+                result = type.getDeclaredConstructor().newInstance();
+            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException ignored) {
                 return null;
             }
             Field[] fields = type.getDeclaredFields();
-            for (int i = 0; i < fields.length; i++) {
-                Field field = fields[i];
+            for (Field field : fields) {
                 String fieldName = field.getName();
                 if (elements.containsKey(fieldName)) {
                     String fieldTypeName = field.getType().getTypeName();

@@ -26,4 +26,14 @@ public class JsonStringTest {
         JsonString elem = new JsonString("\u0001test");
         Assert.assertEquals("\"\\u0001test\"", elem.toString());
     }
+
+    @Test
+    public void stringToObject() {
+        JsonString elem = new JsonString("test");
+        String strValue = elem.toObject(String.class);
+        Assert.assertNotNull(strValue);
+        Assert.assertEquals("test", strValue);
+        Integer intValue = elem.toObject(Integer.class);
+        Assert.assertNull(intValue);
+    }
 }

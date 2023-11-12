@@ -51,6 +51,15 @@ public abstract class JsonElement implements Cloneable {
     public abstract Object toObject();
 
     /**
+     * Represents the element as a Java object of specified type.
+     * @param type The type descriptor
+     * @return Object containing element data or {@code null} if element can't be represented
+     *   as an object of specified type
+     * @param <T> The type
+     */
+    public abstract <T> T toObject(Class<T> type);
+
+    /**
      * Represents the element as text with line breaks and indentation of nested elements,
      * making it easier to read.
      * @param indentation Symbols forming an indentation
