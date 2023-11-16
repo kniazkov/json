@@ -156,14 +156,17 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
             for (Field field : fields) {
                 String fieldName = field.getName();
                 if (elements.containsKey(fieldName)) {
-                    String fieldTypeName = field.getType().getTypeName();
+                    Class<?> fieldType = field.getType();
                     try {
                         field.setAccessible(true);
-                        if (fieldTypeName.equals("int")) {
+                        if (fieldType == int.class) {
                             field.setInt(result, elements.get(fieldName).getIntValue());
                         }
-                        if (fieldTypeName.equals("boolean")) {
+                        else if (fieldType == boolean.class) {
                             field.setBoolean(result, elements.get(fieldName).getBooleanValue());
+                        }
+                        else if (fieldType == java.lang.String.class) {
+                            field.set(result, elements.get(fieldName).getStringValue());
                         }
                     } catch (IllegalAccessException ignored) {
                         return null;
