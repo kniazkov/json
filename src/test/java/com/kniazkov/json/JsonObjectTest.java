@@ -39,13 +39,28 @@ public class JsonObjectTest {
         Assert.assertTrue(map.get("number") instanceof Number);
     }
 
-    public static class TestClass {
+    private static class TestNestedClass {
+        private String str;
+
+        public TestNestedClass() {
+        }
+
+        public String getString() {
+            return str;
+        }
+    }
+
+    private static class TestClass {
         private boolean bool;
         private int number;
 
         private String str;
 
+        private Object nothing;
+        private TestNestedClass obj;
+
         public TestClass() {
+            nothing = "something";
         }
 
         public boolean getBool() {
@@ -59,6 +74,14 @@ public class JsonObjectTest {
         public String getString() {
             return str;
         }
+
+        public Object getNothing() {
+            return nothing;
+        }
+
+        public TestNestedClass getNested() {
+            return obj;
+        }
     }
 
     @Test
@@ -68,6 +91,9 @@ public class JsonObjectTest {
         Assert.assertTrue(obj.getBool());
         Assert.assertEquals(13, obj.getNumber());
         Assert.assertEquals("hello", obj.getString());
+        Assert.assertNull(obj.getNothing());
+        Assert.assertNotNull(obj.getNested());
+        Assert.assertEquals("test", obj.getNested().getString());
     }
 
     /**
