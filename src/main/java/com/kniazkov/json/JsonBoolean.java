@@ -44,6 +44,10 @@ public class JsonBoolean extends JsonElement {
 
     @Override
     public <T> T toObject(Class<T> type) {
+        if (type == java.lang.Boolean.class) {
+            Boolean obj = value;
+            return (T)obj;
+        }
         return null;
     }
 

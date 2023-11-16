@@ -142,8 +142,7 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
 
     @Override
     public <T> T toObject(Class<T> type) {
-        String typeName = type.getTypeName();
-        if (typeName.equals("java.util.Map")) {
+        if (type == java.util.Map.class) {
             return (T) toObject();
         }
         if (!type.isPrimitive() && !type.isInterface()) {

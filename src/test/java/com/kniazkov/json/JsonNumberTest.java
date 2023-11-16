@@ -42,4 +42,15 @@ public class JsonNumberTest {
         Assert.assertEquals(13.01, elem.getDoubleValue(), 0);
         Assert.assertEquals("13.01", elem.toString());
     }
+
+    @Test
+    public void numberToObject() {
+        JsonNumber elem = new JsonNumber(13);
+        Integer intValue = elem.toObject(Integer.class);
+        Assert.assertNotNull(intValue);
+        Double doubleValue = elem.toObject(Double.class);
+        Assert.assertNotNull(doubleValue);
+        Boolean boolValue = elem.toObject(Boolean.class);
+        Assert.assertNull(boolValue);
+    }
 }

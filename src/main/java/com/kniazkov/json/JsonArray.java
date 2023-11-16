@@ -63,6 +63,9 @@ public final class JsonArray extends JsonContainer implements List<JsonElement> 
 
     @Override
     public <T> T toObject(Class<T> type) {
+        if (type == java.util.List.class) {
+            return (T)toObject();
+        }
         return null;
     }
 
