@@ -2,6 +2,8 @@ package com.kniazkov.json;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.*;
 
 /**
@@ -171,6 +173,24 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
                         }
                         else if (fieldType == java.lang.Object.class) {
                             field.set(result, child.toObject());
+                        }
+                        else if (fieldType == java.util.List.class || fieldType == java.util.ArrayList.class) {
+                            JsonArray array = child.toJsonArray();
+                            if (array != null) {
+                                Type listType = field.getGenericType();
+                                if (listType instanceof ParameterizedType) {
+                                    Type[] parameters = ((ParameterizedType) listType).getActualTypeArguments();
+                                    if (parameters.length == 1 && parameters[0] == java.lang.Integer.class) {
+                                        List<Integer> list = new ArrayList<>();
+                                        for (JsonElement jsonElement : array) {
+                                            list.add(jsonElement.getIntValue());
+                                        }
+                                        field.set(result, list);
+                                    }
+                                }
+                            } else {
+                                field.set(result, new ArrayList<>());
+                            }
                         }
                         else {
                             field.set(result, child.toObject(fieldType));

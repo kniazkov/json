@@ -59,6 +59,8 @@ public class JsonObjectTest {
         private Object nothing;
         private TestNestedClass obj;
 
+        private List<Integer> array;
+
         public TestClass() {
             nothing = "something";
         }
@@ -82,6 +84,10 @@ public class JsonObjectTest {
         public TestNestedClass getNested() {
             return obj;
         }
+
+        public List<Integer> getArray() {
+            return array;
+        }
     }
 
     @Test
@@ -94,6 +100,9 @@ public class JsonObjectTest {
         Assert.assertNull(obj.getNothing());
         Assert.assertNotNull(obj.getNested());
         Assert.assertEquals("test", obj.getNested().getString());
+        Assert.assertNotNull(obj.getArray());
+        Assert.assertEquals(2, obj.getArray().size());
+        Assert.assertEquals(1, (int)obj.getArray().get(0));
     }
 
     /**
