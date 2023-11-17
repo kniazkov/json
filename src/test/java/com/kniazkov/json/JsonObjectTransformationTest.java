@@ -117,7 +117,20 @@ public class JsonObjectTransformationTest {
 
     private static class Lists {
         LinkedList<Byte> bytes;
+
+        ArrayList<Short> shorts;
+
         List<Integer> integers;
+
+        List<Long> longs;
+
+        List<Float> floats;
+
+        List<Double> doubles;
+
+        List<Boolean> booleans;
+
+        List<String> strings;
 
         public Lists() {
         }
@@ -128,14 +141,22 @@ public class JsonObjectTransformationTest {
         Lists obj = null;
         boolean oops = false;
         try {
-            obj = Json.parse("{bytes: [1,2,3], integers: [1,2,3]}", Lists.class);
+            obj = Json.parse("{bytes: [1,2,3], shorts: [1,2,3], integers: [1,2,3], longs: [1,2,3]," +
+                    "floats: [1.01, 2.02, 3.03], doubles: [1.01, 2.02, 3.03], booleans: [true, false]," +
+                    "strings: ['one','two','three']}", Lists.class);
         } catch (JsonException ignored) {
             oops = true;
         }
         Assert.assertFalse(oops);
         Assert.assertNotNull(obj);
         Assert.assertTrue(checkList(Arrays.asList((byte)1,(byte)2,(byte)3), obj.bytes));
+        Assert.assertTrue(checkList(Arrays.asList((short)1,(short)2,(short)3), obj.shorts));
         Assert.assertTrue(checkList(Arrays.asList(1,2,3), obj.integers));
+        Assert.assertTrue(checkList(Arrays.asList((long)1,(long)2,(long)3), obj.longs));
+        Assert.assertTrue(checkList(Arrays.asList((float)1.01,(float)2.02,(float)3.03), obj.floats));
+        Assert.assertTrue(checkList(Arrays.asList(1.01,2.02,3.03), obj.doubles));
+        Assert.assertTrue(checkList(Arrays.asList(true, false), obj.booleans));
+        Assert.assertTrue(checkList(Arrays.asList("one", "two", "three"), obj.strings));
     }
 
     private static <T> boolean checkList(List<T> expected, List<T> actual) {

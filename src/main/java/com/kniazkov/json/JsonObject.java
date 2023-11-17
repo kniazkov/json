@@ -353,9 +353,45 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
                     list.add(obj);
                 }
             }
+            else if (parameters[0] == java.lang.Short.class) {
+                for (JsonElement jsonElement : array) {
+                    Short obj = (short)jsonElement.getIntValue();
+                    list.add(obj);
+                }
+            }
             else if (parameters[0] == java.lang.Integer.class) {
                 for (JsonElement jsonElement : array) {
                     Integer obj = jsonElement.getIntValue();
+                    list.add(obj);
+                }
+            }
+            else if (parameters[0] == java.lang.Long.class) {
+                for (JsonElement jsonElement : array) {
+                    Long obj = jsonElement.getLongValue();
+                    list.add(obj);
+                }
+            }
+            else if (parameters[0] == java.lang.Float.class) {
+                for (JsonElement jsonElement : array) {
+                    Float obj = (float)jsonElement.getDoubleValue();
+                    list.add(obj);
+                }
+            }
+            else if (parameters[0] == java.lang.Double.class) {
+                for (JsonElement jsonElement : array) {
+                    Double obj = jsonElement.getDoubleValue();
+                    list.add(obj);
+                }
+            }
+            else if (parameters[0] == java.lang.Boolean.class) {
+                for (JsonElement jsonElement : array) {
+                    Boolean obj = jsonElement.getBooleanValue();
+                    list.add(obj);
+                }
+            }
+            else if (parameters[0] == java.lang.String.class) {
+                for (JsonElement jsonElement : array) {
+                    String obj = jsonElement.getStringValue();
                     list.add(obj);
                 }
             }
