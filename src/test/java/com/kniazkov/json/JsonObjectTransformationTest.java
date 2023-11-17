@@ -87,4 +87,32 @@ public class JsonObjectTransformationTest {
         Assert.assertNotNull(obj.doubleValue);
         Assert.assertEquals(23.001, obj.doubleValue.doubleValue(), 0);
     }
+
+    private static class Booleans {
+        boolean primitive;
+
+        Boolean object;
+
+        Boolean anotherObject;
+
+        public Booleans() {
+        }
+    }
+
+    @Test
+    public void booleans() {
+        Booleans obj = null;
+        boolean oops = false;
+        try {
+            obj = Json.parse("{primitive: true, object: false}", Booleans.class);
+        } catch (JsonException ignored) {
+            oops = true;
+        }
+        Assert.assertFalse(oops);
+        Assert.assertNotNull(obj);
+        Assert.assertTrue(obj.primitive);
+        Assert.assertNotNull(obj.object);
+        Assert.assertFalse(obj.object.booleanValue());
+        Assert.assertNull(obj.anotherObject);
+    }
 }
