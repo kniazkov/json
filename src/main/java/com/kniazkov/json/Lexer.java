@@ -175,7 +175,19 @@ final class Lexer {
         if (negative) {
             intPart = -intPart;
         }
-        return new TokenNumber(loc, intPart);
+        if (ch == '.') {
+            long fractPart = 0;
+            long divisor = 1;
+            ch = source.nextChar();
+            while(isDigit(ch)) {
+                fractPart = fractPart * 10 + (ch - '0');
+                divisor = divisor * 10;
+                ch = source.nextChar();
+            }
+            return new TokenNumber(loc, intPart + (double)fractPart / (double)divisor);
+        } else {
+            return new TokenNumber(loc, intPart);
+        }
     }
 
     /**

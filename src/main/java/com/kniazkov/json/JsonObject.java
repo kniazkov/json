@@ -165,6 +165,15 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
                         if (fieldType == int.class) {
                             field.setInt(result, child.getIntValue());
                         }
+                        else if (fieldType == long.class) {
+                            field.setLong(result, child.getLongValue());
+                        }
+                        else if (fieldType == float.class) {
+                            field.setFloat(result, (float)child.getDoubleValue());
+                        }
+                        else if (fieldType == double.class) {
+                            field.setDouble(result, child.getDoubleValue());
+                        }
                         else if (fieldType == boolean.class) {
                             field.setBoolean(result, child.getBooleanValue());
                         }
