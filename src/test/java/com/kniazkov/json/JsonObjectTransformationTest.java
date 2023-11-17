@@ -3,8 +3,7 @@ package com.kniazkov.json;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Tests covering {@link JsonObject} class, method {@link JsonObject#toObject(Class)}.
@@ -114,5 +113,44 @@ public class JsonObjectTransformationTest {
         Assert.assertNotNull(obj.object);
         Assert.assertFalse(obj.object.booleanValue());
         Assert.assertNull(obj.anotherObject);
+    }
+
+    private static class Lists {
+        LinkedList<Byte> bytes;
+        List<Integer> integers;
+
+        public Lists() {
+        }
+    }
+
+    @Test
+    public void lists() {
+        Lists obj = null;
+        boolean oops = false;
+        try {
+            obj = Json.parse("{bytes: [1,2,3], integers: [1,2,3]}", Lists.class);
+        } catch (JsonException ignored) {
+            oops = true;
+        }
+        Assert.assertFalse(oops);
+        Assert.assertNotNull(obj);
+        Assert.assertTrue(checkList(Arrays.asList((byte)1,(byte)2,(byte)3), obj.bytes));
+        Assert.assertTrue(checkList(Arrays.asList(1,2,3), obj.integers));
+    }
+
+    private static <T> boolean checkList(List<T> expected, List<T> actual) {
+        if (actual == null) {
+            return false;
+        }
+        if (expected.size() != actual.size()) {
+            return false;
+        }
+        Iterator<T> iterator = actual.iterator();
+        for (T item : expected) {
+            if (!item.equals(iterator.next())) {
+                return false;
+            }
+        }
+        return true;
     }
 }

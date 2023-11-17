@@ -218,22 +218,14 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
                             field.set(result, child.toObject());
                         }
                         else if (fieldType == java.util.List.class || fieldType == java.util.ArrayList.class) {
-                            JsonArray array = child.toJsonArray();
-                            if (array != null) {
-                                Type listType = field.getGenericType();
-                                if (listType instanceof ParameterizedType) {
-                                    Type[] parameters = ((ParameterizedType) listType).getActualTypeArguments();
-                                    if (parameters.length == 1 && parameters[0] == java.lang.Integer.class) {
-                                        List<Integer> list = new ArrayList<>();
-                                        for (JsonElement jsonElement : array) {
-                                            list.add(jsonElement.getIntValue());
-                                        }
-                                        field.set(result, list);
-                                    }
-                                }
-                            } else {
-                                field.set(result, new ArrayList<>());
-                            }
+                            List<Object> list = new ArrayList<>();
+                            createListFromJsonArray(field, list, child);
+                            field.set(result, list);
+                        }
+                        else if (fieldType == java.util.LinkedList.class) {
+                            List<Object> list = new LinkedList<>();
+                            createListFromJsonArray(field, list, child);
+                            field.set(result, list);
                         }
                         else {
                             field.set(result, child.toObject(fieldType));
@@ -338,5 +330,35 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
     @Override
     public JsonObject toJsonObject() {
         return this;
+    }
+
+    /**
+     * Creates Java list from JSON element that represents an array
+     * @param field Field of Java object
+     * @param list Resulting list
+     * @param elem JSON element
+     */
+    private static void createListFromJsonArray(Field field, List<Object> list, JsonElement elem) {
+        JsonArray array = elem.toJsonArray();
+        if (array == null) {
+            return;
+        }
+        Type listType = field.getGenericType();
+        if (listType instanceof ParameterizedType) {
+            Type[] parameters = ((ParameterizedType) listType).getActualTypeArguments();
+            assert(parameters.length == 1);
+            if (parameters[0] == java.lang.Byte.class) {
+                for (JsonElement jsonElement : array) {
+                    Byte obj = (byte)jsonElement.getIntValue();
+                    list.add(obj);
+                }
+            }
+            else if (parameters[0] == java.lang.Integer.class) {
+                for (JsonElement jsonElement : array) {
+                    Integer obj = jsonElement.getIntValue();
+                    list.add(obj);
+                }
+            }
+        }
     }
 }
