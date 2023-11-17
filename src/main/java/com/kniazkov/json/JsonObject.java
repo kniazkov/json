@@ -165,20 +165,44 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
                         if (fieldType == byte.class) {
                             field.setByte(result, (byte)child.getIntValue());
                         }
+                        else if (fieldType == java.lang.Byte.class) {
+                            Byte obj = (byte)child.getIntValue();
+                            field.set(result, obj);
+                        }
                         else if (fieldType == short.class) {
                             field.setShort(result, (short)child.getIntValue());
+                        }
+                        else if (fieldType == java.lang.Short.class) {
+                            Short obj = (short)child.getIntValue();
+                            field.set(result, obj);
                         }
                         else if (fieldType == int.class) {
                             field.setInt(result, child.getIntValue());
                         }
+                        else if (fieldType == java.lang.Integer.class) {
+                            Integer obj = child.getIntValue();
+                            field.set(result, obj);
+                        }
                         else if (fieldType == long.class) {
                             field.setLong(result, child.getLongValue());
+                        }
+                        else if (fieldType == java.lang.Long.class) {
+                            Long obj = child.getLongValue();
+                            field.set(result, obj);
                         }
                         else if (fieldType == float.class) {
                             field.setFloat(result, (float)child.getDoubleValue());
                         }
+                        else if (fieldType == java.lang.Float.class) {
+                            Float obj = (float)child.getDoubleValue();
+                            field.set(result, obj);
+                        }
                         else if (fieldType == double.class) {
                             field.setDouble(result, child.getDoubleValue());
+                        }
+                        else if (fieldType == java.lang.Double.class) {
+                            Double obj = child.getDoubleValue();
+                            field.set(result, obj);
                         }
                         else if (fieldType == boolean.class) {
                             field.setBoolean(result, child.getBooleanValue());

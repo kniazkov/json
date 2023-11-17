@@ -45,4 +45,46 @@ public class JsonObjectTransformationTest {
         Assert.assertEquals((float)19.01, obj.floatValue, 0);
         Assert.assertEquals(23.001, obj.doubleValue, 0);
     }
+
+    private static class NumbersAsObjects {
+        Byte byteValue;
+
+        Short shortValue;
+
+        Integer intValue;
+
+        Long longValue;
+
+        Float floatValue;
+
+        Double doubleValue;
+
+        public NumbersAsObjects() {
+        }
+    };
+
+    @Test
+    public void numbersAsObjects() {
+        NumbersAsObjects obj = null;
+        boolean oops = false;
+        try {
+            obj = Json.parse("{byteValue: 3, shortValue: 5, intValue: 13, longValue: 17, floatValue: 19.01, doubleValue: 23.001}", NumbersAsObjects.class);
+        } catch (JsonException ignored) {
+            oops = true;
+        }
+        Assert.assertFalse(oops);
+        Assert.assertNotNull(obj);
+        Assert.assertNotNull(obj.byteValue);
+        Assert.assertEquals(3, obj.byteValue.byteValue());
+        Assert.assertNotNull(obj.shortValue);
+        Assert.assertEquals(5, obj.shortValue.shortValue());
+        Assert.assertNotNull(obj.intValue);
+        Assert.assertEquals(13, obj.intValue.intValue());
+        Assert.assertNotNull(obj.longValue);
+        Assert.assertEquals(17, obj.longValue.longValue());
+        Assert.assertNotNull(obj.floatValue);
+        Assert.assertEquals((float)19.01, obj.floatValue.floatValue(), 0);
+        Assert.assertNotNull(obj.doubleValue);
+        Assert.assertEquals(23.001, obj.doubleValue.doubleValue(), 0);
+    }
 }
