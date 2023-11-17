@@ -162,7 +162,13 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
                     JsonElement child = elements.get(fieldName);
                     try {
                         field.setAccessible(true);
-                        if (fieldType == int.class) {
+                        if (fieldType == byte.class) {
+                            field.setByte(result, (byte)child.getIntValue());
+                        }
+                        else if (fieldType == short.class) {
+                            field.setShort(result, (short)child.getIntValue());
+                        }
+                        else if (fieldType == int.class) {
                             field.setInt(result, child.getIntValue());
                         }
                         else if (fieldType == long.class) {
