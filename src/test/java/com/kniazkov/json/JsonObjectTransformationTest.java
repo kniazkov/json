@@ -132,6 +132,8 @@ public class JsonObjectTransformationTest {
 
         List<String> strings;
 
+        List vars;
+
         public Lists() {
         }
     }
@@ -143,7 +145,7 @@ public class JsonObjectTransformationTest {
         try {
             obj = Json.parse("{bytes: [1,2,3], shorts: [1,2,3], integers: [1,2,3], longs: [1,2,3]," +
                     "floats: [1.01, 2.02, 3.03], doubles: [1.01, 2.02, 3.03], booleans: [true, false]," +
-                    "strings: ['one','two','three']}", Lists.class);
+                    "strings: ['one','two','three'], vars: ['test']}", Lists.class);
         } catch (JsonException ignored) {
             oops = true;
         }
