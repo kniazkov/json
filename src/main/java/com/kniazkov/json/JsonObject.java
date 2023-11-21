@@ -395,6 +395,15 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
                     list.add(obj);
                 }
             }
+            else if (parameters[0] == java.lang.Object.class) {
+                for (JsonElement jsonElement : array) {
+                    list.add(jsonElement.toObject());
+                }
+            }
+        } else {
+            for (JsonElement jsonElement : array) {
+                list.add(jsonElement.toObject());
+            }
         }
     }
 }
