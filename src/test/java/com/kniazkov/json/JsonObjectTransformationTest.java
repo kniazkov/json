@@ -132,7 +132,9 @@ public class JsonObjectTransformationTest {
 
         List<String> strings;
 
-        List vars;
+        List generic;
+
+        List<Object> objects;
 
         public Lists() {
         }
@@ -145,7 +147,7 @@ public class JsonObjectTransformationTest {
         try {
             obj = Json.parse("{bytes: [1,2,3], shorts: [1,2,3], integers: [1,2,3], longs: [1,2,3]," +
                     "floats: [1.01, 2.02, 3.03], doubles: [1.01, 2.02, 3.03], booleans: [true, false]," +
-                    "strings: ['one','two','three'], vars: ['test']}", Lists.class);
+                    "strings: ['one','two','three'], generic: ['test', 1], objects: [false, 2]}", Lists.class);
         } catch (JsonException ignored) {
             oops = true;
         }
@@ -159,6 +161,8 @@ public class JsonObjectTransformationTest {
         Assert.assertTrue(checkList(Arrays.asList(1.01,2.02,3.03), obj.doubles));
         Assert.assertTrue(checkList(Arrays.asList(true, false), obj.booleans));
         Assert.assertTrue(checkList(Arrays.asList("one", "two", "three"), obj.strings));
+        Assert.assertTrue(checkList(Arrays.asList((Object)"test", (Object)1.0), obj.generic));
+        Assert.assertTrue(checkList(Arrays.asList((Object)false, (Object)2.0), obj.objects));
     }
 
     private static <T> boolean checkList(List<T> expected, List<T> actual) {
