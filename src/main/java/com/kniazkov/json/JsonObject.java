@@ -134,6 +134,29 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
     }
 
     @Override
+    protected void toText(StringBuilder builder, String indentation, int level) {
+        final String separator = System.lineSeparator();
+        if (keys.size() < 2) {
+            builder.append(toString());
+        } else {
+            builder.append('{').append(separator);
+            boolean flag = false;
+            for (String key : keys) {
+                if (flag) {
+                    builder.append(',').append(separator);
+                }
+                flag = true;
+                Utils.addRepeatingString(builder, indentation, level + 1);
+                builder.append('"').append(Utils.escapeEntities(key)).append("\": ");
+                elements.get(key).toText(builder, indentation, level + 1);
+            }
+            builder.append(separator);
+            Utils.addRepeatingString(builder, indentation, level);
+            builder.append('}');
+        }
+    }
+
+    @Override
     public Object toObject() {
         Map<String, Object> result = new TreeMap<>();
         for (String key : keys) {
