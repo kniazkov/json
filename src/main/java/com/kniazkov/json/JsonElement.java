@@ -45,6 +45,29 @@ public abstract class JsonElement implements Cloneable {
     public abstract String toString();
 
     /**
+     * Represents the element as text with line breaks and indentation of nested elements,
+     *   making it easier to read.
+     * @param indentation Symbols forming an indentation
+     * @return Text representation of the element
+     */
+    public String toText(String indentation) {
+        final StringBuilder builder = new StringBuilder();
+        toText(builder, indentation, 0);
+        return builder.toString();
+    }
+
+    /**
+     * Represents the element as text with line breaks and indentation of nested elements,
+     *   making it easier to read (internal method).
+     * @param builder Where to build text representation
+     * @param indentation Symbols forming an indentation
+     * @param level Current indentation level
+     */
+    protected void toText(StringBuilder builder, String indentation, int level) {
+        builder.append(toString());
+    }
+
+    /**
      * Represents the element as a Java object.
      * @return Object containing element data
      */
@@ -58,16 +81,6 @@ public abstract class JsonElement implements Cloneable {
      * @param <T> The type
      */
     public abstract <T> T toObject(Class<T> type);
-
-    /**
-     * Represents the element as text with line breaks and indentation of nested elements,
-     * making it easier to read.
-     * @param indentation Symbols forming an indentation
-     * @return Text representation of the element
-     */
-    public String toText(String indentation) {
-        return toString();
-    }
 
     /**
      * Checks if the element is a null literal.

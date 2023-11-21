@@ -62,4 +62,16 @@ final class Utils {
         }
         return "";
     }
+
+    /**
+     * Adds a repeating string to a StringBuilder.
+     * @param builder Builder
+     * @param string String
+     * @param count Number of repetitions
+     */
+    static void addRepeatingString(StringBuilder builder, String string, int count) {
+        for (int i = 0; i < count; i++) {
+            builder.append(string);
+        }
+    }
 }
