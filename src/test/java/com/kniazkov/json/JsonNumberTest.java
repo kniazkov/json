@@ -46,11 +46,11 @@ public class JsonNumberTest {
     @Test
     public void numberToObject() {
         JsonNumber elem = new JsonNumber(13);
-        Integer intValue = elem.toObject(Integer.class);
+        Integer intValue = elem.toJavaObject(Integer.class);
         Assert.assertNotNull(intValue);
-        Double doubleValue = elem.toObject(Double.class);
+        Double doubleValue = elem.toJavaObject(Double.class);
         Assert.assertNotNull(doubleValue);
-        Boolean boolValue = elem.toObject(Boolean.class);
+        Boolean boolValue = elem.toJavaObject(Boolean.class);
         Assert.assertNull(boolValue);
     }
 }

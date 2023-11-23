@@ -28,12 +28,12 @@ public class JsonNull extends JsonElement {
     }
 
     @Override
-    public Object toObject() {
+    public Object toJavaObject() {
         return null;
     }
 
     @Override
-    public <T> T toObject(Class<T> type) {
+    public <T> T toJavaObject(Class<T> type) {
         return null;
     }
 

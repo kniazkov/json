@@ -30,10 +30,10 @@ public class JsonStringTest {
     @Test
     public void stringToObject() {
         JsonString elem = new JsonString("test");
-        String strValue = elem.toObject(String.class);
+        String strValue = elem.toJavaObject(String.class);
         Assert.assertNotNull(strValue);
         Assert.assertEquals("test", strValue);
-        Integer intValue = elem.toObject(Integer.class);
+        Integer intValue = elem.toJavaObject(Integer.class);
         Assert.assertNull(intValue);
     }
 }

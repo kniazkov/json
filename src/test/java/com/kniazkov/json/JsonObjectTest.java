@@ -26,7 +26,7 @@ public class JsonObjectTest {
 
     @Test
     public void objectToJavaGenericObject() {
-        Object obj = createTestObject().toObject();
+        Object obj = createTestObject().toJavaObject();
         Assert.assertTrue(obj instanceof Map);
         Map<String, Object> map = (Map<String, Object>) obj;
         Assert.assertTrue(map.get("array") instanceof List);
@@ -34,7 +34,7 @@ public class JsonObjectTest {
 
     @Test
     public void objectToJavaMap() {
-        Map map = createTestObject().toObject(Map.class);
+        Map map = createTestObject().toJavaObject(Map.class);
         Assert.assertNotNull(map);
         Assert.assertTrue(map.get("number") instanceof Number);
     }
@@ -92,7 +92,7 @@ public class JsonObjectTest {
 
     @Test
     public void objectToJavaClass() {
-        TestClass obj = createTestObject().toObject(TestClass.class);
+        TestClass obj = createTestObject().toJavaObject(TestClass.class);
         Assert.assertNotNull(obj);
         Assert.assertTrue(obj.getBool());
         Assert.assertEquals(13, obj.getNumber());

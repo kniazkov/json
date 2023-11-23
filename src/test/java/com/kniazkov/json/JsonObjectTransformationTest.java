@@ -6,7 +6,7 @@ import org.junit.Test;
 import java.util.*;
 
 /**
- * Tests covering {@link JsonObject} class, method {@link JsonObject#toObject(Class)}.
+ * Tests covering {@link JsonObject} class, method {@link JsonObject#toJavaObject(Class)}.
  */
 public class JsonObjectTransformationTest {
     private static class Numbers {
@@ -31,7 +31,7 @@ public class JsonObjectTransformationTest {
         Numbers obj = null;
         boolean oops = false;
         try {
-            obj = Json.parse("{byteValue: 3, shortValue: 5, intValue: 13, longValue: 17, floatValue: 19.01, doubleValue: 23.001}", Numbers.class);
+            obj = Json.fromJson("{byteValue: 3, shortValue: 5, intValue: 13, longValue: 17, floatValue: 19.01, doubleValue: 23.001}", Numbers.class);
         } catch (JsonException ignored) {
             oops = true;
         }
@@ -67,7 +67,7 @@ public class JsonObjectTransformationTest {
         NumbersAsObjects obj = null;
         boolean oops = false;
         try {
-            obj = Json.parse("{byteValue: 3, shortValue: 5, intValue: 13, longValue: 17, floatValue: 19.01, doubleValue: 23.001}", NumbersAsObjects.class);
+            obj = Json.fromJson("{byteValue: 3, shortValue: 5, intValue: 13, longValue: 17, floatValue: 19.01, doubleValue: 23.001}", NumbersAsObjects.class);
         } catch (JsonException ignored) {
             oops = true;
         }
@@ -103,7 +103,7 @@ public class JsonObjectTransformationTest {
         Booleans obj = null;
         boolean oops = false;
         try {
-            obj = Json.parse("{primitive: true, object: false}", Booleans.class);
+            obj = Json.fromJson("{primitive: true, object: false}", Booleans.class);
         } catch (JsonException ignored) {
             oops = true;
         }
@@ -145,7 +145,7 @@ public class JsonObjectTransformationTest {
         Lists obj = null;
         boolean oops = false;
         try {
-            obj = Json.parse("{bytes: [1,2,3], shorts: [1,2,3], integers: [1,2,3], longs: [1,2,3]," +
+            obj = Json.fromJson("{bytes: [1,2,3], shorts: [1,2,3], integers: [1,2,3], longs: [1,2,3]," +
                     "floats: [1.01, 2.02, 3.03], doubles: [1.01, 2.02, 3.03], booleans: [true, false]," +
                     "strings: ['one','two','three'], generic: ['test', 1], objects: [false, 2]}", Lists.class);
         } catch (JsonException ignored) {

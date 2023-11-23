@@ -13,7 +13,7 @@ public class Json {
      * @param <T> The type
      * @throws JsonException If parsing fails
      */
-    public static <T> T parse(String source, Class<T> type) throws JsonException {
-        return JsonParser.parseString(source).toObject(type);
+    public static <T> T fromJson(String source, Class<T> type) throws JsonException {
+        return JsonParser.parseString(source).toJavaObject(type);
     }
 }
