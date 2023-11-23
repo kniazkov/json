@@ -115,7 +115,7 @@ public final class JsonParser {
      * @throws JsonException If parsing fails
      */
     private JsonObject parseObject(JsonContainer parent) throws JsonException {
-        final JsonObject obj = new JsonObject();
+        final JsonObject obj = new JsonObject(parent);
         Token token = lexer.getToken(mode);
         boolean expectedElement = false;
         do {

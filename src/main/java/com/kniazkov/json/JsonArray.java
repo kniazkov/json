@@ -53,6 +53,28 @@ public final class JsonArray extends JsonContainer implements List<JsonElement> 
     }
 
     @Override
+    protected void toText(StringBuilder builder, String indentation, int level) {
+        final String separator = System.lineSeparator();
+        if (list.size() < 2) {
+            builder.append(toString());
+        } else {
+            builder.append('[').append(separator);
+            boolean flag = false;
+            for (JsonElement element : list) {
+                if (flag) {
+                    builder.append(',').append(separator);
+                }
+                flag = true;
+                Utils.addRepeatingString(builder, indentation, level + 1);
+                element.toText(builder, indentation, level + 1);
+            }
+            builder.append(separator);
+            Utils.addRepeatingString(builder, indentation, level);
+            builder.append(']');
+        }
+    }
+
+    @Override
     public Object toObject() {
         List<Object> result = new ArrayList<>(list.size());
         for (JsonElement elem : list) {

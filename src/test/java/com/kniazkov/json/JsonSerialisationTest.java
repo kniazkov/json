@@ -35,6 +35,89 @@ public class JsonSerialisationTest {
         Assert.assertTrue(commonTest(json, expected));
     }
 
+    @Test
+    public void objectWithNestedEmptyObject() {
+        final String json = "{one: 1, empty: { }}";
+        final String expected = "{" + separator +
+                "  \"one\": 1," + separator +
+                "  \"empty\": {}" + separator +
+                "}";
+        Assert.assertTrue(commonTest(json, expected));
+    }
+
+    @Test
+    public void objectWithNestedObjectContainingOnePair() {
+        final String json = "{one: 1, obj: {two: 2}}";
+        final String expected = "{" + separator +
+                "  \"one\": 1," + separator +
+                "  \"obj\": {\"two\": 2}" + separator +
+                "}";
+        Assert.assertTrue(commonTest(json, expected));
+    }
+
+    @Test
+    public void array() {
+        final String json = "[1, 2, 3]";
+        final String expected = "[" + separator +
+                "  1," + separator +
+                "  2," + separator +
+                "  3" + separator +
+                "]";
+        Assert.assertTrue(commonTest(json, expected));
+    }
+
+    @Test
+    public void arrayWithNestedArray() {
+        final String json = "[1, [2, 3]]";
+        final String expected = "[" + separator +
+                "  1," + separator +
+                "  [" + separator +
+                "    2," + separator +
+                "    3" + separator +
+                "  ]" + separator +
+                "]";
+        Assert.assertTrue(commonTest(json, expected));
+    }
+
+    @Test
+    public void arrayWithNestedEmptyArray() {
+        final String json = "[1, 2, []]";
+        final String expected = "[" + separator +
+                "  1," + separator +
+                "  2," + separator +
+                "  []" + separator +
+                "]";
+        Assert.assertTrue(commonTest(json, expected));
+    }
+
+    @Test
+    public void arrayWithNestedArrayContainingOneItem() {
+        final String json = "[1, 2, [3]]";
+        final String expected = "[" + separator +
+                "  1," + separator +
+                "  2," + separator +
+                "  [3]" + separator +
+                "]";
+        Assert.assertTrue(commonTest(json, expected));
+    }
+
+    @Test
+    public void complexCase() {
+        final String json = "{one: 1, two: 2, obj: {three: [3, 4], four: [{five: null}]}}";
+        final String expected = "{" + separator +
+                "  \"one\": 1," + separator +
+                "  \"two\": 2," + separator +
+                "  \"obj\": {" + separator +
+                "    \"three\": [" + separator +
+                "      3," + separator +
+                "      4" + separator +
+                "    ]," + separator +
+                "    \"four\": [{\"five\": null}]" + separator +
+                "  }" + separator +
+                "}";
+        Assert.assertTrue(commonTest(json, expected));
+    }
+
     /**
      * Common test for testing serialization.
      * @param json Source JSON
