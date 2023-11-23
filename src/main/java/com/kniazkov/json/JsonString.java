@@ -38,12 +38,12 @@ public class JsonString extends JsonElement {
     }
 
     @Override
-    public Object toObject() {
+    public Object toJavaObject() {
         return value;
     }
 
     @Override
-    public <T> T toObject(Class<T> type) {
+    public <T> T toJavaObject(Class<T> type) {
         if (type == java.lang.String.class) {
             return (T)value;
         }

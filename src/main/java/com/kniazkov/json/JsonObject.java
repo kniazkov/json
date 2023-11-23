@@ -157,18 +157,18 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
     }
 
     @Override
-    public Object toObject() {
+    public Object toJavaObject() {
         Map<String, Object> result = new TreeMap<>();
         for (String key : keys) {
-            result.put(key, elements.get(key).toObject());
+            result.put(key, elements.get(key).toJavaObject());
         }
         return Collections.unmodifiableMap(result);
     }
 
     @Override
-    public <T> T toObject(Class<T> type) {
+    public <T> T toJavaObject(Class<T> type) {
         if (type == java.util.Map.class) {
-            return (T) toObject();
+            return (T) toJavaObject();
         }
         if (!type.isPrimitive() && !type.isInterface()) {
             T result = null;
@@ -238,7 +238,7 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
                             field.set(result, child.getStringValue());
                         }
                         else if (fieldType == java.lang.Object.class) {
-                            field.set(result, child.toObject());
+                            field.set(result, child.toJavaObject());
                         }
                         else if (fieldType == java.util.List.class || fieldType == java.util.ArrayList.class) {
                             List<Object> list = new ArrayList<>();
@@ -251,7 +251,7 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
                             field.set(result, list);
                         }
                         else {
-                            field.set(result, child.toObject(fieldType));
+                            field.set(result, child.toJavaObject(fieldType));
                         }
                     } catch (IllegalAccessException ignored) {
                         return null;
@@ -420,12 +420,12 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
             }
             else if (parameters[0] == java.lang.Object.class) {
                 for (JsonElement jsonElement : array) {
-                    list.add(jsonElement.toObject());
+                    list.add(jsonElement.toJavaObject());
                 }
             }
         } else {
             for (JsonElement jsonElement : array) {
-                list.add(jsonElement.toObject());
+                list.add(jsonElement.toJavaObject());
             }
         }
     }

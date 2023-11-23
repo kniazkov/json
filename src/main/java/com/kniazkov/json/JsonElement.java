@@ -71,7 +71,7 @@ public abstract class JsonElement implements Cloneable {
      * Represents the element as a Java object.
      * @return Object containing element data
      */
-    public abstract Object toObject();
+    public abstract Object toJavaObject();
 
     /**
      * Represents the element as a Java object of specified type.
@@ -80,7 +80,7 @@ public abstract class JsonElement implements Cloneable {
      *   as an object of specified type
      * @param <T> The type
      */
-    public abstract <T> T toObject(Class<T> type);
+    public abstract <T> T toJavaObject(Class<T> type);
 
     /**
      * Checks if the element is a null literal.

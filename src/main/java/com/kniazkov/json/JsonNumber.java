@@ -38,12 +38,12 @@ public final class JsonNumber extends JsonElement {
     }
 
     @Override
-    public Object toObject() {
+    public Object toJavaObject() {
         return value;
     }
 
     @Override
-    public <T> T toObject(Class<T> type) {
+    public <T> T toJavaObject(Class<T> type) {
         if (type == java.lang.Integer.class) {
             Integer intValue = getIntValue();
             return (T)intValue;

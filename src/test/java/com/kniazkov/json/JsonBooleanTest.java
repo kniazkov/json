@@ -10,10 +10,10 @@ public class JsonBooleanTest {
     @Test
     public void booleanToObject() {
         JsonBoolean elem = new JsonBoolean(false);
-        Boolean boolValue = elem.toObject(Boolean.class);
+        Boolean boolValue = elem.toJavaObject(Boolean.class);
         Assert.assertNotNull(boolValue);
         Assert.assertEquals(false, boolValue);
-        Integer intValue = elem.toObject(Integer.class);
+        Integer intValue = elem.toJavaObject(Integer.class);
         Assert.assertNull(intValue);
     }
 }
