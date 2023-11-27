@@ -27,10 +27,9 @@ public class JsonObjectTransformationTest {
 
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Numbers)) {
+            if (!(other instanceof Numbers nn)) {
                 return false;
             }
-            Numbers nn = (Numbers) other;
             return byteValue == nn.byteValue && shortValue == nn.shortValue && intValue == nn.intValue &&
                     longValue == nn.longValue && floatValue == nn.floatValue && doubleValue == nn.doubleValue;
         }
@@ -70,6 +69,16 @@ public class JsonObjectTransformationTest {
 
         public NumbersAsObjects() {
         }
+
+        @Override
+        public boolean equals(Object other) {
+            if (!(other instanceof NumbersAsObjects nn)) {
+                return false;
+            }
+            return Objects.equals(byteValue, nn.byteValue) && Objects.equals(shortValue, nn.shortValue) &&
+                    Objects.equals(intValue, nn.intValue) && Objects.equals(longValue, nn.longValue) &&
+                    Objects.equals(floatValue, nn.floatValue) && Objects.equals(doubleValue, nn.doubleValue);
+        }
     };
 
     @Test
@@ -105,6 +114,15 @@ public class JsonObjectTransformationTest {
         Boolean anotherObject;
 
         public Booleans() {
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (!(other instanceof Booleans bb)) {
+                return false;
+            }
+            return primitive == bb.primitive && Objects.equals(object, bb.object) &&
+                    Objects.equals(anotherObject, bb.anotherObject);
         }
     }
 
@@ -225,6 +243,26 @@ public class JsonObjectTransformationTest {
         Assert.assertTrue(serializeAndThenParse(obj));
     }
 
+    @Test
+    public void serializeNumbersAsObjects() {
+        final NumbersAsObjects obj = new NumbersAsObjects();
+        obj.byteValue = 3;
+        obj.shortValue = -5;
+        obj.intValue = 7;
+        obj.longValue = (long)13;
+        obj.floatValue = (float)17.01;
+        obj.doubleValue = 19.0001;
+        Assert.assertTrue(serializeAndThenParse(obj));
+    }
+
+    @Test
+    public void serializeBooleans() {
+        final Booleans obj = new Booleans();
+        obj.primitive = true;
+        obj.object = false;
+        obj.anotherObject = null;
+        Assert.assertTrue(serializeAndThenParse(obj));
+    }
 
     private static boolean serializeAndThenParse(Object obj) {
         return serializeAndThenParse(obj, obj);
