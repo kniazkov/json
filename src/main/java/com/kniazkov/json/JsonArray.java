@@ -1,5 +1,7 @@
 package com.kniazkov.json;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.*;
 
 /**
@@ -85,8 +87,15 @@ public final class JsonArray extends JsonContainer implements List<JsonElement> 
 
     @Override
     public <T> T toJavaObject(Class<T> type) {
-        if (type == java.util.List.class) {
-            return (T) toJavaObject();
+        if (type == java.util.List.class || type == java.util.ArrayList.class) {
+            List<Object> result = new ArrayList<>();
+            JsonArray.createListFromJsonArray(type, result, this);
+            return (T) result;
+        }
+        else if (type == java.util.LinkedList.class) {
+            LinkedList<Object> result = new LinkedList<>();
+            JsonArray.createListFromJsonArray(type, result, this);
+            return (T) result;
         }
         return null;
     }
@@ -307,5 +316,78 @@ public final class JsonArray extends JsonContainer implements List<JsonElement> 
     @Override
     public JsonArray toJsonArray() {
         return this;
+    }
+
+    /**
+     * Creates Java list from JSON element that represents an array
+     * @param listType Type of Java list
+     * @param list Resulting list
+     * @param array JSON array
+     */
+    static void createListFromJsonArray(Type listType, List<Object> list, JsonArray array) {
+        if (array == null) {
+            return;
+        }
+        if (listType instanceof ParameterizedType) {
+            Type[] parameters = ((ParameterizedType) listType).getActualTypeArguments();
+            assert(parameters.length == 1);
+            if (parameters[0] == java.lang.Byte.class) {
+                for (JsonElement jsonElement : array) {
+                    Byte obj = (byte)jsonElement.getIntValue();
+                    list.add(obj);
+                }
+            }
+            else if (parameters[0] == java.lang.Short.class) {
+                for (JsonElement jsonElement : array) {
+                    Short obj = (short)jsonElement.getIntValue();
+                    list.add(obj);
+                }
+            }
+            else if (parameters[0] == java.lang.Integer.class) {
+                for (JsonElement jsonElement : array) {
+                    Integer obj = jsonElement.getIntValue();
+                    list.add(obj);
+                }
+            }
+            else if (parameters[0] == java.lang.Long.class) {
+                for (JsonElement jsonElement : array) {
+                    Long obj = jsonElement.getLongValue();
+                    list.add(obj);
+                }
+            }
+            else if (parameters[0] == java.lang.Float.class) {
+                for (JsonElement jsonElement : array) {
+                    Float obj = (float)jsonElement.getDoubleValue();
+                    list.add(obj);
+                }
+            }
+            else if (parameters[0] == java.lang.Double.class) {
+                for (JsonElement jsonElement : array) {
+                    Double obj = jsonElement.getDoubleValue();
+                    list.add(obj);
+                }
+            }
+            else if (parameters[0] == java.lang.Boolean.class) {
+                for (JsonElement jsonElement : array) {
+                    Boolean obj = jsonElement.getBooleanValue();
+                    list.add(obj);
+                }
+            }
+            else if (parameters[0] == java.lang.String.class) {
+                for (JsonElement jsonElement : array) {
+                    String obj = jsonElement.getStringValue();
+                    list.add(obj);
+                }
+            }
+            else if (parameters[0] == java.lang.Object.class) {
+                for (JsonElement jsonElement : array) {
+                    list.add(jsonElement.toJavaObject());
+                }
+            }
+        } else {
+            for (JsonElement jsonElement : array) {
+                list.add(jsonElement.toJavaObject());
+            }
+        }
     }
 }

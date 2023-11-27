@@ -182,7 +182,7 @@ public class JsonObjectTransformationTest {
     }
 
     @Test
-    public void serializeNumbers() {
+    public void serializePrimitives() {
         Assert.assertTrue(serializeAndThenParse((byte)13));
         Assert.assertTrue(serializeAndThenParse((short)13));
         Assert.assertTrue(serializeAndThenParse(13));
@@ -192,6 +192,15 @@ public class JsonObjectTransformationTest {
         Assert.assertTrue(serializeAndThenParse(true));
         Assert.assertTrue(serializeAndThenParse(false));
         Assert.assertTrue(serializeAndThenParse("test"));
+    }
+
+    @Test
+    public void serializeLists() {
+        final List<Object> objects = new LinkedList<>();
+        objects.add(1.01);
+        objects.add(true);
+        objects.add("test");
+        Assert.assertTrue(serializeAndThenParse(objects));
     }
 
     private static boolean serializeAndThenParse(Object obj) {
