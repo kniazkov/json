@@ -24,6 +24,16 @@ public class JsonObjectTransformationTest {
 
         public Numbers() {
         }
+
+        @Override
+        public boolean equals(Object other) {
+            if (!(other instanceof Numbers)) {
+                return false;
+            }
+            Numbers nn = (Numbers) other;
+            return byteValue == nn.byteValue && shortValue == nn.shortValue && intValue == nn.intValue &&
+                    longValue == nn.longValue && floatValue == nn.floatValue && doubleValue == nn.doubleValue;
+        }
     };
 
     @Test
@@ -202,6 +212,19 @@ public class JsonObjectTransformationTest {
         objects.add("test");
         Assert.assertTrue(serializeAndThenParse(objects));
     }
+
+    @Test
+    public void serializeNumbers() {
+        final Numbers obj = new Numbers();
+        obj.byteValue = 3;
+        obj.shortValue = -5;
+        obj.intValue = 7;
+        obj.longValue = 13;
+        obj.floatValue = (float)17.01;
+        obj.doubleValue = 19.0001;
+        Assert.assertTrue(serializeAndThenParse(obj));
+    }
+
 
     private static boolean serializeAndThenParse(Object obj) {
         return serializeAndThenParse(obj, obj);
