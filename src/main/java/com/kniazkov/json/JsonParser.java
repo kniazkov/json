@@ -1,9 +1,21 @@
 package com.kniazkov.json;
 
+import java.lang.reflect.Field;
+
 /**
  * JSON parser.
  */
 public final class JsonParser {
+    /**
+     * Lexer that splits JSON documents into separate tokens.
+     */
+    private final Lexer lexer;
+
+    /**
+     * Parsing mode.
+     */
+    private final JsonParsingMode mode;
+
     /**
      * Parses a string containing JSON document into a JSON element.
      * @param source String containing JSON document
@@ -27,14 +39,18 @@ public final class JsonParser {
     }
 
     /**
-     * Lexer that splits JSON documents into separate tokens.
+     * Parses a Java object and tries to represent it as a JSON element.
+     * @param obj Java object
+     * @return JSON element
      */
-    private final Lexer lexer;
-
-    /**
-     * Parsing mode.
-     */
-    private final JsonParsingMode mode;
+    public static JsonElement parseObject(Object obj) {
+        Class<?> cls = obj.getClass();
+        if (cls == Integer.class) {
+            return new JsonNumber((Integer)obj);
+        }
+        Field[] fields = cls.getDeclaredFields();
+        return JsonNull.instance;
+    }
 
     /**
      * Constructor.
