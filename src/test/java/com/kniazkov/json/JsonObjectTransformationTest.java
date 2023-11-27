@@ -183,7 +183,15 @@ public class JsonObjectTransformationTest {
 
     @Test
     public void serializeNumbers() {
-        Assert.assertTrue(serializeAndThenParse((Integer)13));
+        Assert.assertTrue(serializeAndThenParse((byte)13));
+        Assert.assertTrue(serializeAndThenParse((short)13));
+        Assert.assertTrue(serializeAndThenParse(13));
+        Assert.assertTrue(serializeAndThenParse((long)13));
+        Assert.assertTrue(serializeAndThenParse((float)13.01));
+        Assert.assertTrue(serializeAndThenParse(13.01));
+        Assert.assertTrue(serializeAndThenParse(true));
+        Assert.assertTrue(serializeAndThenParse(false));
+        Assert.assertTrue(serializeAndThenParse("test"));
     }
 
     private static boolean serializeAndThenParse(Object obj) {

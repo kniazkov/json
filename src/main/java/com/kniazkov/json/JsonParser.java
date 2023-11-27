@@ -43,10 +43,31 @@ public final class JsonParser {
      * @param obj Java object
      * @return JSON element
      */
-    public static JsonElement parseObject(Object obj) {
+    public static JsonElement parseJavaObject(Object obj) {
         Class<?> cls = obj.getClass();
+        if (cls == Byte.class) {
+            return new JsonNumber((Byte)obj);
+        }
+        if (cls == Short.class) {
+            return new JsonNumber((Short)obj);
+        }
         if (cls == Integer.class) {
             return new JsonNumber((Integer)obj);
+        }
+        if (cls == Long.class) {
+            return new JsonNumber((Long)obj);
+        }
+        if (cls == Float.class) {
+            return new JsonNumber((Float)obj);
+        }
+        if (cls == Double.class) {
+            return new JsonNumber((Double) obj);
+        }
+        if (cls == Boolean.class) {
+            return new JsonBoolean((Boolean) obj);
+        }
+        if (cls == String.class) {
+            return new JsonString((String) obj);
         }
         Field[] fields = cls.getDeclaredFields();
         return JsonNull.instance;
@@ -67,7 +88,7 @@ public final class JsonParser {
      * @throws JsonException If parsing fails
      */
     private JsonElement parseRoot() throws JsonException {
-        return parseElement(null, lexer.getToken(mode));
+        return parseJsonElement(null, lexer.getToken(mode));
     }
 
     /**
@@ -77,15 +98,15 @@ public final class JsonParser {
      * @return JSON element
      * @throws JsonException If parsing fails
      */
-    private JsonElement parseElement(JsonContainer parent, Token firstToken) throws JsonException {
+    private JsonElement parseJsonElement(JsonContainer parent, Token firstToken) throws JsonException {
         if (firstToken instanceof TokenLiteral) {
             return ((TokenLiteral) firstToken).toElement(parent);
         }
         if (firstToken instanceof TokenOpeningSquareBracket) {
-            return parseArray(parent);
+            return parseJsonArray(parent);
         }
         if (firstToken instanceof TokenOpeningCurlyBracket) {
-            return parseObject(parent);
+            return parseJsonObject(parent);
         }
         return null;
     }
@@ -96,7 +117,7 @@ public final class JsonParser {
      * @return JSON array
      * @throws JsonException If parsing fails
      */
-    private JsonArray parseArray(JsonContainer parent) throws JsonException {
+    private JsonArray parseJsonArray(JsonContainer parent) throws JsonException {
         final JsonArray array = new JsonArray(parent);
         Token token = lexer.getToken(mode);
         boolean expectedElement = false;
@@ -110,7 +131,7 @@ public final class JsonParser {
                 return array;
             }
 
-            JsonElement child = parseElement(array, token);
+            JsonElement child = parseJsonElement(array, token);
             if (child != null) {
                 array.addChild(child);
                 expectedElement = false;
@@ -130,7 +151,7 @@ public final class JsonParser {
      * @return JSON object
      * @throws JsonException If parsing fails
      */
-    private JsonObject parseObject(JsonContainer parent) throws JsonException {
+    private JsonObject parseJsonObject(JsonContainer parent) throws JsonException {
         final JsonObject obj = new JsonObject(parent);
         Token token = lexer.getToken(mode);
         boolean expectedElement = false;
@@ -160,7 +181,7 @@ public final class JsonParser {
             }
 
             token = lexer.getToken(mode);
-            JsonElement value = parseElement(obj, token);
+            JsonElement value = parseJsonElement(obj, token);
             if (value != null) {
                 obj.addChild(key, value);
                 expectedElement = false;
