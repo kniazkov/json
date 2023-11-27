@@ -1,6 +1,8 @@
 package com.kniazkov.json;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -211,7 +213,37 @@ public final class JsonParser {
             }
             return result;
         }
-        Field[] fields = cls.getDeclaredFields();
+        if (!cls.isInterface() && !cls.isPrimitive()) {
+            JsonObject result = new JsonObject(parent);
+            Field[] fields = cls.getDeclaredFields();
+            for (Field field : fields) {
+                String fieldName = field.getName();
+                Class<?> fieldType = field.getType();
+                try {
+                    field.setAccessible(true);
+                    if (fieldType == byte.class) {
+                        result.addNumber(fieldName, field.getByte(obj));
+                    } else if (fieldType == short.class) {
+                        result.addNumber(fieldName, field.getShort(obj));
+                    } else if (fieldType == int.class) {
+                        result.addNumber(fieldName, field.getInt(obj));
+                    } else if (fieldType == long.class) {
+                        result.addNumber(fieldName, field.getLong(obj));
+                    } else if (fieldType == float.class) {
+                        result.addNumber(fieldName, field.getFloat(obj));
+                    } else if (fieldType == double.class) {
+                        result.addNumber(fieldName, field.getDouble(obj));
+                    } else if (fieldType == boolean.class) {
+                        result.addBoolean(fieldName, field.getBoolean(obj));
+                    } else {
+                        result.addChild(fieldName, parseJavaObject(field.get(obj), result));
+                    }
+                } catch (IllegalAccessException ignored) {
+                    return result;
+                }
+            }
+            return result;
+        }
         if (parent == null) {
             return JsonNull.instance;
         }
