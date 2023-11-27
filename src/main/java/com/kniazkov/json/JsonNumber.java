@@ -44,6 +44,14 @@ public final class JsonNumber extends JsonElement {
 
     @Override
     public <T> T toJavaObject(Class<T> type) {
+        if (type == java.lang.Byte.class) {
+            Byte byteValue = (byte)getIntValue();
+            return (T)byteValue;
+        }
+        if (type == java.lang.Short.class) {
+            Short shortValue = (short)getIntValue();
+            return (T)shortValue;
+        }
         if (type == java.lang.Integer.class) {
             Integer intValue = getIntValue();
             return (T)intValue;
@@ -51,6 +59,10 @@ public final class JsonNumber extends JsonElement {
         if (type == java.lang.Long.class) {
             Long longValue = getLongValue();
             return (T)longValue;
+        }
+        if (type == java.lang.Float.class) {
+            Float floatValue = (float)value;
+            return (T)floatValue;
         }
         if (type == java.lang.Double.class) {
             Double doubleValue = value;

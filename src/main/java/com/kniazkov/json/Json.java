@@ -23,6 +23,6 @@ public class Json {
      * @return String containing JSON document
      */
     public static String serialize(Object obj) {
-        return JsonParser.parseObject(obj).toString();
+        return JsonParser.parseJavaObject(obj).toString();
     }
 }
