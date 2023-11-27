@@ -181,68 +181,70 @@ public final class JsonParser {
      * @return JSON element
      */
     private static JsonElement parseJavaObject(Object obj, JsonContainer parent) {
-        Class<?> cls = obj.getClass();
-        if (cls == Byte.class) {
-            return new JsonNumber(parent, (Byte)obj);
-        }
-        if (cls == Short.class) {
-            return new JsonNumber(parent, (Short)obj);
-        }
-        if (cls == Integer.class) {
-            return new JsonNumber(parent, (Integer)obj);
-        }
-        if (cls == Long.class) {
-            return new JsonNumber(parent, (Long)obj);
-        }
-        if (cls == Float.class) {
-            return new JsonNumber(parent, (Float)obj);
-        }
-        if (cls == Double.class) {
-            return new JsonNumber(parent, (Double) obj);
-        }
-        if (cls == Boolean.class) {
-            return new JsonBoolean(parent, (Boolean) obj);
-        }
-        if (cls == String.class) {
-            return new JsonString(parent, (String) obj);
-        }
-        if (obj instanceof List) {
-            JsonArray result = new JsonArray(parent);
-            for (Object item : (List<?>)obj) {
-                result.addChild(parseJavaObject(item, result));
+        if (obj != null) {
+            Class<?> cls = obj.getClass();
+            if (cls == Byte.class) {
+                return new JsonNumber(parent, (Byte) obj);
             }
-            return result;
-        }
-        if (!cls.isInterface() && !cls.isPrimitive()) {
-            JsonObject result = new JsonObject(parent);
-            Field[] fields = cls.getDeclaredFields();
-            for (Field field : fields) {
-                String fieldName = field.getName();
-                Class<?> fieldType = field.getType();
-                try {
-                    field.setAccessible(true);
-                    if (fieldType == byte.class) {
-                        result.addNumber(fieldName, field.getByte(obj));
-                    } else if (fieldType == short.class) {
-                        result.addNumber(fieldName, field.getShort(obj));
-                    } else if (fieldType == int.class) {
-                        result.addNumber(fieldName, field.getInt(obj));
-                    } else if (fieldType == long.class) {
-                        result.addNumber(fieldName, field.getLong(obj));
-                    } else if (fieldType == float.class) {
-                        result.addNumber(fieldName, field.getFloat(obj));
-                    } else if (fieldType == double.class) {
-                        result.addNumber(fieldName, field.getDouble(obj));
-                    } else if (fieldType == boolean.class) {
-                        result.addBoolean(fieldName, field.getBoolean(obj));
-                    } else {
-                        result.addChild(fieldName, parseJavaObject(field.get(obj), result));
-                    }
-                } catch (IllegalAccessException ignored) {
-                    return result;
+            if (cls == Short.class) {
+                return new JsonNumber(parent, (Short) obj);
+            }
+            if (cls == Integer.class) {
+                return new JsonNumber(parent, (Integer) obj);
+            }
+            if (cls == Long.class) {
+                return new JsonNumber(parent, (Long) obj);
+            }
+            if (cls == Float.class) {
+                return new JsonNumber(parent, (Float) obj);
+            }
+            if (cls == Double.class) {
+                return new JsonNumber(parent, (Double) obj);
+            }
+            if (cls == Boolean.class) {
+                return new JsonBoolean(parent, (Boolean) obj);
+            }
+            if (cls == String.class) {
+                return new JsonString(parent, (String) obj);
+            }
+            if (obj instanceof List) {
+                JsonArray result = new JsonArray(parent);
+                for (Object item : (List<?>) obj) {
+                    result.addChild(parseJavaObject(item, result));
                 }
+                return result;
             }
-            return result;
+            if (!cls.isInterface() && !cls.isPrimitive()) {
+                JsonObject result = new JsonObject(parent);
+                Field[] fields = cls.getDeclaredFields();
+                for (Field field : fields) {
+                    String fieldName = field.getName();
+                    Class<?> fieldType = field.getType();
+                    try {
+                        field.setAccessible(true);
+                        if (fieldType == byte.class) {
+                            result.addNumber(fieldName, field.getByte(obj));
+                        } else if (fieldType == short.class) {
+                            result.addNumber(fieldName, field.getShort(obj));
+                        } else if (fieldType == int.class) {
+                            result.addNumber(fieldName, field.getInt(obj));
+                        } else if (fieldType == long.class) {
+                            result.addNumber(fieldName, field.getLong(obj));
+                        } else if (fieldType == float.class) {
+                            result.addNumber(fieldName, field.getFloat(obj));
+                        } else if (fieldType == double.class) {
+                            result.addNumber(fieldName, field.getDouble(obj));
+                        } else if (fieldType == boolean.class) {
+                            result.addBoolean(fieldName, field.getBoolean(obj));
+                        } else {
+                            result.addChild(fieldName, parseJavaObject(field.get(obj), result));
+                        }
+                    } catch (IllegalAccessException ignored) {
+                        return result;
+                    }
+                }
+                return result;
+            }
         }
         if (parent == null) {
             return JsonNull.instance;

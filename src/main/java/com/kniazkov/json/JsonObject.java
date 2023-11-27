@@ -189,53 +189,53 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
                             field.setByte(result, (byte)child.getIntValue());
                         }
                         else if (fieldType == java.lang.Byte.class) {
-                            Byte obj = (byte)child.getIntValue();
+                            Byte obj = child.isNull() ? null : (byte)child.getIntValue();
                             field.set(result, obj);
                         }
                         else if (fieldType == short.class) {
                             field.setShort(result, (short)child.getIntValue());
                         }
                         else if (fieldType == java.lang.Short.class) {
-                            Short obj = (short)child.getIntValue();
+                            Short obj = child.isNull() ? null : (short)child.getIntValue();
                             field.set(result, obj);
                         }
                         else if (fieldType == int.class) {
                             field.setInt(result, child.getIntValue());
                         }
                         else if (fieldType == java.lang.Integer.class) {
-                            Integer obj = child.getIntValue();
+                            Integer obj = child.isNull() ? null : child.getIntValue();
                             field.set(result, obj);
                         }
                         else if (fieldType == long.class) {
                             field.setLong(result, child.getLongValue());
                         }
                         else if (fieldType == java.lang.Long.class) {
-                            Long obj = child.getLongValue();
+                            Long obj = child.isNull() ? null : child.getLongValue();
                             field.set(result, obj);
                         }
                         else if (fieldType == float.class) {
                             field.setFloat(result, (float)child.getDoubleValue());
                         }
                         else if (fieldType == java.lang.Float.class) {
-                            Float obj = (float)child.getDoubleValue();
+                            Float obj = child.isNull() ? null : (float)child.getDoubleValue();
                             field.set(result, obj);
                         }
                         else if (fieldType == double.class) {
                             field.setDouble(result, child.getDoubleValue());
                         }
                         else if (fieldType == java.lang.Double.class) {
-                            Double obj = child.getDoubleValue();
+                            Double obj = child.isNull() ? null : child.getDoubleValue();
                             field.set(result, obj);
                         }
                         else if (fieldType == boolean.class) {
                             field.setBoolean(result, child.getBooleanValue());
                         }
                         else if (fieldType == java.lang.Boolean.class) {
-                            Boolean obj = child.getBooleanValue();
+                            Boolean obj =  child.isNull() ? null : child.getBooleanValue();
                             field.set(result, obj);
                         }
                         else if (fieldType == java.lang.String.class) {
-                            field.set(result, child.getStringValue());
+                            field.set(result, child.isNull() ? null : child.getStringValue());
                         }
                         else if (fieldType == java.lang.Object.class) {
                             field.set(result, child.toJavaObject());
