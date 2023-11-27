@@ -1,6 +1,7 @@
 package com.kniazkov.json;
 
 import java.lang.reflect.Field;
+import java.util.List;
 
 /**
  * JSON parser.
@@ -44,33 +45,7 @@ public final class JsonParser {
      * @return JSON element
      */
     public static JsonElement parseJavaObject(Object obj) {
-        Class<?> cls = obj.getClass();
-        if (cls == Byte.class) {
-            return new JsonNumber((Byte)obj);
-        }
-        if (cls == Short.class) {
-            return new JsonNumber((Short)obj);
-        }
-        if (cls == Integer.class) {
-            return new JsonNumber((Integer)obj);
-        }
-        if (cls == Long.class) {
-            return new JsonNumber((Long)obj);
-        }
-        if (cls == Float.class) {
-            return new JsonNumber((Float)obj);
-        }
-        if (cls == Double.class) {
-            return new JsonNumber((Double) obj);
-        }
-        if (cls == Boolean.class) {
-            return new JsonBoolean((Boolean) obj);
-        }
-        if (cls == String.class) {
-            return new JsonString((String) obj);
-        }
-        Field[] fields = cls.getDeclaredFields();
-        return JsonNull.instance;
+        return parseJavaObject(obj, null);
     }
 
     /**
@@ -195,5 +170,51 @@ public final class JsonParser {
             }
         } while(expectedElement);
         return obj;
+    }
+
+    /**
+     * Parses a Java object and tries to represent it as a JSON element (internal method).
+     * @param obj Java object
+     * @param parent The container that will contain the parsed object
+     * @return JSON element
+     */
+    private static JsonElement parseJavaObject(Object obj, JsonContainer parent) {
+        Class<?> cls = obj.getClass();
+        if (cls == Byte.class) {
+            return new JsonNumber(parent, (Byte)obj);
+        }
+        if (cls == Short.class) {
+            return new JsonNumber(parent, (Short)obj);
+        }
+        if (cls == Integer.class) {
+            return new JsonNumber(parent, (Integer)obj);
+        }
+        if (cls == Long.class) {
+            return new JsonNumber(parent, (Long)obj);
+        }
+        if (cls == Float.class) {
+            return new JsonNumber(parent, (Float)obj);
+        }
+        if (cls == Double.class) {
+            return new JsonNumber(parent, (Double) obj);
+        }
+        if (cls == Boolean.class) {
+            return new JsonBoolean(parent, (Boolean) obj);
+        }
+        if (cls == String.class) {
+            return new JsonString(parent, (String) obj);
+        }
+        if (obj instanceof List) {
+            JsonArray result = new JsonArray(parent);
+            for (Object item : (List<?>)obj) {
+                result.addChild(parseJavaObject(item, result));
+            }
+            return result;
+        }
+        Field[] fields = cls.getDeclaredFields();
+        if (parent == null) {
+            return JsonNull.instance;
+        }
+        return new JsonNull(parent);
     }
 }

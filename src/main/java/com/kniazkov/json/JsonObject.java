@@ -242,12 +242,12 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
                         }
                         else if (fieldType == java.util.List.class || fieldType == java.util.ArrayList.class) {
                             List<Object> list = new ArrayList<>();
-                            createListFromJsonArray(field, list, child);
+                            JsonArray.createListFromJsonArray(field.getGenericType(), list, child.toJsonArray());
                             field.set(result, list);
                         }
                         else if (fieldType == java.util.LinkedList.class) {
                             List<Object> list = new LinkedList<>();
-                            createListFromJsonArray(field, list, child);
+                            JsonArray.createListFromJsonArray(field.getGenericType(), list, child.toJsonArray());
                             field.set(result, list);
                         }
                         else {
@@ -353,80 +353,5 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
     @Override
     public JsonObject toJsonObject() {
         return this;
-    }
-
-    /**
-     * Creates Java list from JSON element that represents an array
-     * @param field Field of Java object
-     * @param list Resulting list
-     * @param elem JSON element
-     */
-    private static void createListFromJsonArray(Field field, List<Object> list, JsonElement elem) {
-        JsonArray array = elem.toJsonArray();
-        if (array == null) {
-            return;
-        }
-        Type listType = field.getGenericType();
-        if (listType instanceof ParameterizedType) {
-            Type[] parameters = ((ParameterizedType) listType).getActualTypeArguments();
-            assert(parameters.length == 1);
-            if (parameters[0] == java.lang.Byte.class) {
-                for (JsonElement jsonElement : array) {
-                    Byte obj = (byte)jsonElement.getIntValue();
-                    list.add(obj);
-                }
-            }
-            else if (parameters[0] == java.lang.Short.class) {
-                for (JsonElement jsonElement : array) {
-                    Short obj = (short)jsonElement.getIntValue();
-                    list.add(obj);
-                }
-            }
-            else if (parameters[0] == java.lang.Integer.class) {
-                for (JsonElement jsonElement : array) {
-                    Integer obj = jsonElement.getIntValue();
-                    list.add(obj);
-                }
-            }
-            else if (parameters[0] == java.lang.Long.class) {
-                for (JsonElement jsonElement : array) {
-                    Long obj = jsonElement.getLongValue();
-                    list.add(obj);
-                }
-            }
-            else if (parameters[0] == java.lang.Float.class) {
-                for (JsonElement jsonElement : array) {
-                    Float obj = (float)jsonElement.getDoubleValue();
-                    list.add(obj);
-                }
-            }
-            else if (parameters[0] == java.lang.Double.class) {
-                for (JsonElement jsonElement : array) {
-                    Double obj = jsonElement.getDoubleValue();
-                    list.add(obj);
-                }
-            }
-            else if (parameters[0] == java.lang.Boolean.class) {
-                for (JsonElement jsonElement : array) {
-                    Boolean obj = jsonElement.getBooleanValue();
-                    list.add(obj);
-                }
-            }
-            else if (parameters[0] == java.lang.String.class) {
-                for (JsonElement jsonElement : array) {
-                    String obj = jsonElement.getStringValue();
-                    list.add(obj);
-                }
-            }
-            else if (parameters[0] == java.lang.Object.class) {
-                for (JsonElement jsonElement : array) {
-                    list.add(jsonElement.toJavaObject());
-                }
-            }
-        } else {
-            for (JsonElement jsonElement : array) {
-                list.add(jsonElement.toJavaObject());
-            }
-        }
     }
 }
