@@ -11,6 +11,13 @@ import java.io.File;
 public class JsonApiTest {
     private static final String resources = "src/test/resources/";
 
+    static class Simple {
+        String str;
+
+        public Simple() {
+        }
+    }
+
     @Test
     public void parsingFile() {
         JsonElement root = null;
@@ -26,5 +33,19 @@ public class JsonApiTest {
         Assert.assertNotNull(obj);
         Assert.assertTrue(obj.containsKey("str"));
         Assert.assertEquals("hello", obj.get("str").getStringValue());
+    }
+
+    @Test
+    public void parsingFileToObject() {
+        Simple obj = null;
+        boolean oops = false;
+        try {
+            obj = Json.parse(new File(resources + "simple.json"), Simple.class);
+        } catch (JsonException ignored) {
+            oops = true;
+        }
+        Assert.assertFalse(oops);
+        Assert.assertNotNull(obj);
+        Assert.assertEquals("hello", obj.str);
     }
 }

@@ -28,11 +28,11 @@ public class Json {
         if (source == null) {
             return null;
         }
-        return JsonParser.parseString(source);
+        return parse(source);
     }
 
     /**
-     * Parses JSON document into Java object of specified type.
+     * Parses a JSON document, represented as a string, into Java object of specified type.
      * @param source JSON document
      * @param type The type descriptor
      * @return Object containing parsed data or {@code null} if document can't be represented
@@ -41,6 +41,23 @@ public class Json {
      * @throws JsonException If parsing fails
      */
     public static <T> T parse(String source, Class<T> type) throws JsonException {
+        return parse(source).toJavaObject(type);
+    }
+
+    /**
+     * Parses a JSON document from a file into Java object of specified type.
+     * @param file File containing JSON document
+     * @param type The type descriptor
+     * @return Object containing parsed data or {@code null} the file cannot be read for some reason
+     *   or document can't be represented as an object of specified type
+     * @param <T> The type
+     * @throws JsonException If parsing fails
+     */
+    public static <T> T parse(File file, Class<T> type) throws JsonException {
+        final String source = Utils.readFileToString(file);
+        if (source == null) {
+            return null;
+        }
         return parse(source).toJavaObject(type);
     }
 
