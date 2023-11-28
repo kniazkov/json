@@ -166,10 +166,22 @@ public class JsonObjectTransformationTest {
 
         public Lists() {
         }
+
+        @Override
+        public boolean equals(Object other) {
+            if (!(other instanceof Lists ll)) {
+                return false;
+            }
+            return compareTwoLists(bytes, ll.bytes) && compareTwoLists(shorts, ll.shorts) &&
+                    compareTwoLists(integers, ll.integers) && compareTwoLists(longs, ll.longs) &&
+                    compareTwoLists(floats, ll.floats) && compareTwoLists(doubles, ll.doubles) &&
+                    compareTwoLists(booleans, ll.booleans) && compareTwoLists(strings, ll.strings) &&
+                    compareTwoLists(generic, ll.generic) && compareTwoLists(objects, ll.objects);
+        }
     }
 
     @Test
-    public void parsingLists() {
+    public void parsingAndSerializeLists() {
         Lists obj = null;
         boolean oops = false;
         try {
@@ -181,19 +193,20 @@ public class JsonObjectTransformationTest {
         }
         Assert.assertFalse(oops);
         Assert.assertNotNull(obj);
-        Assert.assertTrue(checkList(Arrays.asList((byte)1,(byte)2,(byte)3), obj.bytes));
-        Assert.assertTrue(checkList(Arrays.asList((short)1,(short)2,(short)3), obj.shorts));
-        Assert.assertTrue(checkList(Arrays.asList(1,2,3), obj.integers));
-        Assert.assertTrue(checkList(Arrays.asList((long)1,(long)2,(long)3), obj.longs));
-        Assert.assertTrue(checkList(Arrays.asList((float)1.01,(float)2.02,(float)3.03), obj.floats));
-        Assert.assertTrue(checkList(Arrays.asList(1.01,2.02,3.03), obj.doubles));
-        Assert.assertTrue(checkList(Arrays.asList(true, false), obj.booleans));
-        Assert.assertTrue(checkList(Arrays.asList("one", "two", "three"), obj.strings));
-        Assert.assertTrue(checkList(Arrays.asList((Object)"test", (Object)1.0), obj.generic));
-        Assert.assertTrue(checkList(Arrays.asList((Object)false, (Object)2.0), obj.objects));
+        Assert.assertTrue(compareTwoLists(Arrays.asList((byte)1,(byte)2,(byte)3), obj.bytes));
+        Assert.assertTrue(compareTwoLists(Arrays.asList((short)1,(short)2,(short)3), obj.shorts));
+        Assert.assertTrue(compareTwoLists(Arrays.asList(1,2,3), obj.integers));
+        Assert.assertTrue(compareTwoLists(Arrays.asList((long)1,(long)2,(long)3), obj.longs));
+        Assert.assertTrue(compareTwoLists(Arrays.asList((float)1.01,(float)2.02,(float)3.03), obj.floats));
+        Assert.assertTrue(compareTwoLists(Arrays.asList(1.01,2.02,3.03), obj.doubles));
+        Assert.assertTrue(compareTwoLists(Arrays.asList(true, false), obj.booleans));
+        Assert.assertTrue(compareTwoLists(Arrays.asList("one", "two", "three"), obj.strings));
+        Assert.assertTrue(compareTwoLists(Arrays.asList((Object)"test", (Object)1.0), obj.generic));
+        Assert.assertTrue(compareTwoLists(Arrays.asList((Object)false, (Object)2.0), obj.objects));
+        Assert.assertTrue(serializeAndThenParse(obj));
     }
 
-    private static <T> boolean checkList(List<T> expected, List<T> actual) {
+    private static <T> boolean compareTwoLists(List<T> expected, List<T> actual) {
         if (actual == null) {
             return false;
         }
