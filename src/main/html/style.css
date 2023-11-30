@@ -1,0 +1,18 @@
+.class_name {
+    font-size: 24pt;
+    font-weight: bold;
+    margin-left: 10pt;
+    margin-right: 10pt;
+}
+
+.methods_block {
+    margin-left: 20pt;
+}
+
+.signature {
+    font-family: monospace;
+}
+
+.description {
+    margin-left: 20pt;
+}
