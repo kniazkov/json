@@ -18,32 +18,120 @@
         <hr/>
         <p>An element has the following methods (which are respectively inherited by all entities):</p>
         <div class="methods_block">
-            <p class="signature">JsonContainer <b>getParent()</b></p>
+            <p class="signature">JsonContainer <b>getParent</b>()</p>
             <p class="description">
                 Returns a container, that is, either a JSON object or a JSON array that owns this element.
                 If this element is the root of the tree, the method returns <code>null</code>.<br/>
                 In this way, you can traverse the tree in various directions, including from leaf to root.
                 To be honest, I don't know why this is so necessary.
             </p>
-            <p class="signature">JsonElement <b>clone()</b></p>
+            <p class="signature">JsonElement <b>clone</b>()</p>
             <p class="description">
                 Creates a clone of this element. If the element contains other elements, clones of these elements
                 are also created, i.e. "deep" copying is performed. Thus, the result is a new (sub-)tree, which is
                 not related to the original in any way.
             </p>
-            <p class="signature">String <b>toString()</b></p>
+            <p class="signature">String <b>toString</b>()</p>
             <p class="description">
                 Represents the element as a string, that is, it performs serialization.
                 This name instead of <code>serialize</code> was chosen because <code>toString</code> method
                 is automatically called by debuggers during step-by-step execution and displaying the object's
                 contents, which turns out to be quite convenient.
             </p>
-            <p class="signature">String <b>toText(String indentation)</b></p>
+            <p class="signature">String <b>toText</b>(String indentation)</p>
             <p class="description">
-                Represents the element as a string, that is, it performs serialization.
-                This name instead of <code>serialize</code> was chosen because <code>toString</code> method
-                is automatically called by debuggers during step-by-step execution and displaying the object's
-                contents, which turns out to be quite convenient.
+                It's the same serialization as <code>toString()</code>, only indented to make it easier to read.
+                You want to specify a string that will represent "one unit" of indentation. This can be, say,
+                multiple spaces or a tab.
+            </p>
+            <p class="signature">
+                Object <b>toJavaObject</b>()<br/>
+                &lt;T&gt; T <b>toJavaObject</b>(Class&lt;T&gt; type)
+            </p>
+            <p class="description">
+                Converts the element to a suitable Java object. For example, a string is converted to a
+                <code>String</code> instance, a number is converted to a <code>Double</code> instance, and so on.
+                Complex objects are converted into associative arrays (like <code>Map</code>). Using the second method,
+                you can directly specify the type of Java object, and, accordingly,  will be performed an attempt
+                to convert to this type. If this is not possible, the method will return <code>null</code>.
+            </p>
+            <p class="description">
+                Example:
+                <pre>
+                    class Vector {
+                        int x;
+                        int y;
+
+                        public Vector() { }
+                    }
+
+                    Vector createVector() throws JsonException {
+                        JsonElement element = JsonParser.parseString("{x: 10, y: 20}");
+                        Vector vector = element.toJavaObject(Vector.class);
+                        return vector;
+                    }
+                </pre>
+            </p>
+            <p class="signature">boolean <b>isNull</b>()</p>
+            <p class="description">
+                Checks if the element is <code>null</code> literal (such a special value allowed by JSON syntax).
+            </p>
+            <p class="signature">boolean <b>isBoolean</b>()</p>
+            <p class="description">
+                Checks if the element contains boolean value.
+            </p>
+            <p class="signature">boolean <b>getBooleanValue</b>()</p>
+            <p class="description">
+                If the element contains boolean value (<code>element.isBoolean() == true</code>), returns this value.
+                If not (for example, element is a string), returns <code>false</code>.
+            </p>
+            <p class="signature">boolean <b>isInteger</b>()</p>
+            <p class="description">
+                Checks if the element is a 32-bit integer.
+            </p>
+            <p class="signature">boolean <b>isLongInteger</b>()</p>
+            <p class="description">
+                Checks if the element is a 64-bit integer.<br/>
+                If <code>element.isInteger() == true</code>, then always <code>element.isLongInteger() == true</code>
+                (the reverse is not true).
+            </p>
+            <p class="signature">boolean <b>isNumber</b>()</p>
+            <p class="description">
+                Checks if the element is a number.<br/>
+                If <code>element.isInteger() == true</code> or <code>element.isLongInteger() == true</code>,
+                then always <code>element.isNumber() == true</code> (the reverse is not true).
+            </p>
+            <p class="signature">int <b>getIntValue</b>()</p>
+            <p class="description">
+                Returns the value of the element converted to a 32-bit integer, or 0 if no such conversion is possible.
+            </p>
+            <p class="signature">long <b>getLongValue</b>()</p>
+            <p class="description">
+                Returns the value of the element converted to a 62-bit integer, or 0 if no such conversion is possible.
+            </p>
+            <p class="signature">double <b>getDoubleValue</b>()</p>
+            <p class="description">
+                Returns the value of the element represented as a double-precision real number,
+                or 0 if no such conversion is possible.
+            </p>
+            <p class="signature">boolean <b>isString</b>()</p>
+            <p class="description">
+                Checks if the element is a string.
+            </p>
+            <p class="signature">String <b>getStringValue</b>()</p>
+            <p class="description">
+                Returns the value of the element represented as a string, or empty string if no such conversion
+                is possible. Primitive types (numbers, boolean values) can be represented as a string.
+            </p>
+            <p class="signature">JsonArray <b>toJsonArray</b>()</p>
+            <p class="description">
+                Safely casts an element to the <code>JsonArray</code> type. Returns an instance of
+                <code>JsonArray</code> or <code>null</code> if the element is not a JSON array.
+            </p>
+            <p class="signature">JsonObject <b>toJsonObject</b>()</p>
+            <p class="description">
+                Safely casts an element to the <code>JsonObject</code> type. Returns an instance of
+                <code>JsonObject</code> or <code>null</code> if the element is not a JSON object.
             </p>
         </div>
     </body>

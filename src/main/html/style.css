@@ -1,8 +1,8 @@
 .class_name {
     font-size: 24pt;
     font-weight: bold;
-    margin-left: 10pt;
-    margin-right: 10pt;
+    margin-left: 5pt;
+    margin-right: 5pt;
 }
 
 .methods_block {
@@ -15,4 +15,19 @@
 
 .description {
     margin-left: 20pt;
+}
+
+pre {
+    background-color: cornsilk;
+    padding-top: 12pt;
+    padding-bottom: 3pt;
+}
+
+a {
+    color: blue;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
 }
