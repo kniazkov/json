@@ -1,0 +1,37 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>JsonObject</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <p>
+            Class <span class="class_name">JsonObject</span>
+            extends <a href="element.html">JsonContainer</a>
+            implements <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Map.html">Map</a>&lt;String,
+            JsonElement&gt;
+            :
+        </p>
+        <p>
+            JSON objects are sets of key-value pairs, where the key is a string and the value is any
+            <a href="element.html">JSON element</a>.
+        </p>
+        <hr/>
+        <p>A JSON object has the following methods, in addition to inherited methods:</p>
+        <div class="methods_block">
+            <p class="signature">JsonElement <b>getElement</b>(String key)</p>
+            <p class="description">
+                Returns a child element by its key.
+            </p>
+            <p class="signature">void <b>addElement</b>(String key, JsonElement elem)</p>
+            <p class="description">
+                The element itself remains unchanged and further its modification will not affect the current tree.<br/>
+                The clone will have the correct relations with the sequence of parent nodes.
+                In this way, data consistency is always achieved.<br/>
+                <br/>
+                "Data consistency" is such a clever phrase that should automatically make this project incredibly cool.
+            </p>
+
+        </div>
+    </body>
+</html>
