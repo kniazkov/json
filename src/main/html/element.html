@@ -1,9 +1,15 @@
 <html>
     <head>
-        <title>JsonElement.java</title>
+        <meta charset="UTF-8">
+        <title>JsonElement</title>
+        <link rel="stylesheet" href="style.css">
     </head>
     <body>
-        <h1>JsonElement</h1>
+        <p>
+            Class <span class="class_name">JsonElement</span>
+            implements <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Cloneable.html">Cloneable</a>
+            :
+        </p>
         <p>
             This class describes a JSON element, that is, some entity that can be an object, an array, a number,
             a string, a boolean value, or <code>null</code>. All other classes that describe the above entities
@@ -11,13 +17,33 @@
         </p>
         <hr/>
         <p>An element has the following methods (which are respectively inherited by all entities):</p>
-        <div style="margin-left: 20pt;">
-            <p><code>JsonContainer <b>getParent()</b></code></p>
-            <p>
+        <div class="methods_block">
+            <p class="signature">JsonContainer <b>getParent()</b></p>
+            <p class="description">
                 Returns a container, that is, either a JSON object or a JSON array that owns this element.
                 If this element is the root of the tree, the method returns <code>null</code>.<br/>
                 In this way, you can traverse the tree in various directions, including from leaf to root.
                 To be honest, I don't know why this is so necessary.
+            </p>
+            <p class="signature">JsonElement <b>clone()</b></p>
+            <p class="description">
+                Creates a clone of this element. If the element contains other elements, clones of these elements
+                are also created, i.e. "deep" copying is performed. Thus, the result is a new (sub-)tree, which is
+                not related to the original in any way.
+            </p>
+            <p class="signature">String <b>toString()</b></p>
+            <p class="description">
+                Represents the element as a string, that is, it performs serialization.
+                This name instead of <code>serialize</code> was chosen because <code>toString</code> method
+                is automatically called by debuggers during step-by-step execution and displaying the object's
+                contents, which turns out to be quite convenient.
+            </p>
+            <p class="signature">String <b>toText(String indentation)</b></p>
+            <p class="description">
+                Represents the element as a string, that is, it performs serialization.
+                This name instead of <code>serialize</code> was chosen because <code>toString</code> method
+                is automatically called by debuggers during step-by-step execution and displaying the object's
+                contents, which turns out to be quite convenient.
             </p>
         </div>
     </body>
