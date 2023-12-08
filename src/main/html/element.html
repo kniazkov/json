@@ -6,13 +6,16 @@
     </head>
     <body>
         <p>
-            Class <span class="class_name">JsonElement</span>
-            implements <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Cloneable.html">Cloneable</a>
+            class <span class="class_name">JsonElement</span>
+            implements <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Cloneable.html">
+                <code>Cloneable</code>
+            </a>
             :
         </p>
         <p>
             This class describes a JSON element, that is, some entity that can be an <a href="object.html">object</a>,
-            an array, a number, a string, a boolean value, or <code>null</code>.
+            an <a href="array.html">array</a>, a number, a string, a <a href="boolean.html">boolean value</a>,
+            or <a href="null.html"><code>null</code></a>.
             All other classes that describe the above entities are inherited from this class.
         </p>
         <hr/>
@@ -75,7 +78,8 @@
             </p>
             <p class="signature">boolean <b>isNull</b>()</p>
             <p class="description">
-                Checks if the element is <code>null</code> literal (such a special value allowed by JSON syntax).
+                Checks if the element is <a href="null.html"><code>null</code></a> literal
+                (such a special value allowed by JSON syntax).
             </p>
             <p class="signature">boolean <b>isBoolean</b>()</p>
             <p class="description">
@@ -124,7 +128,7 @@
                 Returns the value of the element represented as a string, or empty string if no such conversion
                 is possible. Primitive types (numbers, boolean values) can be represented as a string.
             </p>
-            <p class="signature">JsonArray <b>toJsonArray</b>()</p>
+            <p class="signature"><a href="array.html">JsonArray</a> <b>toJsonArray</b>()</p>
             <p class="description">
                 Safely casts an element to the <code>JsonArray</code> type. Returns an instance of
                 <code>JsonArray</code> or <code>null</code> if the element is not a JSON array.
