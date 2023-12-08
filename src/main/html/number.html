@@ -1,0 +1,32 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>JsonNumber</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <p>
+            class <span class="class_name">JsonNumber</span>
+            extends <a href="element.html"><code>JsonElement</code></a>
+            :
+        </p>
+        <p>
+            Represents a JSON element containing number.
+        </p>
+        <hr/>
+        <p>A JSON number has the following method, in addition to inherited methods:</p>
+        <div class="methods_block">
+            <p class="signature"><b>JsonNumber</b>(double value)</p>
+            <p class="description">
+                Constructor. Creates an element that does not have a parent.
+            </p>
+        </div>
+        <p>
+            The overridden <code>isNumber()</code> method for this class will return <code>true</code>.
+            You can also check whether a number is an integer (32-bit) or a long integer (64-bit) using the
+            <code>isInteger()</code> and <code>isLongInteger()</code> methods.<br/>
+            Using the <code>getIntValue()</code>, <code>getLongValue()</code>, <code>getDoubleValue()</code>
+            methods you can get the value of the element.
+        </p>
+    </body>
+</html>
