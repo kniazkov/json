@@ -15,7 +15,7 @@
         <p>
             This class describes a JSON element, that is, some entity that can be an <a href="object.html">object</a>,
             an <a href="array.html">array</a>, a <a href="number.html">number</a>,
-            a string, a <a href="boolean.html">boolean value</a>,
+            a <a href="string.html">string</a>, a <a href="boolean.html">boolean value</a>,
             or <a href="null.html"><code>null</code></a>.
             All other classes that describe the above entities are inherited from this class.
         </p>
@@ -24,7 +24,7 @@
         <div class="methods_block">
             <p class="signature"><a href="container.html">JsonContainer</a> <b>getParent</b>()</p>
             <p class="description">
-                Returns a <a href="container.html"><b>container</b></a>, that is, either a JSON object or a JSON array
+                Returns a <a href="container.html">container</a>, that is, either a JSON object or a JSON array
                 that owns this element. If this element is the root of the tree, the method returns
                 <code>null</code>.<br/>
                 In this way, you can traverse the tree in various directions, including from leaf to root.
@@ -62,19 +62,19 @@
             </p>
             <p class="description">
                 Example:
-                <pre>
-                    class Vector {
-                        int x;
-                        int y;
+                <pre style="padding-left: 40pt;">
+class Vector {
+    int x;
+    int y;
 
-                        public Vector() { }
-                    }
+    public Vector() { }
+}
 
-                    Vector createVector() throws JsonException {
-                        JsonElement element = JsonParser.parseString("{x: 10, y: 20}");
-                        Vector vector = element.toJavaObject(Vector.class);
-                        return vector;
-                    }
+Vector createVector() throws JsonException {
+    JsonElement element = JsonParser.parseString("{x: 10, y: 20}");
+    Vector vector = element.toJavaObject(Vector.class);
+    return vector;
+}
                 </pre>
             </p>
             <p class="signature">boolean <b>isNull</b>()</p>
