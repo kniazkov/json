@@ -1,8 +1,6 @@
 package com.kniazkov.json;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -26,7 +24,7 @@ public final class JsonParser {
      * @throws JsonException If parsing fails
      */
     public static JsonElement parseString(String source) throws JsonException {
-        return parseString(source, JsonParsingMode.ENHANCED);
+        return parseString(source, JsonParsingMode.EXTENDED);
     }
 
     /**

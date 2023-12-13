@@ -21,5 +21,5 @@ public enum JsonParsingMode {
      * JSON5 syntax is allowed. Besides, if a JSON document contains some errors,
      * the parser will still try to parse such a document.
      */
-    ENHANCED
+    EXTENDED
 }

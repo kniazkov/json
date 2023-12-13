@@ -1,0 +1,44 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Json</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <p>
+            class <span class="class_name">Json</span>
+        </p>
+        <p>
+            This class contains static methods that do most of the transformations you'll need,
+            like parsing JSON documents and serializing objects into JSON format.<br/>
+            The class was designed so that you write as little code as possible to get the result you want.
+        </p>
+        <hr/>
+        <p>If you need to parse a JSON document into a tree:</p>
+        <div class="methods_block">
+            <p class="signature">
+                <a href="element.html">JsonElement</a> Json.<b>parse</b>(String source) throws JsonException<br/>
+                JsonElement Json.<b>parse</b>(File file) throws JsonException
+            </p>
+            <p class="description">
+                Parses a string or file containing a JSON document and returns an <a href="element.html">element</a>
+                that is the root of the tree. If the parsing fails, an exception will be thrown.
+            </p>
+            <p class="description">
+                Example:
+                <pre style="padding-left: 40pt;">
+String json = "{\"name\": \"John\", \"age\": 17}";
+try {
+    JsonElement root = Json.parse(json);
+    JsonObject obj = root.toJsonObject();
+    if (obj != null && obj.containsKey("name") {
+        System.out.print(obj.get("name"));
+    }
+} catch (JsonException error) {
+    System.out.print("Parsing error: " + error.getMessage());
+}
+                </pre>
+            </p>
+        </div>
+    </body>
+</html>

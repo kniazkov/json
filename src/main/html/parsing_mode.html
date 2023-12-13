@@ -1,0 +1,63 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Json</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <p>
+            enum <span class="class_name">JsonParsingMode</span>
+        </p>
+        <p>
+            Specifies the parsing mode of the JSON document.
+        </p>
+        <hr/>
+        <p>In total, there are three parsing modes:</p>
+        <div class="methods_block">
+            <p class="signature">JsonParsingMode.<b>STRICT</b></p>
+            <p class="description">
+                The most brutal regime. Only the syntax defined by the
+                <a href="https://ecma-international.org/publications-and-standards/standards/ecma-404">ECMA-404 standard</a>
+                ("The JSON Data Interchange Standard") is allowed.<br/>
+                Parsing syntax constructs not defined by this standard will raise an exception.<br/>
+                All competing parsers support this mode.
+            </p>
+            <p class="signature">JsonParsingMode.<b>JSON5</b></p>
+            <p class="description">
+                Supports <a href="http://json5.org">extended syntax</a>. Such JSON documents are easier for humans
+                to read and modify. You'll love this.<br/>
+                For example, you don't have to put the key in quotes:
+                <pre style="padding-left: 40pt;">
+{
+    name: "John",
+    age: 17
+}
+                </pre>
+            </p>
+            <p class="signature">JsonParsingMode.<b>EXTENDED</b></p>
+            <p class="description">
+                Do you make mistakes? I think I do. And that includes if you are editing a JSON document
+                that is large enough to get confused.<br/>
+                You might, say, accidentally forget to <s>drink your morning coffee</s> put a comma between
+                two objects, like this:
+                <pre style="padding-left: 40pt;">
+[
+    {
+        name: "John",
+        age: 17
+    }
+    {
+        name: "Anna",
+        age: 16
+    }
+]
+                </pre>
+                And of course, no other parser will bother with this. It would just throw an exception.<br/>
+                But not this one. In this mode, we will still try to parse this somehow (and forgive the user
+                who has to edit a large document <s>and hasn't had his morning coffee</s>).<br/>
+                After all, we all make mistakes.<br/>
+                This is the default mode unless another mode is specified.
+            </p>
+        </div>
+    </body>
+</html>
