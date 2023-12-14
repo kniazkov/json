@@ -14,6 +14,11 @@
             The class was designed so that you write as little code as possible to get the result you want.
         </p>
         <hr/>
+        <p>
+            A JSON document can be represented as a tree, suitable for data retrieval and modification.<br/>
+            A tree is also an intermediate structure when converting documents to and from specific
+            user-defined classes.
+        </p>
         <p>If you need to parse a JSON document into a tree:</p>
         <div class="methods_block">
             <p class="signature">
@@ -31,8 +36,54 @@ String json = "{\"name\": \"John\", \"age\": 17}";
 try {
     JsonElement root = Json.parse(json);
     JsonObject obj = root.toJsonObject();
-    if (obj != null && obj.containsKey("name") {
-        System.out.print(obj.get("name"));
+    if (obj != null && obj.containsKey("name")) {
+        System.out.print(obj.get("name")); // It'll print, "John"
+    }
+} catch (JsonException error) {
+    System.out.print("Parsing error: " + error.getMessage());
+}
+                </pre>
+            </p>
+            <p class="signature">
+                JsonElement Json.<b>parse</b>(String source, <a href="parsing_mode.html">JsonParsingMode</a> mode) throws JsonException<br/>
+                JsonElement Json.<b>parse</b>(File file, JsonParsingMode mode) throws JsonException
+            </p>
+            <p class="description">
+                Parses a string or file with a <a href="parsing_mode.html">mode</a> that specifies
+                the valid JSON syntax.
+            </p>
+        </div>
+        <p>
+            A more convenient way to work with JSON documents is to convert the document directly into a specific
+            Java object defined by user.<br/>
+            The following methods are defined for such conversion:
+        </p>
+        <div class="methods_block">
+            <p class="signature">
+                &lt;T&gt; T Json.<b>parse</b>(String source, Class&lt;T&gt;) throws JsonException<br/>
+                &lt;T&gt; T Json.<b>parse</b>(File file, Class&lt;T&gt;) throws JsonException
+            </p>
+            <p class="description">
+                Parses a JSON document and further instantiates an object from a user defined class
+                and fills that object with data from the parsed document.
+            </p>
+            <p class="description">
+                Example. Let's say you've defined a class:
+                <pre style="padding-left: 40pt;">
+class Vector {
+    double x;
+    double y;
+
+    public Vector() {}
+}
+                </pre>
+                The following code will create and fill an object of this class:
+                <pre style="padding-left: 40pt;">
+String json = "{\"x\": 10, \"y\": 20}";
+try {
+    Vector vector = Json.parse(json, Vector.class);
+    if (vector != null) {
+        System.out.print(vector.x); // It'll print, "10"
     }
 } catch (JsonException error) {
     System.out.print("Parsing error: " + error.getMessage());
