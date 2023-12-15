@@ -14,6 +14,7 @@
             The class was designed so that you write as little code as possible to get the result you want.
         </p>
         <hr/>
+        <h2>Parsing</h2>
         <p>
             A JSON document can be represented as a tree, suitable for data retrieval and modification.<br/>
             A tree is also an intermediate structure when converting documents to and from specific
@@ -36,6 +37,8 @@ String json = "{\"name\": \"John\", \"age\": 17}";
 try {
     JsonElement root = Json.parse(json);
     JsonObject obj = root.toJsonObject();
+
+    // Use this object, for example:
     if (obj != null && obj.containsKey("name")) {
         System.out.print(obj.get("name")); // It'll print, "John"
     }
@@ -82,6 +85,8 @@ class Vector {
 String json = "{\"x\": 10, \"y\": 20}";
 try {
     Vector vector = Json.parse(json, Vector.class);
+
+    // Use this object, for example:
     if (vector != null) {
         System.out.print(vector.x); // It'll print, "10"
     }
@@ -89,6 +94,109 @@ try {
     System.out.print("Parsing error: " + error.getMessage());
 }
                 </pre>
+                Object fields are filled only if they have a suitable type, otherwise such a field is ignored.<br/>
+                The correlation between Java and JSON types is as follows:
+                <ul>
+                    <li>booleans can be written to the <code>boolean</code> (<code>Boolean</code>) type;</li>
+                    <li>strings can be written to the <code>String</code> type;</li>
+                    <li>
+                        numbers can be written in <code>byte</code> (<code>Byte</code>),
+                        <code>short</code> (<code>Short</code>), <code>int</code> (<code>Integer</code>),
+                        <code>long</code> (<code>Long</code>), <code>float</code> (<code>Float</code>)
+                        and <code>double</code> (<code>Double</code>) types (the value is converted
+                        to the specified type);
+                    </li>
+                    <li><code>null</code> can be written to any object (but not a primitive type);</li>
+                    <li>objects are converted (recursively) to Java objects of the specified type;</li>
+                    <li>
+                        arrays may be converted to Java lists, with each element of such an array converted
+                        to the type specified as a Java list parameter.
+                    </li>
+                </ul>
+                Let's look at a more complex example. Suppose we have several classes:
+                <pre style="padding-left: 40pt;">
+class Employee {
+    String name;
+    int age;
+
+    public Employee {}
+}
+
+class Department {
+    String title;
+    Employee manager;
+    List&lt;Employee&gt; staff;
+    List&lt;Float&gt; monthlyExpenses;
+}
+                </pre>
+                The following JSON document can be converted to the above structure:
+                <pre style="padding-left: 40pt;">
+{
+    "title": "Research lab",
+    "manager": {
+        "name": "James Brown",
+        "age": 42
+    },
+    "staff": [
+        {
+            "name": "Gary Walker",
+            "age": 28
+        },
+        {
+            "name": "Jessica Mcconnell",
+            "age": 33
+        }
+    ],
+    "monthlyExpenses" : [1200, 1000, 1450.99]
+}
+                </pre>
+                A few more notes:
+                <ul>
+                    <li>
+                        fields can be inaccessible (private), they will still be filled in.
+                        However, the constructor must be public;
+                    </li>
+                    <li>
+                        if the field type is specified as <code>List</code> or <code>ArrayList</code>, an object
+                        of type <code>ArrayList</code> will be created; if the field type is specified as
+                        <code>LinkedList</code>, an object of type <code>LinkedList</code> will be created;
+                    </li>
+                    <li>
+                        if the field type is specified as <code>Object</code>, an object of a suitable type
+                        will be created;
+                    </li>
+                    <li>
+                        in case the conversion is performed to Map type, an associative array will be created
+                        where the key is a string and a value is <code>Object</code>, and the actual type
+                        will depend on the JSON value type. But why would you use such a conversion?..
+                    </li>
+                </ul>
+            </p>
+            <p class="signature">
+                &lt;T&gt; T Json.<b>parse</b>(String source, Class&lt;T&gt;, <a href="parsing_mode.html">JsonParsingMode</a> mode) throws JsonException<br/>
+                &lt;T&gt; T Json.<b>parse</b>(File file, Class&lt;T&gt;, JsonParsingMode mode) throws JsonException
+            </p>
+            <p class="description">
+                Parses a JSON document with a <a href="parsing_mode.html">mode</a> that specifies
+                the valid JSON syntax and further instantiates an object from a user defined class
+                and fills that object with data from the parsed document.
+            </p>
+        </div>
+        <h2>Serialization</h2>
+        <p>
+            The process that is the reverse of parsing, that is, transforming an object into a JSON document,
+            is called <b>serialization</b>. Here, too, everything is very simple.
+        </p>
+        <p>If you need to convert a Java object to a string containing a JSON document:</p>
+        <div class="methods_block">
+            <p class="signature">String Json.<b>serialize</b>(Object obj)</p>
+            <p class="description">
+                Represents Java object as string containing JSON document.
+            </p>
+            <p class="signature">String Json.<b>serialize</b>(Object obj, String indentation)</p>
+            <p class="description">
+                Represents Java object as string containing JSON document, with line breaks and indentation of
+                nested elements making it easier to read.
             </p>
         </div>
     </body>
