@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2023 Ivan Kniazkov
+ */
 package com.kniazkov.json;
 
 import java.lang.reflect.Field;
