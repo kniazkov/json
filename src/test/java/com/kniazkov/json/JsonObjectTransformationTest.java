@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2023 Ivan Kniazkov
+ */
 package com.kniazkov.json;
 
 import org.junit.Assert;
@@ -27,9 +30,10 @@ public class JsonObjectTransformationTest {
 
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Numbers nn)) {
+            if (!(other instanceof Numbers)) {
                 return false;
             }
+            Numbers nn = (Numbers) other;
             return byteValue == nn.byteValue && shortValue == nn.shortValue && intValue == nn.intValue &&
                     longValue == nn.longValue && floatValue == nn.floatValue && doubleValue == nn.doubleValue;
         }
@@ -72,9 +76,10 @@ public class JsonObjectTransformationTest {
 
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof NumbersAsObjects nn)) {
+            if (!(other instanceof NumbersAsObjects)) {
                 return false;
             }
+            NumbersAsObjects nn = (NumbersAsObjects) other;
             return Objects.equals(byteValue, nn.byteValue) && Objects.equals(shortValue, nn.shortValue) &&
                     Objects.equals(intValue, nn.intValue) && Objects.equals(longValue, nn.longValue) &&
                     Objects.equals(floatValue, nn.floatValue) && Objects.equals(doubleValue, nn.doubleValue);
@@ -118,9 +123,10 @@ public class JsonObjectTransformationTest {
 
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Booleans bb)) {
+            if (!(other instanceof Booleans)) {
                 return false;
             }
+            Booleans bb = (Booleans) other;
             return primitive == bb.primitive && Objects.equals(object, bb.object) &&
                     Objects.equals(anotherObject, bb.anotherObject);
         }
@@ -169,9 +175,10 @@ public class JsonObjectTransformationTest {
 
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof Lists ll)) {
+            if (!(other instanceof Lists)) {
                 return false;
             }
+            Lists ll = (Lists) other;
             return compareTwoLists(bytes, ll.bytes) && compareTwoLists(shorts, ll.shorts) &&
                     compareTwoLists(integers, ll.integers) && compareTwoLists(longs, ll.longs) &&
                     compareTwoLists(floats, ll.floats) && compareTwoLists(doubles, ll.doubles) &&

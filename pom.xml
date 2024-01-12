@@ -6,11 +6,13 @@
 
     <groupId>com.kniazkov</groupId>
     <artifactId>json</artifactId>
-    <version>1.0</version>
+    <version>0.0.1</version>
+
+
 
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <dependencies>
@@ -26,7 +28,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
-                <version>3.21.0</version>
+                <version>3.21.2</version>
             </plugin>
         </plugins>
     </build>
