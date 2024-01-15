@@ -7,14 +7,42 @@
     <groupId>com.kniazkov</groupId>
     <artifactId>json</artifactId>
     <version>0.0.1</version>
+    <name>com.kniazkov.json</name>
+    <description>User-friendly JSON parser/serializer</description>
+    <url>https://github.com/kniazkov/json</url>
 
+    <developers>
+        <developer>
+            <id>kniazkov</id>
+            <name>Ivan Kniazkov</name>
+            <email>ivan@kniazkov.com</email>
+            <url>https://github.com/kniazkov</url>
+            <roles>
+                <role>architect</role>
+                <role>developer</role>
+            </roles>
+            <timezone>Russia/Moscow</timezone>
+        </developer>
+    </developers>
 
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git:git://github.com/kniazkov/json.git</connection>
+        <url>https://github.com/kniazkov/json/tree/master</url>
+    </scm>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -23,6 +51,7 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
     <build>
         <plugins>
             <plugin>
