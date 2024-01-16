@@ -6,7 +6,7 @@
 
     <groupId>com.kniazkov</groupId>
     <artifactId>json</artifactId>
-    <version>0.1</version>
+    <version>0.2</version>
     <name>com.kniazkov.json</name>
     <description>User-friendly JSON parser/serializer</description>
     <url>https://github.com/kniazkov/json</url>
@@ -98,17 +98,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.6.7</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <serverId>ossrh</serverId>
-                    <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
-                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                </configuration>
             </plugin>
         </plugins>
     </build>

@@ -149,6 +149,29 @@ public class JsonObjectTransformationTest {
         Assert.assertNull(obj.anotherObject);
     }
 
+    private static class Vector {
+        int x;
+
+        int y;
+
+        public Vector() {
+        }
+
+        public Vector(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (!(other instanceof Vector)) {
+                return false;
+            }
+            Vector vv = (Vector) other;
+            return x == vv.x && y == vv.y;
+        }
+    }
+
     private static class Lists {
         LinkedList<Byte> bytes;
 
@@ -170,6 +193,8 @@ public class JsonObjectTransformationTest {
 
         List<Object> objects;
 
+        List<Vector> vectors;
+
         public Lists() {
         }
 
@@ -183,7 +208,8 @@ public class JsonObjectTransformationTest {
                     compareTwoLists(integers, ll.integers) && compareTwoLists(longs, ll.longs) &&
                     compareTwoLists(floats, ll.floats) && compareTwoLists(doubles, ll.doubles) &&
                     compareTwoLists(booleans, ll.booleans) && compareTwoLists(strings, ll.strings) &&
-                    compareTwoLists(generic, ll.generic) && compareTwoLists(objects, ll.objects);
+                    compareTwoLists(generic, ll.generic) && compareTwoLists(objects, ll.objects) &&
+                    compareTwoLists(vectors, ll.vectors);
         }
     }
 
@@ -194,7 +220,8 @@ public class JsonObjectTransformationTest {
         try {
             obj = Json.parse("{bytes: [1,2,3], shorts: [1,2,3], integers: [1,2,3], longs: [1,2,3]," +
                     "floats: [1.01, 2.02, 3.03], doubles: [1.01, 2.02, 3.03], booleans: [true, false]," +
-                    "strings: ['one','two','three'], generic: ['test', 1], objects: [false, 2]}", Lists.class);
+                    "strings: ['one','two','three'], generic: ['test', 1], objects: [false, 2], " +
+                    "vectors: [{x: 1, y: 2}, {x: 3, y: 4}] }", Lists.class);
         } catch (JsonException ignored) {
             oops = true;
         }
