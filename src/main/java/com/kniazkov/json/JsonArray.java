@@ -387,6 +387,11 @@ public final class JsonArray extends JsonContainer implements List<JsonElement> 
                     list.add(jsonElement.toJavaObject());
                 }
             }
+            else if (parameters[0] instanceof Class) {
+                for (JsonElement jsonElement : array) {
+                    list.add(jsonElement.toJavaObject((Class)parameters[0]));
+                }
+            }
         } else {
             for (JsonElement jsonElement : array) {
                 list.add(jsonElement.toJavaObject());
