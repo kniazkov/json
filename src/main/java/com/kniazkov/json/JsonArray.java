@@ -60,9 +60,19 @@ public final class JsonArray extends JsonContainer implements List<JsonElement> 
     @Override
     protected void toText(StringBuilder builder, String indentation, int level) {
         final String separator = System.lineSeparator();
-        if (list.size() < 2) {
-            builder.append(toString());
-        } else {
+        final int size = list.size();
+        boolean converted = false;
+        if (size == 0) {
+            builder.append("[]");
+            converted = true;
+        } else if (size == 1) {
+            final JsonElement child = list.get(0);
+            if (child.toJsonArray() == null && child.toJsonObject() == null) {
+                builder.append('[').append(child.toString()).append(']');
+                converted = true;
+            }
+        }
+        if (!converted) {
             builder.append('[').append(separator);
             boolean flag = false;
             for (JsonElement element : list) {

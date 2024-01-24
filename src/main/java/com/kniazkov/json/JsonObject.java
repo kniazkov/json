@@ -137,9 +137,21 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
     @Override
     protected void toText(StringBuilder builder, String indentation, int level) {
         final String separator = System.lineSeparator();
-        if (keys.size() < 2) {
-            builder.append(toString());
-        } else {
+        final int size = keys.size();
+        boolean converted = false;
+        if (size == 0) {
+            builder.append("{}");
+            converted = true;
+        } else if (size == 1) {
+            final String key = keys.get(0);
+            final JsonElement child = elements.get(key);
+            if (child.toJsonArray() == null && child.toJsonObject() == null) {
+                builder.append("{\"").append(Utils.escapeEntities(key)).append("\": ")
+                        .append(child.toString()).append('}');
+                converted = true;
+            }
+        }
+        if (!converted) {
             builder.append('{').append(separator);
             boolean flag = false;
             for (String key : keys) {
