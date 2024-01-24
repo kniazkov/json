@@ -106,16 +106,18 @@ public class JsonSerialisationTest {
 
     @Test
     public void complexCase() {
-        final String json = "{one: 1, two: 2, obj: {three: [3, 4], four: [{five: null}]}}";
+        final String json = "{one: 1, two: 2, obj: {three: [3, [4]], four: [{five: null}]}}";
         final String expected = "{" + separator +
                 "  \"one\": 1," + separator +
                 "  \"two\": 2," + separator +
                 "  \"obj\": {" + separator +
                 "    \"three\": [" + separator +
                 "      3," + separator +
-                "      4" + separator +
+                "      [4]" + separator +
                 "    ]," + separator +
-                "    \"four\": [{\"five\": null}]" + separator +
+                "    \"four\": [" + separator +
+                "      {\"five\": null}" + separator +
+                "    ]" + separator +
                 "  }" + separator +
                 "}";
         Assert.assertTrue(commonTest(json, expected));
