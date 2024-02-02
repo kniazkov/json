@@ -58,6 +58,20 @@ final class Lexer {
             return new TokenIdentifier(loc, identifier);
         }
 
+        if (ch == '0') {
+            ch = source.nextChar();
+            if (ch == 'x') {
+                ch = source.nextChar();
+                if (isHexDigit(ch)) {
+                    return parseHexNumber(loc, ch, false);
+                }
+            } else if (isDigit(ch)) {
+                return parseNumber(loc, ch, false);
+            } else {
+                return new TokenNumber(loc, 0);
+            }
+        }
+
         if (isDigit(ch)) {
             return parseNumber(loc, ch, false);
         }
@@ -158,7 +172,7 @@ final class Lexer {
      * @return Checking result
      */
     private static boolean isHexDigit(char ch) {
-        return ch >= '0' && ch <= '9' || ch >= 'a' && ch <= 'f' || ch >= 'A' && ch <= 'F' ;
+        return isDigit(ch) || ch >= 'a' && ch <= 'f' || ch >= 'A' && ch <= 'F' ;
     }
 
     /**
@@ -189,6 +203,30 @@ final class Lexer {
         } else {
             return new TokenNumber(loc, sign * intPart);
         }
+    }
+
+    /**
+     * Parses the character sequence as a hexadecimal number.
+     * @param loc Location of the first character of the token
+     * @param firstDigit First digit
+     * @param negative Is the number negative
+     * @return A token representing a number
+     */
+    private TokenNumber parseHexNumber(JsonLocation loc, char firstDigit, boolean negative) {
+        final long sign = negative ? -1 : 1;
+        char ch = firstDigit;
+        long value = 0;
+        do {
+            if (ch >= 'a' && ch <= 'z') {
+                value = value * 16 + (ch - 'a' + 10);
+            } else if (ch >= 'A' && ch <= 'Z') {
+                value = value * 16 + (ch - 'A' + 10);
+            } else {
+                value = value * 10 + (ch - '0');
+            }
+            ch = source.nextChar();
+        } while(isHexDigit(ch));
+        return new TokenNumber(loc, sign * value);
     }
 
     /**
