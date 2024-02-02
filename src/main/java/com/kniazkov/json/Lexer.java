@@ -169,15 +169,13 @@ final class Lexer {
      * @return A token representing a number
      */
     private TokenNumber parseNumber(JsonLocation loc, char firstDigit, boolean negative) {
+        final double sign = negative ? -1 : 1;
         char ch = firstDigit;
         long intPart = 0;
         do {
             intPart = intPart * 10 + (ch - '0');
             ch = source.nextChar();
         } while(isDigit(ch));
-        if (negative) {
-            intPart = -intPart;
-        }
         if (ch == '.') {
             long fractPart = 0;
             long divisor = 1;
@@ -187,9 +185,9 @@ final class Lexer {
                 divisor = divisor * 10;
                 ch = source.nextChar();
             }
-            return new TokenNumber(loc, intPart + (double)fractPart / (double)divisor);
+            return new TokenNumber(loc, sign * (intPart + (double)fractPart / (double)divisor));
         } else {
-            return new TokenNumber(loc, intPart);
+            return new TokenNumber(loc, sign * intPart);
         }
     }
 
