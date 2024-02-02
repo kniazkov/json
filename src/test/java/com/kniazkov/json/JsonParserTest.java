@@ -82,6 +82,53 @@ public class JsonParserTest {
     }
 
     @Test
+    public void integerStartedFromZero() {
+        boolean oops = false;
+        JsonElement elem = null;
+        try {
+            elem = JsonParser.parseString("00013");
+        } catch (JsonException exception) {
+            oops = true;
+        }
+        Assert.assertFalse(oops);
+        Assert.assertNotNull(elem);
+        Assert.assertTrue(elem.isInteger());
+        Assert.assertEquals(13, elem.getIntValue());
+    }
+
+    @Test
+    public void realNumber() {
+        boolean oops = false;
+        JsonElement elem = null;
+        try {
+            elem = JsonParser.parseString("13.001");
+        } catch (JsonException exception) {
+            oops = true;
+        }
+        Assert.assertFalse(oops);
+        Assert.assertNotNull(elem);
+        Assert.assertFalse(elem.isInteger());
+        Assert.assertTrue(elem.isNumber());
+        Assert.assertEquals(13.001, elem.getDoubleValue(), 0);
+    }
+
+    @Test
+    public void negativeRealNumber() {
+        boolean oops = false;
+        JsonElement elem = null;
+        try {
+            elem = JsonParser.parseString("-13.001");
+        } catch (JsonException exception) {
+            oops = true;
+        }
+        Assert.assertFalse(oops);
+        Assert.assertNotNull(elem);
+        Assert.assertFalse(elem.isInteger());
+        Assert.assertTrue(elem.isNumber());
+        Assert.assertEquals(-13.001, elem.getDoubleValue(), 0);
+    }
+
+    @Test
     public void emptyArray() {
         boolean oops = false;
         JsonElement elem = null;
