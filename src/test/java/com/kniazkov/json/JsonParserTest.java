@@ -129,6 +129,21 @@ public class JsonParserTest {
     }
 
     @Test
+    public void hexNumber() {
+        boolean oops = false;
+        JsonElement elem = null;
+        try {
+            elem = JsonParser.parseString("0xFE");
+        } catch (JsonException exception) {
+            oops = true;
+        }
+        Assert.assertFalse(oops);
+        Assert.assertNotNull(elem);
+        Assert.assertTrue(elem.isInteger());
+        Assert.assertEquals(254, elem.getIntValue());
+    }
+
+    @Test
     public void emptyArray() {
         boolean oops = false;
         JsonElement elem = null;
