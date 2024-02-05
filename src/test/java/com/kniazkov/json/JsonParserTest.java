@@ -11,6 +11,21 @@ import org.junit.Test;
  */
 public class JsonParserTest {
     @Test
+    public void zero() {
+        boolean oops = false;
+        JsonElement elem = null;
+        try {
+            elem = JsonParser.parseString("0");
+        } catch (JsonException exception) {
+            oops = true;
+        }
+        Assert.assertFalse(oops);
+        Assert.assertNotNull(elem);
+        Assert.assertTrue(elem.isInteger());
+        Assert.assertEquals(0, elem.getIntValue());
+    }
+
+    @Test
     public void integer() {
         boolean oops = false;
         JsonElement elem = null;
@@ -141,6 +156,24 @@ public class JsonParserTest {
         Assert.assertNotNull(elem);
         Assert.assertTrue(elem.isInteger());
         Assert.assertEquals(254, elem.getIntValue());
+
+        JsonError error = null;
+        try {
+            JsonParser.parseString("0xFe", JsonParsingMode.STRICT);
+        } catch (JsonException exception) {
+            error = exception.getError();
+        }
+        Assert.assertTrue(error instanceof JsonError.InvalidCharacter);
+        String message = error.getMessage();
+        Assert.assertEquals("Invalid character: 'x'", message);
+
+        error = null;
+        try {
+            JsonParser.parseString("0xZ1");
+        } catch (JsonException exception) {
+            error = exception.getError();
+        }
+        Assert.assertTrue(error instanceof JsonError.ExpectedHexDigit);
     }
 
     @Test
