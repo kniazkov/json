@@ -91,6 +91,27 @@ public abstract class JsonError {
     }
 
     /**
+     * Error 'Hexadecimal digit after 'x' is expected'.
+     */
+    public final static class ExpectedHexDigit extends JsonError {
+        /**
+         * Constructor.
+         * @param loc Position in the document where the error was found
+         */
+        ExpectedHexDigit(JsonLocation loc) {
+            super(loc);
+        }
+
+        @Override
+        public String getLocalizedMessage(String lang) {
+            if ("ru".equals(lang)) {
+                return "После 'x' должна быть шестнадцатеричная цифра";
+            }
+            return "Hexadecimal digit after 'x' is expected";
+        }
+    }
+
+    /**
      * Error 'Invalid character'.
      */
     public final static class InvalidCharacter extends JsonError {

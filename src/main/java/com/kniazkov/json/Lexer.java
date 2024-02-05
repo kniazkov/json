@@ -84,6 +84,7 @@ final class Lexer {
                 if (isHexDigit(ch)) {
                     return parseHexNumber(loc, ch, negative);
                 }
+                throw new JsonException(new JsonError.ExpectedHexDigit(source.getLocation()));
             } else if (isDigit(ch)) {
                 return parseNumber(loc, ch, negative);
             } else {
