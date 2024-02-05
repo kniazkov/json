@@ -245,6 +245,11 @@ final class Lexer {
         JsonLocation point;
 
         /**
+         * Exponent.
+         */
+        int exponent;
+
+        /**
          * Constructor.
          * @param start Location in the JSON document
          * @param negative Flag that determines that the number is negative
@@ -257,6 +262,7 @@ final class Lexer {
             this.fractPart = 0;
             this.divisor = 1;
             this.point = null;
+            this.exponent = 0;
         }
 
         /**
@@ -274,10 +280,11 @@ final class Lexer {
                 }
             }
             final double sign = negative ? -1 : 1;
-            return new TokenNumber(
-                    start,
-                    sign * (intPart + (double)fractPart / (double)divisor)
-            );
+            double value = sign * (intPart + (double)fractPart / (double)divisor);
+            if (exponent != 0) {
+                value = value * Math.pow(10, exponent);
+            }
+            return new TokenNumber(start, value);
         }
     }
 
@@ -298,9 +305,10 @@ final class Lexer {
         if (ch == '.') {
             return parseRealNumber(data);
         }
-        else {
-            return data.createToken();
+        if (ch == 'e' || ch == 'E') {
+            return parseExponent(data);
         }
+        return data.createToken();
     }
 
     /**
@@ -319,6 +327,39 @@ final class Lexer {
             data.divisor = data.divisor * 10;
             ch = source.nextChar();
         }
+        if (ch == 'e' || ch == 'E') {
+            return parseExponent(data);
+        }
+        return data.createToken();
+    }
+
+    /**
+     * Parses the character sequence as an exponent (the part of number after 'e').
+     * @param data Data needed for parsing numbers
+     * @return A token representing a number
+     * @throws JsonException If parsing fails
+     */
+    private TokenNumber parseExponent(NumberParsing data) throws JsonException {
+        char ch = source.getChar();
+        assert ch == 'e' || ch == 'E';
+        JsonLocation loc = source.getLocation();
+        ch = source.nextChar();
+        int sign = 1;
+        if (ch == '+') {
+            ch = source.nextChar();
+        } else if (ch == '-') {
+            sign = -1;
+            ch = source.nextChar();
+        }
+        if (!isDigit(ch)) {
+            throw new JsonException(new JsonError.IncorrectExponentNotation(loc));
+        }
+        int value = 0;
+        while (isDigit(ch)) {
+            value = value * 10 + (ch - '0');
+            ch = source.nextChar();
+        }
+        data.exponent = value * sign;
         return data.createToken();
     }
 

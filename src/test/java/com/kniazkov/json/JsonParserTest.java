@@ -250,6 +250,69 @@ public class JsonParserTest {
     }
 
     @Test
+    public void numberWithExponent() {
+        boolean oops = false;
+        JsonElement elem = null;
+        try {
+            elem = JsonParser.parseString("1e3");
+        } catch (JsonException exception) {
+            oops = true;
+        }
+        Assert.assertFalse(oops);
+        Assert.assertNotNull(elem);
+        Assert.assertEquals(1000, elem.getDoubleValue(), 0);
+
+        elem = null;
+        try {
+            elem = JsonParser.parseString("1.024e3");
+        } catch (JsonException exception) {
+            oops = true;
+        }
+        Assert.assertFalse(oops);
+        Assert.assertNotNull(elem);
+        Assert.assertEquals(1024, elem.getDoubleValue(), 0);
+
+        elem = null;
+        try {
+            elem = JsonParser.parseString("1.024e+3");
+        } catch (JsonException exception) {
+            oops = true;
+        }
+        Assert.assertFalse(oops);
+        Assert.assertNotNull(elem);
+        Assert.assertEquals(1024, elem.getDoubleValue(), 0);
+
+        elem = null;
+        try {
+            elem = JsonParser.parseString("1.0E-3");
+        } catch (JsonException exception) {
+            oops = true;
+        }
+        Assert.assertFalse(oops);
+        Assert.assertNotNull(elem);
+        Assert.assertEquals(0.001, elem.getDoubleValue(), 0);
+
+        elem = null;
+        try {
+            elem = JsonParser.parseString("5.0e100");
+        } catch (JsonException exception) {
+            oops = true;
+        }
+        Assert.assertFalse(oops);
+        Assert.assertNotNull(elem);
+        Assert.assertEquals(5e100, elem.getDoubleValue(), 0);
+        Assert.assertEquals(elem.toString(), "5.0E100");
+
+        JsonError error = null;
+        try {
+            JsonParser.parseString("1e");
+        } catch (JsonException exception) {
+            error = exception.getError();
+        }
+        Assert.assertTrue(error instanceof JsonError.IncorrectExponentNotation);
+    }
+
+    @Test
     public void emptyArray() {
         boolean oops = false;
         JsonElement elem = null;
