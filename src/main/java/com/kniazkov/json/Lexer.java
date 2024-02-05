@@ -58,41 +58,49 @@ final class Lexer {
             return new TokenIdentifier(loc, identifier);
         }
 
+        boolean expectedNumber = false;
+        boolean negative = false;
+
+        if (ch == '-') {
+            ch = source.nextChar();
+            expectedNumber = true;
+            negative = true;
+        }
+        else if (ch == '+') {
+            if (mode == JsonParsingMode.STRICT) {
+                throw new JsonException(new JsonError.InvalidCharacter(loc, '+'));
+            }
+            ch = source.nextChar();
+            expectedNumber = true;
+        }
+
         if (ch == '0') {
             ch = source.nextChar();
             if (ch == 'x') {
+                if (mode == JsonParsingMode.STRICT) {
+                    throw new JsonException(new JsonError.InvalidCharacter(loc, 'x'));
+                }
                 ch = source.nextChar();
                 if (isHexDigit(ch)) {
-                    return parseHexNumber(loc, ch, false);
+                    return parseHexNumber(loc, ch, negative);
                 }
             } else if (isDigit(ch)) {
-                return parseNumber(loc, ch, false);
+                return parseNumber(loc, ch, negative);
             } else {
                 return new TokenNumber(loc, 0);
             }
         }
 
         if (isDigit(ch)) {
-            return parseNumber(loc, ch, false);
+            return parseNumber(loc, ch, negative);
         }
 
-        if (ch == '-') {
-            ch = source.nextChar();
-            if (isDigit(ch)) {
-                return parseNumber(loc, ch, true);
+        if (expectedNumber) {
+            if (negative) {
+                throw new JsonException(new JsonError.ExpectedNumberAfterMinus(source.getLocation()));
+            } else {
+                throw new JsonException(new JsonError.ExpectedNumberAfterPlus(source.getLocation()));
             }
-            throw new JsonException(new JsonError.ExpectedNumberAfterMinus(source.getLocation()));
-        }
-
-        if (ch == '+') {
-            if (mode == JsonParsingMode.STRICT) {
-                throw new JsonException(new JsonError.InvalidCharacter(loc, '+'));
-            }
-            ch = source.nextChar();
-            if (isDigit(ch)) {
-                return parseNumber(loc, ch, false);
-            }
-            throw new JsonException(new JsonError.ExpectedNumberAfterPlus(source.getLocation()));
         }
 
         if (ch == '"') {
@@ -217,13 +225,7 @@ final class Lexer {
         char ch = firstDigit;
         long value = 0;
         do {
-            if (ch >= 'a' && ch <= 'z') {
-                value = value * 16 + (ch - 'a' + 10);
-            } else if (ch >= 'A' && ch <= 'Z') {
-                value = value * 16 + (ch - 'A' + 10);
-            } else {
-                value = value * 10 + (ch - '0');
-            }
+            value = value * 16 + hexToDecimal(ch);
             ch = source.nextChar();
         } while(isHexDigit(ch));
         return new TokenNumber(loc, sign * value);

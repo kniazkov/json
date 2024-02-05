@@ -133,7 +133,7 @@ public class JsonParserTest {
         boolean oops = false;
         JsonElement elem = null;
         try {
-            elem = JsonParser.parseString("0xFE");
+            elem = JsonParser.parseString("0xFe");
         } catch (JsonException exception) {
             oops = true;
         }
