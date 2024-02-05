@@ -56,7 +56,7 @@ public final class JsonParser {
      * @param src Object containing JSON document for parsing
      */
     private JsonParser(Source src, JsonParsingMode mode) {
-        this.lexer = new Lexer(src);
+        this.lexer = new Lexer(src, mode);
         this.mode = mode;
     }
 
@@ -66,7 +66,7 @@ public final class JsonParser {
      * @throws JsonException If parsing fails
      */
     private JsonElement parseRoot() throws JsonException {
-        return parseJsonElement(null, lexer.getToken(mode));
+        return parseJsonElement(null, lexer.getToken());
     }
 
     /**
@@ -97,7 +97,7 @@ public final class JsonParser {
      */
     private JsonArray parseJsonArray(JsonContainer parent) throws JsonException {
         final JsonArray array = new JsonArray(parent);
-        Token token = lexer.getToken(mode);
+        Token token = lexer.getToken();
         boolean expectedElement = false;
         do {
             if (token instanceof TokenClosingSquareBracket) {
@@ -113,10 +113,10 @@ public final class JsonParser {
             if (child != null) {
                 array.addChild(child);
                 expectedElement = false;
-                token = lexer.getToken(mode);
+                token = lexer.getToken();
                 if (token instanceof TokenComma) {
                     expectedElement = true;
-                    token = lexer.getToken(mode);
+                    token = lexer.getToken();
                 }
             }
         } while(expectedElement);
@@ -131,7 +131,7 @@ public final class JsonParser {
      */
     private JsonObject parseJsonObject(JsonContainer parent) throws JsonException {
         final JsonObject obj = new JsonObject(parent);
-        Token token = lexer.getToken(mode);
+        Token token = lexer.getToken();
         boolean expectedElement = false;
         do {
             if (token instanceof TokenClosingCurlyBracket) {
@@ -153,20 +153,20 @@ public final class JsonParser {
                 throw new JsonException(new JsonError.ExpectedKey(token.getLocation()));
             }
 
-            token = lexer.getToken(mode);
+            token = lexer.getToken();
             if (!(token instanceof TokenColon)) {
                 throw new JsonException(new JsonError.ExpectedSeparator(token.getLocation()));
             }
 
-            token = lexer.getToken(mode);
+            token = lexer.getToken();
             JsonElement value = parseJsonElement(obj, token);
             if (value != null) {
                 obj.addChild(key, value);
                 expectedElement = false;
-                token = lexer.getToken(mode);
+                token = lexer.getToken();
                 if (token instanceof TokenComma) {
                     expectedElement = true;
-                    token = lexer.getToken(mode);
+                    token = lexer.getToken();
                 }
             } else {
                 throw new JsonException(new JsonError.ExpectedElementAfterSeparator(token.getLocation()));
