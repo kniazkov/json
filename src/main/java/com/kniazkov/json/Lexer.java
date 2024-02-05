@@ -63,20 +63,18 @@ final class Lexer {
             return new TokenIdentifier(loc, identifier);
         }
 
-        boolean expectedNumber = false;
-        boolean negative = false;
+        NumberParsing number = null;
 
         if (ch == '-') {
             ch = source.nextChar();
-            expectedNumber = true;
-            negative = true;
+            number = new NumberParsing(loc, true);
         }
         else if (ch == '+') {
             if (mode == JsonParsingMode.STRICT) {
                 throw new JsonException(new JsonError.InvalidCharacter(loc, '+'));
             }
             ch = source.nextChar();
-            expectedNumber = true;
+            number = new NumberParsing(loc, false);
         }
 
         if (ch == '0') {
@@ -87,22 +85,28 @@ final class Lexer {
                 }
                 ch = source.nextChar();
                 if (isHexDigit(ch)) {
-                    return parseHexNumber(loc, ch, negative);
+                    return parseHexNumber(loc, ch, number != null && number.negative);
                 }
                 throw new JsonException(new JsonError.ExpectedHexDigit(source.getLocation()));
             } else if (isDigit(ch)) {
-                return parseNumber(loc, ch, negative);
+                if (number == null) {
+                    number = new NumberParsing(loc, false);
+                }
+                return parseNumber(number, ch);
             } else {
                 return new TokenNumber(loc, 0);
             }
         }
 
         if (isDigit(ch)) {
-            return parseNumber(loc, ch, negative);
+            if (number == null) {
+                number = new NumberParsing(loc, false);
+            }
+           return parseNumber(number, ch);
         }
 
-        if (expectedNumber) {
-            if (negative) {
+        if (number != null) {
+            if (number.negative) {
                 throw new JsonException(new JsonError.ExpectedNumberAfterMinus(source.getLocation()));
             } else {
                 throw new JsonException(new JsonError.ExpectedNumberAfterPlus(source.getLocation()));
@@ -190,33 +194,78 @@ final class Lexer {
     }
 
     /**
+     * Data needed for parsing numbers.
+     */
+    private class NumberParsing {
+        /**
+         * Location in the JSON document.
+         */
+        final JsonLocation loc;
+
+        /**
+         * Flag that determines that the number is negative.
+         */
+        final boolean negative;
+
+        /**
+         * Integer part of the number.
+         */
+        long intPart;
+
+        /**
+         * Fractional part of the number.
+         */
+        long fractPart;
+
+        /**
+         * Divisor by which the fractional part is to be divided.
+         */
+        long divisor;
+
+        /**
+         * Constructor.
+         * @param loc Location in the JSON document
+         * @param negative Flag that determines that the number is negative
+         */
+        NumberParsing(JsonLocation loc, boolean negative) {
+            this.loc = loc;
+            this.negative = negative;
+            this.intPart = 0;
+            this.fractPart = 0;
+            this.divisor = 1;
+        }
+
+        /**
+         * Generates a token from the collected data.
+         * @return Token representing a number
+         */
+        TokenNumber createToken() {
+            final double sign = negative ? -1 : 1;
+            return new TokenNumber(loc, sign * (intPart + (double)fractPart / (double)divisor));
+        }
+    }
+
+    /**
      * Parses the character sequence as a number.
-     * @param loc Location of the first character of the token
+     * @param data Data needed for parsing numbers
      * @param firstDigit First digit
-     * @param negative Is the number negative
      * @return A token representing a number
      */
-    private TokenNumber parseNumber(JsonLocation loc, char firstDigit, boolean negative) {
-        final double sign = negative ? -1 : 1;
+    private TokenNumber parseNumber(NumberParsing data, char firstDigit) {
         char ch = firstDigit;
-        long intPart = 0;
         do {
-            intPart = intPart * 10 + (ch - '0');
+            data.intPart = data.intPart * 10 + (ch - '0');
             ch = source.nextChar();
         } while(isDigit(ch));
         if (ch == '.') {
-            long fractPart = 0;
-            long divisor = 1;
             ch = source.nextChar();
-            while(isDigit(ch)) {
-                fractPart = fractPart * 10 + (ch - '0');
-                divisor = divisor * 10;
+            while (isDigit(ch)) {
+                data.fractPart = data.fractPart * 10 + (ch - '0');
+                data.divisor = data.divisor * 10;
                 ch = source.nextChar();
             }
-            return new TokenNumber(loc, sign * (intPart + (double)fractPart / (double)divisor));
-        } else {
-            return new TokenNumber(loc, sign * intPart);
         }
+        return data.createToken();
     }
 
     /**
