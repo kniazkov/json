@@ -13,20 +13,25 @@ final class Lexer {
     private final Source source;
 
     /**
+     * Parsing mode.
+     */
+    private final JsonParsingMode mode;
+
+    /**
      * Constructor.
      * @param source Object containing JSON document for parsing
      */
-    public Lexer(Source source) {
+    public Lexer(Source source, JsonParsingMode mode) {
         this.source = source;
+        this.mode = mode;
     }
 
     /**
      * Returns the next token from a sequence.
-     * @param mode Parsing mode
      * @return A token.
      * @throws JsonException If parsing fails
      */
-    public Token getToken(JsonParsingMode mode) throws JsonException {
+    public Token getToken() throws JsonException {
         char ch = source.getChar();
 
         while(isWhiteSpace(ch)) {
