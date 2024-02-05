@@ -51,7 +51,7 @@ public abstract class JsonError {
     /**
      * Error 'A number after the minus sign is expected'.
      */
-    public final static class ExpectedNumberAfterMinus extends JsonError {
+    public final static class ExpectedNumberAfterMinus extends IncorrectNumberFormat {
         /**
          * Constructor.
          * @param loc Position in the document where the error was found
@@ -72,7 +72,7 @@ public abstract class JsonError {
     /**
      * Error 'A number after the plus sign is expected'.
      */
-    public final static class ExpectedNumberAfterPlus extends JsonError {
+    public final static class ExpectedNumberAfterPlus extends IncorrectNumberFormat {
         /**
          * Constructor.
          * @param loc Position in the document where the error was found
@@ -91,9 +91,30 @@ public abstract class JsonError {
     }
 
     /**
+     * Error 'A number after the decimal point is expected'.
+     */
+    public final static class ExpectedNumberAfterPoint extends IncorrectNumberFormat {
+        /**
+         * Constructor.
+         * @param loc Position in the document where the error was found
+         */
+        ExpectedNumberAfterPoint(JsonLocation loc) {
+            super(loc);
+        }
+
+        @Override
+        public String getLocalizedMessage(String lang) {
+            if ("ru".equals(lang)) {
+                return "После десятичной точки должно быть число";
+            }
+            return "A number after the decimal point is expected";
+        }
+    }
+
+    /**
      * Error 'Hexadecimal digit after 'x' is expected'.
      */
-    public final static class ExpectedHexDigit extends JsonError {
+    public final static class ExpectedHexDigit extends IncorrectNumberFormat {
         /**
          * Constructor.
          * @param loc Position in the document where the error was found
@@ -108,6 +129,27 @@ public abstract class JsonError {
                 return "После 'x' должна быть шестнадцатеричная цифра";
             }
             return "Hexadecimal digit after 'x' is expected";
+        }
+    }
+
+    /**
+     * Error 'Incorrect number format' (common error related to numbers parsing).
+     */
+    public static class IncorrectNumberFormat extends JsonError {
+        /**
+         * Constructor.
+         * @param loc Position in the document where the error was found
+         */
+        IncorrectNumberFormat(JsonLocation loc) {
+            super(loc);
+        }
+
+        @Override
+        public String getLocalizedMessage(String lang) {
+            if ("ru".equals(lang)) {
+                return "Неправильный формат числа";
+            }
+            return "Incorrect number format";
         }
     }
 

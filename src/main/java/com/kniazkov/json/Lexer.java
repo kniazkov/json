@@ -78,6 +78,9 @@ final class Lexer {
         }
 
         if (ch == '0') {
+            if (number == null) {
+                number = new NumberParsing(loc, false);
+            }
             ch = source.nextChar();
             if (ch == 'x') {
                 if (mode == JsonParsingMode.STRICT) {
@@ -85,14 +88,13 @@ final class Lexer {
                 }
                 ch = source.nextChar();
                 if (isHexDigit(ch)) {
-                    return parseHexNumber(loc, ch, number != null && number.negative);
+                    return parseHexNumber(loc, ch, number.negative);
                 }
                 throw new JsonException(new JsonError.ExpectedHexDigit(source.getLocation()));
             } else if (isDigit(ch)) {
-                if (number == null) {
-                    number = new NumberParsing(loc, false);
-                }
                 return parseNumber(number, ch);
+            } else if (ch == '.') {
+                return parseRealNumber(number);
             } else {
                 return new TokenNumber(loc, 0);
             }
@@ -103,6 +105,16 @@ final class Lexer {
                 number = new NumberParsing(loc, false);
             }
            return parseNumber(number, ch);
+        }
+
+        if (ch == '.') {
+            if (mode == JsonParsingMode.STRICT) {
+                throw new JsonException(new JsonError.InvalidCharacter(loc, '.'));
+            }
+            if (number == null) {
+                number = new NumberParsing(loc, false);
+            }
+            return parseRealNumber(number);
         }
 
         if (number != null) {
@@ -200,7 +212,7 @@ final class Lexer {
         /**
          * Location in the JSON document.
          */
-        final JsonLocation loc;
+        final JsonLocation start;
 
         /**
          * Flag that determines that the number is negative.
@@ -213,6 +225,11 @@ final class Lexer {
         long intPart;
 
         /**
+         * Flag that indicates that the number has an integer part.
+         */
+        boolean hasIntPart;
+
+        /**
          * Fractional part of the number.
          */
         long fractPart;
@@ -223,25 +240,44 @@ final class Lexer {
         long divisor;
 
         /**
+         * Decimal point location.
+         */
+        JsonLocation point;
+
+        /**
          * Constructor.
-         * @param loc Location in the JSON document
+         * @param start Location in the JSON document
          * @param negative Flag that determines that the number is negative
          */
-        NumberParsing(JsonLocation loc, boolean negative) {
-            this.loc = loc;
+        NumberParsing(JsonLocation start, boolean negative) {
+            this.start = start;
             this.negative = negative;
             this.intPart = 0;
+            this.hasIntPart = false;
             this.fractPart = 0;
             this.divisor = 1;
+            this.point = null;
         }
 
         /**
          * Generates a token from the collected data.
          * @return Token representing a number
+         * @throws JsonException If parsing fails
          */
-        TokenNumber createToken() {
+        TokenNumber createToken() throws JsonException {
+            if (divisor == 1) {
+                if (!hasIntPart) {
+                    throw new JsonException(new JsonError.IncorrectNumberFormat(start));
+                }
+                if (point != null && mode == JsonParsingMode.STRICT) {
+                    throw new JsonException(new JsonError.ExpectedNumberAfterPoint(point));
+                }
+            }
             final double sign = negative ? -1 : 1;
-            return new TokenNumber(loc, sign * (intPart + (double)fractPart / (double)divisor));
+            return new TokenNumber(
+                    start,
+                    sign * (intPart + (double)fractPart / (double)divisor)
+            );
         }
     }
 
@@ -250,20 +286,38 @@ final class Lexer {
      * @param data Data needed for parsing numbers
      * @param firstDigit First digit
      * @return A token representing a number
+     * @throws JsonException If parsing fails
      */
-    private TokenNumber parseNumber(NumberParsing data, char firstDigit) {
+    private TokenNumber parseNumber(NumberParsing data, char firstDigit) throws JsonException {
+        data.hasIntPart = true;
         char ch = firstDigit;
         do {
             data.intPart = data.intPart * 10 + (ch - '0');
             ch = source.nextChar();
         } while(isDigit(ch));
         if (ch == '.') {
+            return parseRealNumber(data);
+        }
+        else {
+            return data.createToken();
+        }
+    }
+
+    /**
+     * Parses the character sequence as a real number.
+     * @param data Data needed for parsing numbers
+     * @return A token representing a number
+     * @throws JsonException If parsing fails
+     */
+    private TokenNumber parseRealNumber(NumberParsing data) throws JsonException {
+        char ch = source.getChar();
+        assert ch == '.';
+        data.point = source.getLocation();
+        ch = source.nextChar();
+        while (isDigit(ch)) {
+            data.fractPart = data.fractPart * 10 + (ch - '0');
+            data.divisor = data.divisor * 10;
             ch = source.nextChar();
-            while (isDigit(ch)) {
-                data.fractPart = data.fractPart * 10 + (ch - '0');
-                data.divisor = data.divisor * 10;
-                ch = source.nextChar();
-            }
         }
         return data.createToken();
     }

@@ -144,6 +144,79 @@ public class JsonParserTest {
     }
 
     @Test
+    public void zeroPointFive() {
+        boolean oops = false;
+        JsonElement elem = null;
+        try {
+            elem = JsonParser.parseString("0.5");
+        } catch (JsonException exception) {
+            oops = true;
+        }
+        Assert.assertFalse(oops);
+        Assert.assertNotNull(elem);
+        Assert.assertEquals(0.5, elem.getDoubleValue(), 0);
+
+        elem = null;
+        try {
+            elem = JsonParser.parseString(".5");
+        } catch (JsonException exception) {
+            oops = true;
+        }
+        Assert.assertFalse(oops);
+        Assert.assertNotNull(elem);
+        Assert.assertEquals(0.5, elem.getDoubleValue(), 0);
+
+        elem = null;
+        try {
+            elem = JsonParser.parseString("-.5");
+        } catch (JsonException exception) {
+            oops = true;
+        }
+        Assert.assertFalse(oops);
+        Assert.assertNotNull(elem);
+        Assert.assertEquals(-0.5, elem.getDoubleValue(), 0);
+
+        JsonError error = null;
+        try {
+            JsonParser.parseString(".5", JsonParsingMode.STRICT);
+        } catch (JsonException exception) {
+            error = exception.getError();
+        }
+        Assert.assertTrue(error instanceof JsonError.InvalidCharacter);
+    }
+
+    @Test
+    public void trailingPoint() {
+        boolean oops = false;
+        JsonElement elem = null;
+        try {
+            elem = JsonParser.parseString("13.");
+        } catch (JsonException exception) {
+            oops = true;
+        }
+        Assert.assertFalse(oops);
+        Assert.assertNotNull(elem);
+        Assert.assertTrue(elem.isInteger());
+        Assert.assertEquals(13, elem.getIntValue());
+
+        JsonError error = null;
+        try {
+            JsonParser.parseString("13.", JsonParsingMode.STRICT);
+        } catch (JsonException exception) {
+            error = exception.getError();
+        }
+        Assert.assertTrue(error instanceof JsonError.ExpectedNumberAfterPoint);
+
+        error = null;
+        try {
+            JsonParser.parseString(" . ");
+        } catch (JsonException exception) {
+            error = exception.getError();
+        }
+        Assert.assertTrue(error instanceof JsonError.IncorrectNumberFormat);
+    }
+
+    @Test
     public void hexNumber() {
         boolean oops = false;
         JsonElement elem = null;
