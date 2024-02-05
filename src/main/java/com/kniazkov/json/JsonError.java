@@ -112,6 +112,27 @@ public abstract class JsonError {
     }
 
     /**
+     * Error 'Incorrect exponent notation'.
+     */
+    public final static class IncorrectExponentNotation extends IncorrectNumberFormat {
+        /**
+         * Constructor.
+         * @param loc Position in the document where the error was found
+         */
+        IncorrectExponentNotation(JsonLocation loc) {
+            super(loc);
+        }
+
+        @Override
+        public String getLocalizedMessage(String lang) {
+            if ("ru".equals(lang)) {
+                return "Неправильный формат экспоненты числа";
+            }
+            return "Incorrect exponent notation";
+        }
+    }
+
+    /**
      * Error 'Hexadecimal digit after 'x' is expected'.
      */
     public final static class ExpectedHexDigit extends IncorrectNumberFormat {
