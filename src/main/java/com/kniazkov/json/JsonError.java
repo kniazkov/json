@@ -353,4 +353,25 @@ public abstract class JsonError {
             return "An element after the separator is expected";
         }
     }
+
+    /**
+     * Error 'Missing a comma'.
+     */
+    public final static class MissingComma extends JsonError {
+        /**
+         * Constructor.
+         * @param loc Position in the document where the error was found
+         */
+        MissingComma(JsonLocation loc) {
+            super(loc);
+        }
+
+        @Override
+        public String getLocalizedMessage(String lang) {
+            if ("ru".equals(lang)) {
+                return "Пропущена запятая";
+            }
+            return "Missing a comma";
+        }
+    }
 }

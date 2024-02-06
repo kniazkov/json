@@ -474,6 +474,17 @@ public class JsonParserTest {
         ));
     }
 
+    @Test
+    public void missingComma() {
+        Assert.assertTrue(commonTestErrorIfStrict(
+                "[{\"x\": 1, \"y\": 2} {\"x\": 3, \"y\": 4}]",
+                "[{\"x\": 1, \"y\": 2}, {\"x\": 3, \"y\": 4}]",
+                JsonError.MissingComma.class,
+                1,
+                19
+        ));
+    }
+
     /**
      * A common test for JSON parser. First parses a JSON document,
      * then converts the resulting element into a string, the results should match.
@@ -529,7 +540,8 @@ public class JsonParserTest {
                int row, int column) {
         try {
             JsonElement elem = JsonParser.parseString(json);
-            if (!elem.toString().equals(json2)) {
+            String str = elem.toString();
+            if (!str.equals(json2)) {
                 return false;
             }
         } catch (JsonException ignored) {
