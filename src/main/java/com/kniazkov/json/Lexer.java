@@ -432,6 +432,25 @@ final class Lexer {
                         value.append((char) (hexToDecimal(hex0) * 0x1000 + hexToDecimal(hex1) * 0x100
                                 + hexToDecimal(hex2) * 0x10 + hexToDecimal(hex3)));
                         break;
+                    case ' ':
+                        JsonLocation start = source.getLocation();
+                        if (mode == JsonParsingMode.STRICT) {
+                            throw new JsonException(new JsonError.IncorrectStringSequence(start, "?"));
+                        }
+                        while (ch == ' ' || ch == '\r' || ch == '\t') {
+                            ch = source.nextChar();
+                        }
+                        if (ch != '\n') {
+                            throw new JsonException(new JsonError.IncorrectStringSequence(start, "?"));
+                        }
+                        break;
+                    case '\n':
+                        if (mode == JsonParsingMode.STRICT) {
+                            throw new JsonException(
+                                    new JsonError.IncorrectStringSequence(source.getLocation(), "?")
+                            );
+                        }
+                        break;
                     default:
                         throw new JsonException(new JsonError.IncorrectStringSequence(
                                 source.getLocation(),
