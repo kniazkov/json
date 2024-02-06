@@ -435,6 +435,24 @@ public class JsonParserTest {
     }
 
     @Test
+    public void lineBreak() {
+        Assert.assertTrue(commonTestErrorIfStrict(
+                "\"line \\\nbreak\"",
+                "\"line break\"",
+                JsonError.IncorrectStringSequence.class,
+                1,
+                8
+        ));
+        Assert.assertTrue(commonTestErrorIfStrict(
+                "\"line \\        \nbreak\"",
+                "\"line break\"",
+                JsonError.IncorrectStringSequence.class,
+                1,
+                8
+        ));
+    }
+
+    @Test
     public void emptyObject() {
         boolean oops = false;
         JsonElement elem = null;
