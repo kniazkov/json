@@ -6,6 +6,9 @@ package com.kniazkov.json;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Tests covering {@link JsonParser} class.
  */
@@ -483,6 +486,23 @@ public class JsonParserTest {
                 1,
                 19
         ));
+    }
+
+    @Test
+    public void listOfWarnings() {
+        boolean oops = false;
+        JsonElement elem = null;
+        List<JsonError> warnings = new ArrayList<>();
+        try {
+            elem = JsonParser.parseString("[{\"x\": 1, \"y\": 2} {\"x\": 3, \"y\": 4}]", warnings);
+        } catch (JsonException exception) {
+            oops = true;
+        }
+        Assert.assertFalse(oops);
+        Assert.assertNotNull(elem);
+        Assert.assertEquals(warnings.size(), 1);
+        JsonError warning = warnings.get(0);
+        Assert.assertTrue(warning instanceof JsonError.MissingComma);
     }
 
     /**
