@@ -98,29 +98,38 @@ public final class JsonParser {
     private JsonArray parseJsonArray(JsonContainer parent) throws JsonException {
         final JsonArray array = new JsonArray(parent);
         Token token = lexer.getToken();
-        boolean expectedElement = false;
-        do {
+        if (token instanceof TokenClosingSquareBracket) {
+            // empty
+            return array;
+        }
+        while (true) {
+            JsonElement child = parseJsonElement(array, token);
+            assert child != null;
+            array.addChild(child);
+            token = lexer.getToken();
             if (token instanceof TokenClosingSquareBracket) {
-                if (expectedElement && mode == JsonParsingMode.STRICT) {
-                    throw new JsonException(
-                            new JsonError.ExpectedElementAfterComma(token.getLocation())
-                    );
-                }
                 return array;
             }
-
-            JsonElement child = parseJsonElement(array, token);
-            if (child != null) {
-                array.addChild(child);
-                expectedElement = false;
+            if (token instanceof TokenComma) {
                 token = lexer.getToken();
-                if (token instanceof TokenComma) {
-                    expectedElement = true;
-                    token = lexer.getToken();
+                if (token instanceof TokenClosingSquareBracket) {
+                    // extra comma
+                    if (mode == JsonParsingMode.STRICT) {
+                        throw new JsonException(
+                                new JsonError.ExpectedElementAfterComma(token.getLocation())
+                        );
+                    }
+                    return array;
                 }
             }
-        } while(expectedElement);
-        return array;
+            else {
+                if (mode != JsonParsingMode.EXTENDED) {
+                    throw new JsonException(
+                            new JsonError.MissingComma(token.getLocation())
+                    );
+                }
+            }
+        }
     }
 
     /**
