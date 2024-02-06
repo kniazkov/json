@@ -4,7 +4,6 @@
 package com.kniazkov.json;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,7 +27,8 @@ public final class JsonParser {
     private final List<JsonError> warnings;
 
     /**
-     * Parses a string containing JSON document into a JSON element.
+     * Parses a string containing JSON document into a JSON element
+     *  in {@link JsonParsingMode#EXTENDED} mode.
      * @param source String containing JSON document
      * @return JSON element
      * @throws JsonException If parsing fails
@@ -39,13 +39,29 @@ public final class JsonParser {
 
     /**
      * Parses a string containing JSON document into a JSON element.
+     *  The parsing mode is specified.
      * @param source String containing JSON document
      * @param mode Parsing mode
      * @return JSON element
      * @throws JsonException If parsing fails
      */
     public static JsonElement parseString(String source, JsonParsingMode mode) throws JsonException {
-        JsonParser parser = new JsonParser(new Source(source), mode);
+        JsonParser parser = new JsonParser(new Source(source), mode, null);
+        return parser.parseRoot();
+    }
+
+    /**
+     * Parses a string containing JSON document into a JSON element.
+     *  in {@link JsonParsingMode#EXTENDED} mode. Errors that occur during this process, but are intentionally
+     *  ignored by the parser, are saved to a list.
+     * @param source String containing JSON document
+     * @param warnings List where to save errors that occurred during parsing in extended mode
+     *  and were intentionally ignored.
+     * @return JSON element
+     * @throws JsonException If parsing failed, that is, an error occurred that could not be ignored
+     */
+    public static JsonElement parseString(String source, List<JsonError> warnings) throws JsonException {
+        JsonParser parser = new JsonParser(new Source(source), JsonParsingMode.EXTENDED, warnings);
         return parser.parseRoot();
     }
 
@@ -62,10 +78,10 @@ public final class JsonParser {
      * Constructor.
      * @param src Object containing JSON document for parsing
      */
-    private JsonParser(Source src, JsonParsingMode mode) {
+    private JsonParser(Source src, JsonParsingMode mode, List<JsonError> warnings) {
         this.lexer = new Lexer(src, mode);
         this.mode = mode;
-        this.warnings = new ArrayList<>();
+        this.warnings = warnings;
     }
 
     /**
@@ -135,7 +151,9 @@ public final class JsonParser {
                 if (mode != JsonParsingMode.EXTENDED) {
                     throw new JsonException(error);
                 }
-                warnings.add(error);
+                if (warnings != null) {
+                    warnings.add(error);
+                }
             }
         }
     }
