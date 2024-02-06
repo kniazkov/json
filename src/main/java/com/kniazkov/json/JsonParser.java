@@ -4,6 +4,7 @@
 package com.kniazkov.json;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -19,6 +20,12 @@ public final class JsonParser {
      * Parsing mode.
      */
     private final JsonParsingMode mode;
+
+    /**
+     * List of errors that occurred during parsing in extended mode
+     * and were intentionally ignored.
+     */
+    private final List<JsonError> warnings;
 
     /**
      * Parses a string containing JSON document into a JSON element.
@@ -58,6 +65,7 @@ public final class JsonParser {
     private JsonParser(Source src, JsonParsingMode mode) {
         this.lexer = new Lexer(src, mode);
         this.mode = mode;
+        this.warnings = new ArrayList<>();
     }
 
     /**
@@ -123,11 +131,11 @@ public final class JsonParser {
                 }
             }
             else {
+                JsonError error = new JsonError.MissingComma(token.getLocation());
                 if (mode != JsonParsingMode.EXTENDED) {
-                    throw new JsonException(
-                            new JsonError.MissingComma(token.getLocation())
-                    );
+                    throw new JsonException(error);
                 }
+                warnings.add(error);
             }
         }
     }
