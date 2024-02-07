@@ -6,7 +6,7 @@ package com.kniazkov.json;
 import java.io.File;
 
 /**
- * Class that combines all methods for parsing and serialising JSON documents..
+ * Class that combines all methods for parsing and serialising JSON documents.
  */
 public class Json {
     /**

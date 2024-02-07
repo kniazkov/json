@@ -25,9 +25,6 @@ public class JsonObjectTransformationTest {
 
         double doubleValue;
 
-        public Numbers() {
-        }
-
         @Override
         public boolean equals(Object other) {
             if (!(other instanceof Numbers)) {
@@ -71,8 +68,6 @@ public class JsonObjectTransformationTest {
 
         Double doubleValue;
 
-        public NumbersAsObjects() {
-        }
 
         @Override
         public boolean equals(Object other) {
@@ -117,9 +112,6 @@ public class JsonObjectTransformationTest {
         Boolean object;
 
         Boolean anotherObject;
-
-        public Booleans() {
-        }
 
         @Override
         public boolean equals(Object other) {
@@ -195,8 +187,6 @@ public class JsonObjectTransformationTest {
 
         List<Vector> vectors;
 
-        public Lists() {
-        }
 
         @Override
         public boolean equals(Object other) {
