@@ -19,7 +19,7 @@ public class JsonApiTest {
     static class Simple {
         String str;
 
-        public Simple() {
+        private Simple() {
         }
     }
 

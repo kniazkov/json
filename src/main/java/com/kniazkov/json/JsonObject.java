@@ -3,6 +3,7 @@
  */
 package com.kniazkov.json;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -186,7 +187,9 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
         if (!type.isPrimitive() && !type.isInterface()) {
             T result = null;
             try {
-                result = type.getDeclaredConstructor().newInstance();
+                Constructor<T> constructor = type.getDeclaredConstructor();
+                constructor.setAccessible(true);
+                result = constructor.newInstance();
             } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException ignored) {
                 return null;
             }
