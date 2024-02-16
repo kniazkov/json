@@ -1,3 +1,6 @@
+<!---
+  Copyright (c) 2024 Ivan Kniazkov
+-->
 # User-friendly JSON parser/serializer
 
 Version 1.0
@@ -255,3 +258,231 @@ The following JSON document can be converted to the above structure:
     "monthlyExpenses" : [1200, 1000, 1450.99]
 }
 ```
+
+### Serializing Java objects
+
+Serialization is the inverse procedure to parsing, that is, transforming a Java object
+into a JSON document.
+
+The `Json` class has two methods to do this:
+
+```
+String Json.serialize(Object obj)
+String Json.serialize(Object obj, String indentation)
+```
+
+The first method transforms the Java object into a string without line separators (CR+LF or LF),
+for example, the `Person` object we described above would be converted to the string
+```json
+{"name": "Johnny", "age": 41}
+```
+
+The second method composes a string divided into lines by system line separator.
+There will be an indentation before each new line. For nested objects or arrays, multiple indents
+are added accordingly. The indents are formed by copying the pattern passed as an argument.
+
+Here's a full example.
+
+```java
+
+import com.kniazkov.json.Json;
+import java.util.List;
+import java.util.Arrays;
+
+class MyClass {
+    class Employee {
+        String name;
+        List<Integer> expenses;
+    }
+
+    public String generateJson() {
+        Employee obj = new Employee();
+        obj.name = "John Smith";
+        obj.expenses = Arrays.asList(1000, 2000, 1500);
+        return Json.serialize(obj, "\t");
+    }
+}
+```
+
+Output:
+
+```json
+{
+    "name": "John Smith",
+    "expenses": [
+        1000,
+        2000,
+        1500
+    ]
+}
+```
+
+### Serializing JSON tree
+
+You can also serialize a JSON tree (i.e., an intermediate data representation).
+To do this, call the `toString` method or `toText` method at the root of the tree (i.e., an object
+of the `JsonElement` class):
+
+```
+String JsonElement.toString()
+String JsonElement.toText(String indentation)
+```
+
+The first method transforms the JSON tree into a string without line separators (CR+LF or LF),
+while the second method transforms it into a string with separators and indents.
+
+## Data structures
+
+Remember you can work with JSON using only the `Json` class, which is described above.
+
+Ok, as mentioned earlier, the library works with an internal data structure in which it stores a JSON tree.
+
+### JsonElement
+
+A base class that describes a JSON element, which can be an object, array, string, number, or literal.
+This is an abstract class, and all specified types of elements are inherited from it.
+
+An element of any type can be the root of a JSON tree. If an element contains no children (for example, a number),
+then this element is a valid JSON tree consisting of a single element.
+
+An element has the following methods (which are respectively inherited by all entities):
+
+```
+JsonContainer getParent()
+```
+Returns a *container*, that is, either a JSON object or a JSON array that owns this element.
+If this element is the root of the tree, the method returns `null`.
+
+In this way, you can traverse the tree in various directions, including from leaf to root.
+To be honest, I don't know why this is so necessary. I guess we can come up with some algorithms to use this later.
+
+```
+JsonElement clone
+```
+Each element is [cloneable](https://docs.oracle.com/javase/8/docs/api/java/lang/Cloneable.html).
+If the element contains other elements, clones of these elements are also created, i.e. "deep" copying
+is performed. Thus, the result is a new (sub-)tree, which is not related to the original in any way.
+
+```
+String toString()
+```
+Represents the element as a string, that is, it performs serialization.
+
+This name instead of `serialize` was chosen because `toString` method
+is automatically called by debuggers during step-by-step execution and displaying the object's
+contents, which turns out to be quite convenient.
+
+```
+String toText(String indentation)
+```
+It's the same serialization as `toString()`, only indented to make it easier to read.
+You want to specify a string that will represent "one unit" of indentation. This can be, say,
+multiple spaces or a tab.
+
+```
+Object toJavaObject()
+```
+Converts the element to a suitable Java object. For example, a string is converted to a
+`String` instance, a number is converted to a `Double` instance, and so on.
+Complex objects are converted into associative arrays (like `Map`).
+
+```
+<T> T toJavaObject(Class<T> type)
+```
+Using this method, you can directly specify the type of Java object, and, accordingly,  will be performed an attempt
+to convert to this type. If this is not possible, the method will return `null`.
+
+For example,
+
+```java
+
+import com.kniazkov.json.JsonParser;
+import java.util.List;
+import java.util.Arrays;
+
+class MyClass {
+    class Vector {
+        int x;
+        int y;
+    }
+
+    Vector createVector() throws JsonException {
+        JsonElement element = JsonParser.parseString("{x: 10, y: 20}");
+        Vector vector = element.toJavaObject(Vector.class);
+        return vector;
+    }
+}
+```
+
+```
+boolean isNull()
+```
+Checks if the element is `null` literal(such a special value allowed by JSON syntax).
+
+```
+boolean isBoolean()
+```
+Checks if the element contains boolean value.
+
+```
+boolean getBooleanValue()
+```
+If the element contains boolean value (`element.isBoolean() == true`), returns this value.
+If not (for example, element is a string), returns `false`.
+
+```
+boolean isInteger()
+```
+Checks if the element is a 32-bit integer.
+
+```
+boolean isLongInteger()
+```
+Checks if the element is a 64-bit integer.
+
+If `element.isInteger() == true`, then always `element.isLongInteger() == true` (the reverse is not true).
+
+```
+boolean isNumber()
+```
+Checks if the element is a number.
+If `element.isInteger() == true` or `element.isLongInteger() == true`, then always `element.isNumber() == true`
+(the reverse is not true).
+
+```
+int getIntValue()
+```
+Returns the value of the element converted to a 32-bit integer, or 0 if no such conversion is possible.
+
+```
+long getLongValue()
+```
+Returns the value of the element converted to a 62-bit integer, or 0 if no such conversion is possible.
+
+```
+double getDoubleValue()
+```
+Returns the value of the element represented as a double-precision real number, or 0 if no such conversion is possible.
+
+```
+boolean isString()
+```
+Checks if the element is a string.
+
+```
+String getStringValue()
+```
+Returns the value of the element represented as a string, or empty string if no such conversion
+is possible. Primitive types (numbers, boolean values) can be represented as a string.
+
+```
+JsonArray JsonArray()
+```
+Safely casts an element to the `JsonArray` type. Returns an instance of `JsonArray` or `null` if the element
+is not a JSON array.
+
+```
+JsonObject toJsonObject()
+```
+Safely casts an element to the `JsonObject` type. Returns an instance of `JsonObject` or `null` if the element
+is not a JSON object.

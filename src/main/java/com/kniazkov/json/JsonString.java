@@ -6,7 +6,7 @@ package com.kniazkov.json;
 /**
  * JSON element representing a string.
  */
-public class JsonString extends JsonElement {
+public final class JsonString extends JsonElement {
     /**
      * Value of the string.
      */
