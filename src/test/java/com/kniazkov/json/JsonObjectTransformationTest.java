@@ -25,6 +25,9 @@ public class JsonObjectTransformationTest {
 
         double doubleValue;
 
+        private Numbers() {
+        }
+
         @Override
         public boolean equals(Object other) {
             if (!(other instanceof Numbers)) {
