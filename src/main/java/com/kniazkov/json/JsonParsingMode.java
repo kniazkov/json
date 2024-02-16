@@ -14,14 +14,14 @@ public enum JsonParsingMode {
     STRICT,
 
     /**
-     * Extended syntax is allowed (<a href="http://json5.org">...</a>).
-     * JSON5 is an extension to the base format that aims to be easier to write
+     * JSON5 syntax (<a href="http://json5.org">...</a>) is allowed.
+     * This is an extension to the base format that aims to be easier to write
      * and maintain files by hand.
      */
     JSON5,
 
     /**
-     * JSON5 syntax is allowed. Besides, if a JSON document contains some errors,
+     * Extended mode. JSON5 syntax is allowed. Besides, if a JSON document contains some errors,
      * the parser will still try to parse such a document.
      */
     EXTENDED
