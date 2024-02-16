@@ -6,7 +6,7 @@ package com.kniazkov.json;
 /**
  * JSON element representing a boolean value.
  */
-public class JsonBoolean extends JsonElement {
+public final class JsonBoolean extends JsonElement {
     /**
      * Boolean value.
      */
