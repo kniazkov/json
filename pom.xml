@@ -6,7 +6,7 @@
 
     <groupId>com.kniazkov</groupId>
     <artifactId>json</artifactId>
-    <version>0.3</version>
+    <version>1.0</version>
     <name>com.kniazkov.json</name>
     <description>User-friendly JSON parser/serializer</description>
     <url>https://github.com/kniazkov/json</url>
