@@ -522,3 +522,53 @@ of key-value pairs:
 
 In addition, modern Java development tools allow you to expand a JSON object
 in the IDE window as a drop-down list, which is very convenient for debugging.
+
+The class has the following methods, in addition to inherited methods:
+
+- `JsonElement getElement(String key)`
+
+    Returns a child element by its key.
+
+
+- `void addElement(String key, JsonElement elem)`
+
+    Makes a clone of a JSON element and adds new key-value pair to the object.
+    The element itself remains unchanged and further its modification will not affect the current tree.
+
+    The clone will have the correct relations with the sequence of parent nodes.
+    In this way, data consistency is always achieved.
+
+    "Data consistency" is such a clever phrase that should automatically make this project incredibly
+    cool.
+
+However, if you need to fill the object with child elements, it is better to create them directly
+inside the object, instead of creating them separately and then adding them using the
+`addElement` method. This way you will avoid cloning operation.
+Here are the methods to do this:
+
+- `void addNull(String key)`
+
+    Creates a child element of type `null`.
+
+- `void addBoolean(String key, boolean value)`
+
+    Creates a child element of boolean type.
+
+- `void addNumber(String key, double value)`
+
+    Creates a child element of numeric type.
+
+- `void addString(String key, String value)`
+
+    Creates a child element of string type.
+
+- `JsonArray createArray(String key)`
+
+    Creates an empty array as a child of this object.  
+    A reference to the created array is returned so that it can be filled in later.
+
+- `JsonObject createObject(String key)`
+
+  Creates an empty object as a child of this object.  
+  A reference to the created object is returned so that it can be filled in later.
+
