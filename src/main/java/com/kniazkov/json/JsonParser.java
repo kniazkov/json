@@ -283,7 +283,7 @@ public final class JsonParser {
             }
         }
         if (parent == null) {
-            return JsonNull.instance;
+            return JsonNull.INSTANCE;
         }
         return new JsonNull(parent);
     }
