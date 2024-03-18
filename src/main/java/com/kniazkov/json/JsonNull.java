@@ -10,7 +10,7 @@ public class JsonNull extends JsonElement {
     /**
      * The instance.
      */
-    public static final JsonNull instance = new JsonNull(null);
+    public static final JsonNull INSTANCE = new JsonNull(null);
 
     /**
      * Constructor (for internal use).

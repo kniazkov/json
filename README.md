@@ -394,7 +394,6 @@ An element has the following methods (which are respectively inherited by all en
     For example,
 
     ```java
-    
     import com.kniazkov.json.JsonParser;
     import java.util.List;
     import java.util.Arrays;
@@ -520,7 +519,7 @@ of key-value pairs:
 - values;
 - entrySet.
 
-In addition, modern Java development tools allow you to expand a JSON object
+Modern Java development tools allow you to expand a JSON object
 in the IDE window as a drop-down list, which is very convenient for debugging.
 
 The class has the following methods, in addition to inherited methods:
@@ -543,7 +542,7 @@ The class has the following methods, in addition to inherited methods:
 
 However, if you need to fill the object with child elements, it is better to create them directly
 inside the object, instead of creating them separately and then adding them using the
-`addElement` method. This way you will avoid cloning operation.
+`addElement` method. This way you will avoid cloning operation.  
 Here are the methods to do this:
 
 - `void addNull(String key)`
@@ -572,3 +571,115 @@ Here are the methods to do this:
   Creates an empty object as a child of this object.  
   A reference to the created object is returned so that it can be filled in later.
 
+### JsonArray
+
+A JSON array is an ordered set of JSON elements.
+
+The class inherits the [java.util.List](https://docs.oracle.com/javase/8/docs/api/java/util/List.html)
+interface. Accordingly, it supports methods that can be used to search, add, delete, iterate over a list
+of elements:
+
+- size;
+- isEmpty;
+- toArray;
+- add;
+- remove;
+- containsAll;
+- addAll;
+- removeAll;
+- retainAll;
+- clear;
+- get;
+- set;
+- indexOf;
+- lastIndexOf;
+- contains;
+- iterator;
+- listIterator.
+
+The class has the following methods, in addition to inherited methods:
+
+- `JsonElement getElement(int index)`
+
+    Returns a child element by its index.
+
+- `void addElement(JsonElement elem)`
+    
+    Makes a clone of the JSON element and appends this clone to the end of the array.
+    The element itself remains unchanged and further its modification will not affect the current tree.
+
+    The clone will have the correct relations with the sequence of parent nodes.
+    In this way, data consistency is always achieved.
+
+However, if you need to fill the array with child elements, it is better to create them directly
+inside the array, instead of creating them separately and then adding them using the `addElement` method.
+This way you will avoid cloning operation.  
+Here are the methods to do this:
+
+- `void addNull()`
+
+    Creates a child element of type `null`.
+
+- `void addBoolean(boolean value)`
+
+    Creates a child element of boolean type.
+
+- `void addNumber(double value)`
+
+    Creates a child element of numeric type.
+
+- `void addString(String value)`
+
+    Creates a child element of string type.
+
+- `JsonArray createArray()`
+
+    Creates an empty array as a child of this array.  
+    A reference to the created array is returned so that it can be filled in later.
+
+- `JsonObject createObject()`
+
+    Creates an empty object as a child of this array.  
+    A reference to the created object is returned so that it can be filled in later.
+
+### JsonNull
+
+An element representing `null` literal.
+
+Doesn't have a public constructor. An element without parent is a singleton that can be accessed by
+`JsonNull.INSTANCE`.
+
+### JsonBoolean
+
+Represents a boolean JSON element, i.e `true` or `false` literals.
+
+Doesn't have a public constructor. An element without a parent that represents `true` is a singleton that
+can be accessed by `JsonBoolean.TRUE`, element that represents `false` can be accessed by `JsonBoolean.FALSE`. 
+Also, element can be retrieved using the `getInstance` method.
+
+### JsonNumber
+
+Represents a JSON element containing number.
+
+### JsonString
+
+Represents a JSON element containing string.
+
+### Classes for error handling
+
+There are three classes for error handling: `JsonLocation`, `JsonError` and `JsonException`.
+
+The location is determined by the row number and column number of the JSON document in which the error was found.
+The actual error is described by the `JsonError` class, which contains a location and has the following methods:
+
+- `String getMessage()`
+
+    Returns the text description of the error (in English).
+
+- `String getLocalizedMessage(String lang)`
+
+    Returns the localized text description of the error. English (`en`) and Russian (`ru`) languages
+    are now supported.
+
+The last class, `JsonException` is a wrapper of the `JsonError` class, which inherits from `Exception`
+and hence can be thrown by the parser.

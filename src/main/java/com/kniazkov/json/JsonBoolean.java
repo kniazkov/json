@@ -8,16 +8,27 @@ package com.kniazkov.json;
  */
 public final class JsonBoolean extends JsonElement {
     /**
+     * The instance of {@code true} literal.
+     */
+    public static final JsonBoolean TRUE = new JsonBoolean(null, true);
+
+    /**
+     * The instance of {@code false} literal.
+     */
+    public static final JsonBoolean FALSE = new JsonBoolean(null, false);
+
+    /**
      * Boolean value.
      */
     private final boolean value;
 
     /**
-     * Constructor.
+     * Returns an instance of Boolean element.
      * @param value Boolean value
+     * @return An instance
      */
-    public JsonBoolean(boolean value) {
-        this(null, value);
+    public static JsonBoolean getInstance(boolean value) {
+        return value ? TRUE : FALSE;
     }
 
     /**
