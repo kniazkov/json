@@ -3,7 +3,7 @@
 -->
 # User-friendly JSON parser/serializer
 
-Version 1.0
+Version 1.1
 
 ## Goal
 
@@ -21,7 +21,7 @@ To link the library to your Maven project, add the following dependency to `pom.
     <dependency>
         <groupId>com.kniazkov</groupId>
         <artifactId>json</artifactId>
-        <version>1.0</version>
+        <version>1.1</version>
     </dependency>
 </dependencies>
 ```
@@ -220,19 +220,36 @@ to the specified type);
 - arrays may be converted to Java lists, with each element of such an array converted
 to the type specified as a Java list parameter.
 
+As shown above, the field name of a Java class is usually mapped to the property name of a JSON object.
+However, there are cases when the JSON property key name is not allowed in JAVA. For example,
+when the name is reserved (`int`, `extends`, and so on) or contains spaces. In such a case, you can add
+a special `JsonProperty` annotation that will contain the actual property name:
+
+```java
+import com.kniazkov.json.JsonProperty;
+
+class YourClass {
+  @JsonProperty(name = "int")
+  private int intValue;
+}
+```
+
 Let's look at a more complex example. Suppose we have several classes:
 
 ```java
+import com.kniazkov.json.JsonProperty;
+
 class Employee {
-    String name;
-    int age;
+  String name;
+  int age;
 }
 
 class Department {
-    String title;
-    Employee manager;
-    List<Employee> staff;
-    List<Float> monthlyExpenses;
+  String title;
+  @JsonProperty(name = "abstract") String description;
+  Employee manager;
+  List<Employee> staff;
+  List<Float> monthlyExpenses;
 }
 ```
 
@@ -241,6 +258,7 @@ The following JSON document can be converted to the above structure:
 ```json
 {
     "title": "Research lab",
+    "abstract": "Investigation of material properties",
     "manager": {
         "name": "James Brown",
         "age": 42

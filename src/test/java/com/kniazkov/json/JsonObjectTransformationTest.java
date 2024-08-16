@@ -17,6 +17,7 @@ public class JsonObjectTransformationTest {
 
         short shortValue;
 
+        @JsonProperty(name = "int")
         int intValue;
 
         long longValue;
@@ -44,7 +45,7 @@ public class JsonObjectTransformationTest {
         Numbers obj = null;
         boolean oops = false;
         try {
-            obj = Json.parse("{byteValue: 3, shortValue: 5, intValue: 13, longValue: 17, floatValue: 19.01, doubleValue: 23.001}", Numbers.class);
+            obj = Json.parse("{byteValue: 3, shortValue: 5, int: 13, longValue: 17, floatValue: 19.01, doubleValue: 23.001}", Numbers.class);
         } catch (JsonException ignored) {
             oops = true;
         }

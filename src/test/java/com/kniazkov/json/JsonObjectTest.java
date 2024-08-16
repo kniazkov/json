@@ -24,7 +24,7 @@ public class JsonObjectTest {
     public void objectWithData() {
         JsonObject obj = createTestObject();
         Assert.assertEquals(6, obj.size());
-        Assert.assertEquals("{\"bool\": true, \"nothing\": null, \"str\": \"hello\", \"number\": 13, \"array\": [1, 2], \"obj\": {\"str\": \"test\"}}", obj.toString());
+        Assert.assertEquals("{\"bool\": true, \"nothing\": null, \"str\": \"hello\", \"int\": 13, \"array\": [1, 2], \"obj\": {\"str\": \"test\"}}", obj.toString());
     }
 
     @Test
@@ -39,7 +39,7 @@ public class JsonObjectTest {
     public void objectToJavaMap() {
         Map map = createTestObject().toJavaObject(Map.class);
         Assert.assertNotNull(map);
-        Assert.assertTrue(map.get("number") instanceof Number);
+        Assert.assertTrue(map.get("int") instanceof Number);
     }
 
     private static class TestNestedClass {
@@ -55,6 +55,8 @@ public class JsonObjectTest {
 
     private static class TestClass {
         private boolean bool;
+
+        @JsonProperty(name = "int")
         private int number;
 
         private String str;
@@ -117,7 +119,7 @@ public class JsonObjectTest {
         obj.addBoolean("bool", true);
         obj.addNull("nothing");
         obj.addString("str", "hello");
-        obj.addNumber("number", 13);
+        obj.addNumber("int", 13);
         JsonArray array = obj.createArray("array");
         array.addNumber(1);
         array.addNumber(2);
