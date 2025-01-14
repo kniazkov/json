@@ -1,9 +1,9 @@
 <!---
-  Copyright (c) 2024 Ivan Kniazkov
+  Copyright (c) 2025 Ivan Kniazkov
 -->
 # User-friendly JSON parser/serializer
 
-Version 1.1
+Version 1.2
 
 ## Goal
 
@@ -21,7 +21,7 @@ To link the library to your Maven project, add the following dependency to `pom.
     <dependency>
         <groupId>com.kniazkov</groupId>
         <artifactId>json</artifactId>
-        <version>1.1</version>
+        <version>1.2</version>
     </dependency>
 </dependencies>
 ```
