@@ -317,4 +317,27 @@ public class JsonObjectTransformationTest {
             return false;
         }
     }
+
+    private static class Base {
+        int alpha;
+    }
+
+    private static class Derived extends Base {
+        int beta;
+    }
+
+    @Test
+    public void parsingToDerivedClass() {
+        Derived obj = null;
+        boolean oops = false;
+        try {
+            obj = Json.parse("{alpha: 10, beta: 20}", Derived.class);
+        } catch (JsonException ignored) {
+            oops = true;
+        }
+        Assert.assertFalse(oops);
+        Assert.assertNotNull(obj);
+        Assert.assertEquals(10, obj.alpha);
+        Assert.assertEquals(20, obj.beta);
+    }
 }

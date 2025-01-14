@@ -306,7 +306,7 @@ public abstract class JsonError {
         @Override
         public String getLocalizedMessage(String lang) {
             if ("ru".equals(lang)) {
-                return "Ожижается ключ (строка)";
+                return "Ожидается ключ (строка)";
             }
             return "A key (string) is expected";
         }
@@ -372,6 +372,41 @@ public abstract class JsonError {
                 return "Пропущена запятая";
             }
             return "Missing a comma";
+        }
+    }
+
+    /**
+     * Error 'Incorrect sequence starting with the ... token'.
+     */
+    public final static class UnexpectedToken extends JsonError {
+        /**
+         * A token.
+         */
+        private final Token token;
+
+        /**
+         * Constructor.
+         *
+         * @param loc Position in the document where the error was found
+         * @param token A token
+         */
+        UnexpectedToken(JsonLocation loc, Token token) {
+            super(loc);
+            this.token = token;
+        }
+
+        @Override
+        public String getLocalizedMessage(String lang) {
+            if ("ru".equals(lang)) {
+                return String.format(
+                    "Неправильная последовательность, начинающаяся с токена '%s'",
+                    token.toString()
+                );
+            }
+            return String.format(
+                "Incorrect sequence starting with the '%s' token",
+                token.toString()
+            );
         }
     }
 }

@@ -110,7 +110,7 @@ public final class JsonParser {
         if (firstToken instanceof TokenOpeningCurlyBracket) {
             return parseJsonObject(parent);
         }
-        return null;
+        throw new JsonException(new JsonError.UnexpectedToken(firstToken.getLocation(), firstToken));
     }
 
     /**

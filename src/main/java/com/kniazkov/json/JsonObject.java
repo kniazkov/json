@@ -193,7 +193,7 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
             } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException ignored) {
                 return null;
             }
-            Field[] fields = type.getDeclaredFields();
+            final List<Field> fields = getAllFields(type);
             for (Field field : fields) {
                 String fieldName = field.getName();
                 if (elements.containsKey(fieldName)) {
@@ -369,5 +369,34 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
     @Override
     public JsonObject toJsonObject() {
         return this;
+    }
+
+    /**
+     * Recursively collects all fields from the given class and its superclasses.
+     * Fields in subclasses override fields with the same name from superclasses.
+     *
+     * @param type the class to analyze
+     * @param map  the map to store fields by name
+     */
+    private static void getAllFieldsMap(Class<?> type, Map<String, Field> map) {
+        if (type.getSuperclass() != null) {
+            getAllFieldsMap(type.getSuperclass(), map);
+        }
+        for (Field field : type.getDeclaredFields()) {
+            map.put(field.getName(), field);
+        }
+    }
+
+    /**
+     * Returns a list of all fields from the given class and its superclasses.
+     * Fields in subclasses override fields with the same name from superclasses.
+     *
+     * @param type the class to analyze
+     * @return a list of all unique fields in order of inheritance
+     */
+    private static List<Field> getAllFields(Class<?> type) {
+        final Map<String, Field> map = new TreeMap<>();
+        getAllFieldsMap(type, map);
+        return new ArrayList<>(map.values());
     }
 }

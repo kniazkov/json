@@ -507,6 +507,16 @@ public class JsonParserTest {
     }
 
     @Test
+    public void unexpectedIdentifier() {
+        Assert.assertTrue(commonTestError(
+                "hello.txt",
+                JsonError.UnexpectedToken.class,
+                1,
+                1
+        ));
+    }
+
+    @Test
     public void listOfWarnings() {
         boolean oops = false;
         JsonElement elem = null;
