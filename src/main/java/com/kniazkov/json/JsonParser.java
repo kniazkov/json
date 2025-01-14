@@ -254,26 +254,30 @@ public final class JsonParser {
                 JsonObject result = new JsonObject(parent);
                 Field[] fields = cls.getDeclaredFields();
                 for (Field field : fields) {
-                    String fieldName = field.getName();
+                    String propertyName = field.getName();
+                    if (field.isAnnotationPresent(JsonProperty.class)) {
+                        JsonProperty annotation = field.getAnnotation(JsonProperty.class);
+                        propertyName = annotation.name();
+                    }
                     Class<?> fieldType = field.getType();
                     try {
                         field.setAccessible(true);
                         if (fieldType == byte.class) {
-                            result.addNumber(fieldName, field.getByte(obj));
+                            result.addNumber(propertyName, field.getByte(obj));
                         } else if (fieldType == short.class) {
-                            result.addNumber(fieldName, field.getShort(obj));
+                            result.addNumber(propertyName, field.getShort(obj));
                         } else if (fieldType == int.class) {
-                            result.addNumber(fieldName, field.getInt(obj));
+                            result.addNumber(propertyName, field.getInt(obj));
                         } else if (fieldType == long.class) {
-                            result.addNumber(fieldName, field.getLong(obj));
+                            result.addNumber(propertyName, field.getLong(obj));
                         } else if (fieldType == float.class) {
-                            result.addNumber(fieldName, field.getFloat(obj));
+                            result.addNumber(propertyName, field.getFloat(obj));
                         } else if (fieldType == double.class) {
-                            result.addNumber(fieldName, field.getDouble(obj));
+                            result.addNumber(propertyName, field.getDouble(obj));
                         } else if (fieldType == boolean.class) {
-                            result.addBoolean(fieldName, field.getBoolean(obj));
+                            result.addBoolean(propertyName, field.getBoolean(obj));
                         } else {
-                            result.addChild(fieldName, parseJavaObject(field.get(obj), result));
+                            result.addChild(propertyName, parseJavaObject(field.get(obj), result));
                         }
                     } catch (IllegalAccessException ignored) {
                         return result;

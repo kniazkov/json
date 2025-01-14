@@ -195,10 +195,14 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
             }
             final List<Field> fields = getAllFields(type);
             for (Field field : fields) {
-                String fieldName = field.getName();
-                if (elements.containsKey(fieldName)) {
+                String propertyName = field.getName();
+                if (field.isAnnotationPresent(JsonProperty.class)) {
+                    JsonProperty annotation = field.getAnnotation(JsonProperty.class);
+                    propertyName = annotation.name();
+                }
+                if (elements.containsKey(propertyName)) {
                     Class<?> fieldType = field.getType();
-                    JsonElement child = elements.get(fieldName);
+                    JsonElement child = elements.get(propertyName);
                     try {
                         field.setAccessible(true);
                         if (fieldType == byte.class) {
