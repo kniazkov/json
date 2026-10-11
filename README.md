@@ -15,6 +15,19 @@ while writing as little code as possible, supports extended JSON5 syntax, and al
 
 ## The Maven dependency
 
+The current source requires **Java 21 or newer** to build and run. Building also requires
+**Maven 3.6.3 or newer**. This requirement applies to the next release; the published
+1.2 dependency shown below still targets Java 8.
+
+To build the library, run all tests, and generate the source and Javadoc JARs without
+requiring a release signing key:
+
+```sh
+mvn -B -Dgpg.skip=true clean verify
+```
+
+Release builds retain GPG signing when `gpg.skip` is not set.
+
 To link the library to your Maven project, add the following dependency to `pom.xml`:
 ```xml
 <dependencies>
@@ -376,7 +389,7 @@ An element has the following methods (which are respectively inherited by all en
 
 - `JsonElement clone()`
 
-    Each element is [cloneable](https://docs.oracle.com/javase/8/docs/api/java/lang/Cloneable.html).
+    Each element is [cloneable](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Cloneable.html).
     If the element contains other elements, clones of these elements are also created, i.e. "deep" copying
     is performed. Thus, the result is a new (sub-)tree, which is not related to the original in any way.
 
@@ -520,7 +533,7 @@ A container has the following method (which are respectively inherited by JSON o
 
 JSON objects are sets of key-value pairs, where key is a string and value is any JSON element.
 
-The class inherits the [java.util.Map](https://docs.oracle.com/javase/8/docs/api/java/util/Map.html)
+The class inherits the [java.util.Map](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Map.html)
 interface. Accordingly, it supports methods that can be used to search, add, delete, iterate over a list
 of key-value pairs:
 
@@ -593,7 +606,7 @@ Here are the methods to do this:
 
 A JSON array is an ordered set of JSON elements.
 
-The class inherits the [java.util.List](https://docs.oracle.com/javase/8/docs/api/java/util/List.html)
+The class inherits the [java.util.List](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html)
 interface. Accordingly, it supports methods that can be used to search, add, delete, iterate over a list
 of elements:
 
