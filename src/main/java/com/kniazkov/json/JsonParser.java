@@ -220,7 +220,7 @@ public final class JsonParser {
         if (obj != null) {
             Class<?> cls = obj.getClass();
             if (obj instanceof Number number) {
-                return JsonNumber.of(number).clone(parent);
+                return JsonNumber.of(parent, number);
             }
             if (cls == Boolean.class) {
                 return new JsonBoolean(parent, (Boolean) obj);

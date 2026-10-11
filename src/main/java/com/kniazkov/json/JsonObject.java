@@ -324,7 +324,7 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
      * @param value Value of the number
      */
     public void addNumber(String key, double value) {
-        addChild(key, JsonNumber.of(value).clone(this));
+        addChild(key, JsonNumber.of(this, value));
     }
 
     /**
@@ -333,7 +333,7 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
      * @param value Numeric value
      */
     public void addNumber(String key, float value) {
-        addChild(key, JsonNumber.of(value).clone(this));
+        addChild(key, JsonNumber.of(this, value));
     }
 
     /**
@@ -342,7 +342,7 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
      * @param value Numeric value
      */
     public void addNumber(String key, long value) {
-        addChild(key, JsonNumber.of(value).clone(this));
+        addChild(key, JsonNumber.of(this, value));
     }
 
     /**
@@ -351,7 +351,7 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
      * @param value Numeric value
      */
     public void addNumber(String key, Number value) {
-        addChild(key, JsonNumber.of(value).clone(this));
+        addChild(key, JsonNumber.of(this, value));
     }
 
     /**

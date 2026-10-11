@@ -24,7 +24,12 @@ public abstract class JsonNumber extends JsonElement {
      * @return An integer element
      */
     public static JsonInteger of(long value) {
-        return of(BigInteger.valueOf(value));
+        return of(null, value);
+    }
+
+    /** Creates a number directly with its parent, without a temporary JSON node. */
+    static JsonInteger of(JsonContainer parent, long value) {
+        return of(parent, BigInteger.valueOf(value));
     }
 
     /**
@@ -33,7 +38,12 @@ public abstract class JsonNumber extends JsonElement {
      * @return An integer element
      */
     public static JsonInteger of(BigInteger value) {
-        return new JsonInteger(value);
+        return of(null, value);
+    }
+
+    /** Creates a number directly with its parent, without a temporary JSON node. */
+    static JsonInteger of(JsonContainer parent, BigInteger value) {
+        return new JsonInteger(parent, value);
     }
 
     /**
@@ -43,7 +53,12 @@ public abstract class JsonNumber extends JsonElement {
      * @throws NumberFormatException If the value is NaN or infinite
      */
     public static JsonReal of(double value) {
-        return of(BigDecimal.valueOf(value));
+        return of(null, value);
+    }
+
+    /** Creates a number directly with its parent, without a temporary JSON node. */
+    static JsonReal of(JsonContainer parent, double value) {
+        return of(parent, BigDecimal.valueOf(value));
     }
 
     /**
@@ -53,7 +68,12 @@ public abstract class JsonNumber extends JsonElement {
      * @throws NumberFormatException If the value is NaN or infinite
      */
     public static JsonReal of(float value) {
-        return of(new BigDecimal(Float.toString(value)));
+        return of(null, value);
+    }
+
+    /** Creates a number directly with its parent, without a temporary JSON node. */
+    static JsonReal of(JsonContainer parent, float value) {
+        return of(parent, new BigDecimal(Float.toString(value)));
     }
 
     /**
@@ -62,7 +82,12 @@ public abstract class JsonNumber extends JsonElement {
      * @return A real element
      */
     public static JsonReal of(BigDecimal value) {
-        return new JsonReal(value);
+        return of(null, value);
+    }
+
+    /** Creates a number directly with its parent, without a temporary JSON node. */
+    static JsonReal of(JsonContainer parent, BigDecimal value) {
+        return new JsonReal(parent, value);
     }
 
     /**
@@ -72,22 +97,27 @@ public abstract class JsonNumber extends JsonElement {
      * @throws IllegalArgumentException If the Number implementation is unsupported
      */
     public static JsonNumber of(Number value) {
+        return of(null, value);
+    }
+
+    /** Creates a number directly with its parent, without a temporary JSON node. */
+    static JsonNumber of(JsonContainer parent, Number value) {
         Objects.requireNonNull(value, "value");
         if (value instanceof BigInteger integer) {
-            return of(integer);
+            return of(parent, integer);
         }
         if (value instanceof BigDecimal decimal) {
-            return of(decimal);
+            return of(parent, decimal);
         }
         if (value instanceof Byte || value instanceof Short
                 || value instanceof Integer || value instanceof Long) {
-            return of(value.longValue());
+            return of(parent, value.longValue());
         }
         if (value instanceof Float real) {
-            return of(real.floatValue());
+            return of(parent, real.floatValue());
         }
         if (value instanceof Double real) {
-            return of(real.doubleValue());
+            return of(parent, real.doubleValue());
         }
         throw new IllegalArgumentException("Unsupported number type: " + value.getClass().getName());
     }

@@ -284,7 +284,7 @@ public final class JsonArray extends JsonContainer implements List<JsonElement> 
      * @param value Value of the number
      */
     public void addNumber(double value) {
-        list.add(JsonNumber.of(value).clone(this));
+        list.add(JsonNumber.of(this, value));
     }
 
     /**
@@ -292,7 +292,7 @@ public final class JsonArray extends JsonContainer implements List<JsonElement> 
      * @param value Numeric value
      */
     public void addNumber(float value) {
-        list.add(JsonNumber.of(value).clone(this));
+        list.add(JsonNumber.of(this, value));
     }
 
     /**
@@ -300,7 +300,7 @@ public final class JsonArray extends JsonContainer implements List<JsonElement> 
      * @param value Numeric value
      */
     public void addNumber(long value) {
-        list.add(JsonNumber.of(value).clone(this));
+        list.add(JsonNumber.of(this, value));
     }
 
     /**
@@ -308,7 +308,7 @@ public final class JsonArray extends JsonContainer implements List<JsonElement> 
      * @param value Numeric value
      */
     public void addNumber(Number value) {
-        list.add(JsonNumber.of(value).clone(this));
+        list.add(JsonNumber.of(this, value));
     }
 
     /**
