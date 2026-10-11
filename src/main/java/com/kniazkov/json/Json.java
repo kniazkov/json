@@ -4,6 +4,15 @@
 package com.kniazkov.json;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringReader;
+import java.nio.charset.Charset;
+import java.nio.charset.CodingErrorAction;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 /**
  * Class that combines all methods for parsing and serialising JSON documents.
@@ -13,7 +22,7 @@ public class Json {
      * Parses a JSON document, represented as a string, into a tree.
      * @param source JSON document
      * @return JSON element, root of the tree
-     * @throws JsonException If parsing fails
+     * @throws JsonException If parsing or input fails
      */
     public static JsonElement parse(String source) throws JsonException {
         return JsonParser.parseString(source);
@@ -22,15 +31,11 @@ public class Json {
     /**
      * Parses a JSON document from a file into a tree.
      * @param file File containing JSON document
-     * @return JSON element, root of the tree, or {@code null} if the file cannot be read for some reason
-     * @throws JsonException If parsing fails
+     * @return JSON element, root of the tree
+     * @throws JsonException If parsing or input fails
      */
     public static JsonElement parse(File file) throws JsonException {
-        final String source = Utils.readFileToString(file);
-        if (source == null) {
-            return null;
-        }
-        return parse(source);
+        return parse(file, JsonParsingMode.EXTENDED);
     }
 
     /**
@@ -38,7 +43,7 @@ public class Json {
      * @param source JSON document
      * @param mode Parsing mode defining the allowed JSON syntax
      * @return JSON element, root of the tree
-     * @throws JsonException If parsing fails
+     * @throws JsonException If parsing or input fails
      */
     public static JsonElement parse(String source, JsonParsingMode mode) throws JsonException {
         return JsonParser.parseString(source, mode);
@@ -48,15 +53,11 @@ public class Json {
      * Parses a JSON document from a file into a tree.
      * @param file File containing JSON document
      * @param mode Parsing mode defining the allowed JSON syntax
-     * @return JSON element, root of the tree, or {@code null} if the file cannot be read for some reason
-     * @throws JsonException If parsing fails
+     * @return JSON element, root of the tree
+     * @throws JsonException If parsing or input fails
      */
     public static JsonElement parse(File file, JsonParsingMode mode) throws JsonException {
-        final String source = Utils.readFileToString(file);
-        if (source == null) {
-            return null;
-        }
-        return parse(source, mode);
+        return parse(file, StandardCharsets.UTF_8, mode);
     }
 
     /**
@@ -66,7 +67,7 @@ public class Json {
      * @return Object containing parsed data or {@code null} if document can't be represented
      *   as an object of specified type
      * @param <T> The type
-     * @throws JsonException If parsing fails
+     * @throws JsonException If parsing or input fails
      */
     public static <T> T parse(String source, Class<T> type) throws JsonException {
         return parse(source).toJavaObject(type);
@@ -76,17 +77,13 @@ public class Json {
      * Parses a JSON document from a file into Java object of specified type.
      * @param file File containing JSON document
      * @param type The type descriptor
-     * @return Object containing parsed data or {@code null} the file cannot be read for some reason
-     *   or document can't be represented as an object of specified type
+     * @return Object containing parsed data or {@code null} if the document cannot be represented
+     *   as an object of specified type
      * @param <T> The type
-     * @throws JsonException If parsing fails
+     * @throws JsonException If parsing or input fails
      */
     public static <T> T parse(File file, Class<T> type) throws JsonException {
-        final String source = Utils.readFileToString(file);
-        if (source == null) {
-            return null;
-        }
-        return parse(source).toJavaObject(type);
+        return parse(file).toJavaObject(type);
     }
 
     /**
@@ -97,7 +94,7 @@ public class Json {
      * @return Object containing parsed data or {@code null} if document can't be represented
      *   as an object of specified type
      * @param <T> The type
-     * @throws JsonException If parsing fails
+     * @throws JsonException If parsing or input fails
      */
     public static <T> T parse(String source, Class<T> type, JsonParsingMode mode) throws JsonException {
         return parse(source, mode).toJavaObject(type);
@@ -108,17 +105,141 @@ public class Json {
      * @param file File containing JSON document
      * @param type The type descriptor
      * @param mode Parsing mode defining the allowed JSON syntax
-     * @return Object containing parsed data or {@code null} the file cannot be read for some reason
-     *   or document can't be represented as an object of specified type
+     * @return Object containing parsed data or {@code null} if the document cannot be represented
+     *   as an object of specified type
      * @param <T> The type
-     * @throws JsonException If parsing fails
+     * @throws JsonException If parsing or input fails
      */
     public static <T> T parse(File file, Class<T> type, JsonParsingMode mode) throws JsonException {
-        final String source = Utils.readFileToString(file);
-        if (source == null) {
-            return null;
+        return parse(file, mode).toJavaObject(type);
+    }
+
+    /**
+     * Parses a named string.
+     * @param source JSON document
+     * @param sourceName Diagnostic name, or null for unnamed input
+     * @param mode Parsing mode
+     * @return Root element
+     * @throws JsonException If parsing fails
+     */
+    public static JsonElement parse(String source, String sourceName, JsonParsingMode mode)
+            throws JsonException {
+        return parse(new StringReader(source), sourceName, mode);
+    }
+
+    /**
+     * Parses a reader in extended mode without closing it.
+     * @param reader Character input
+     * @return Root element
+     * @throws JsonException If parsing or input fails
+     */
+    public static JsonElement parse(Reader reader) throws JsonException {
+        return parse(reader, JsonParsingMode.EXTENDED);
+    }
+
+    /**
+     * Parses a reader without closing it. Buffering may read ahead.
+     * @param reader Character input
+     * @param mode Parsing mode
+     * @return Root element
+     * @throws JsonException If parsing or input fails
+     */
+    public static JsonElement parse(Reader reader, JsonParsingMode mode) throws JsonException {
+        return parse(reader, null, mode);
+    }
+
+    /**
+     * Parses a named reader without closing it. Buffering may read ahead.
+     * @param reader Character input
+     * @param sourceName Diagnostic name, or null for unnamed input
+     * @param mode Parsing mode
+     * @return Root element
+     * @throws JsonException If parsing or input fails
+     */
+    public static JsonElement parse(Reader reader, String sourceName, JsonParsingMode mode)
+            throws JsonException {
+        return JsonParser.parseSource(new Source(reader, sourceName), mode);
+    }
+
+    /**
+     * Parses UTF-8 input in extended mode without closing it.
+     * @param stream Byte input
+     * @return Root element
+     * @throws JsonException If parsing or input fails
+     */
+    public static JsonElement parse(InputStream stream) throws JsonException {
+        return parse(stream, JsonParsingMode.EXTENDED);
+    }
+
+    /**
+     * Parses UTF-8 input without closing it. Invalid byte sequences are reported.
+     * @param stream Byte input
+     * @param mode Parsing mode
+     * @return Root element
+     * @throws JsonException If parsing or input fails
+     */
+    public static JsonElement parse(InputStream stream, JsonParsingMode mode) throws JsonException {
+        return parse(stream, StandardCharsets.UTF_8, mode);
+    }
+
+    /**
+     * Parses bytes in an explicit encoding without closing the stream.
+     * @param stream Byte input
+     * @param charset Input encoding
+     * @param mode Parsing mode
+     * @return Root element
+     * @throws JsonException If parsing or input fails
+     */
+    public static JsonElement parse(InputStream stream, Charset charset, JsonParsingMode mode)
+            throws JsonException {
+        return parse(stream, null, charset, mode);
+    }
+
+    /**
+     * Parses named bytes without closing the stream. Invalid byte sequences are reported;
+     * buffering may read ahead beyond the parsed value.
+     * @param stream Byte input
+     * @param sourceName Diagnostic name, or null for unnamed input
+     * @param charset Input encoding
+     * @param mode Parsing mode
+     * @return Root element
+     * @throws JsonException If parsing or input fails
+     */
+    public static JsonElement parse(InputStream stream, String sourceName, Charset charset,
+            JsonParsingMode mode) throws JsonException {
+        return parse(decodingReader(stream, charset), sourceName, mode);
+    }
+
+    /**
+     * Parses a file in an explicit encoding and closes the owned input on every exit path.
+     * The diagnostic source name is the supplied file path. Invalid bytes are reported.
+     * @param file JSON file
+     * @param charset Input encoding
+     * @param mode Parsing mode
+     * @return Root element
+     * @throws JsonException If opening, parsing, reading, decoding or closing fails
+     */
+    public static JsonElement parse(File file, Charset charset, JsonParsingMode mode)
+            throws JsonException {
+        // Validate the decoder before opening the file, so invalid arguments cannot leak a handle.
+        var decoder = charset.newDecoder().onMalformedInput(CodingErrorAction.REPORT)
+                .onUnmappableCharacter(CodingErrorAction.REPORT);
+        String sourceName = file.getPath();
+        Source source = null;
+        try (Reader reader = new InputStreamReader(Files.newInputStream(file.toPath()), decoder)) {
+            source = new Source(reader, sourceName);
+            return JsonParser.parseSource(source, mode);
+        } catch (IOException cause) {
+            JsonLocation loc = source == null ? new JsonLocation(1, 1, sourceName) : source.location();
+            throw new JsonException(new JsonError.InputFailure(loc), cause);
         }
-        return parse(source, mode).toJavaObject(type);
+    }
+
+    /** Creates a decoder that never silently replaces malformed or unmappable bytes. */
+    private static Reader decodingReader(InputStream stream, Charset charset) {
+        return new InputStreamReader(stream, charset.newDecoder()
+                .onMalformedInput(CodingErrorAction.REPORT)
+                .onUnmappableCharacter(CodingErrorAction.REPORT));
     }
 
     /**

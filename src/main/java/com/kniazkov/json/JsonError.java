@@ -45,7 +45,19 @@ public abstract class JsonError {
 
     @Override
     public String toString() {
-        return String.format("%d.%d, %s", loc.row, loc.column, message());
+        return loc + ", " + message();
+    }
+
+    /** An input could not be opened, read, decoded or closed. */
+    public static final class InputFailure extends JsonError {
+        InputFailure(JsonLocation loc) {
+            super(loc);
+        }
+
+        @Override
+        public String localizedMessage(String lang) {
+            return "ru".equals(lang) ? "Ошибка чтения источника" : "Failed to read input";
+        }
     }
 
     /**

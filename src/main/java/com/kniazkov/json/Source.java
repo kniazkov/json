@@ -1,94 +1,83 @@
 /*
- * Copyright (c) 2024 Ivan Kniazkov
+ * Copyright (c) 2026 Ivan Kniazkov
  */
 package com.kniazkov.json;
 
-/**
- * Object containing JSON document for parsing.
- */
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.util.Objects;
+
+/** Sequential UTF-16 input with one current code unit and immutable location snapshots. */
 final class Source {
-    /**
-     * JSON document for parsing.
-     */
-    private final String data;
+    private final Reader reader;
+    private final String sourceName;
+    private int current;
+    private int row = 1;
+    private int column = 1;
+    private boolean afterCarriageReturn;
+    private JsonException failure;
 
-    /**
-     * Index indicating the current position.
-     */
-    private int index;
-
-    /**
-     * Index indicating the last position.
-     */
-    private final int lastIndex;
-
-    /**
-     * Specifies the location of the current character in the JSON document.
-     */
-    private final JsonLocation loc;
-
-    /**
-     * Flag that indicates that the lexer has encountered a newline character.
-     */
-    private boolean newLine;
-
-    /**
-     * Constructor.
-     * @param data JSON document for parsing
-     */
-    Source(String data) {
-        this.data = data;
-        this.index = 0;
-        this.lastIndex = data.length();
-        this.loc = new JsonLocation(1, 1);
-        this.newLine = false;
+    /** Creates an unnamed string source. */
+    Source(String data) throws JsonException {
+        this(new StringReader(data), null);
     }
 
-    /**
-     * Returns the character from the current position.
-     * @return A symbol
-     */
-    char charValue() {
-        if (index < lastIndex) {
-            char ch = data.charAt(index);
-            if (ch == '\n') {
-                newLine = true;
-            }
-            return ch;
+    /** Creates a source without taking ownership of the reader; reads the first code unit. */
+    Source(Reader reader, String sourceName) throws JsonException {
+        Objects.requireNonNull(reader, "reader");
+        this.reader = reader instanceof BufferedReader ? reader : new BufferedReader(reader);
+        this.sourceName = sourceName;
+        this.current = read();
+    }
+
+    /** Returns the current UTF-16 code unit (0..65535), or -1 at EOF, without advancing. */
+    int charValue() throws JsonException {
+        if (failure != null) {
+            throw failure;
         }
-        return 0;
+        return current;
     }
 
-    /**
-     * Moves the position forward by 1 and returns the character from the new position.
-     * @return A symbol
-     */
-    char nextChar() {
-        if (index < lastIndex) {
-            index++;
-            if (newLine) {
-                loc.row++;
-                loc.column = 1;
-                newLine = false;
-            } else {
-                loc.column++;
-            }
-            if (index < lastIndex) {
-                char ch = data.charAt(index);
-                if (ch == '\n') {
-                    newLine = true;
-                }
-                return ch;
-            }
+    /** Advances once and returns the new code unit; EOF and its coordinates are stable. */
+    int nextChar() throws JsonException {
+        if (failure != null) {
+            throw failure;
         }
-        return 0;
+        if (current == -1) {
+            return -1;
+        }
+        if (current == '\r') {
+            row++;
+            column = 1;
+        } else if (current == '\n') {
+            if (!afterCarriageReturn) {
+                row++;
+                column = 1;
+            }
+        } else if (current == 0x2028 || current == 0x2029) {
+            row++;
+            column = 1;
+        } else {
+            column++;
+        }
+        afterCarriageReturn = current == '\r';
+        current = read();
+        return current;
     }
 
-    /**
-     * Returns the location of the current character in the JSON document.
-     * @return Location instance
-     */
+    /** Returns an immutable snapshot, including at EOF or a read failure. */
     JsonLocation location() {
-        return new JsonLocation(loc);
+        return new JsonLocation(row, column, sourceName);
+    }
+
+    private int read() throws JsonException {
+        try {
+            return reader.read();
+        } catch (IOException cause) {
+            failure = new JsonException(new JsonError.InputFailure(location()), cause);
+            throw failure;
+        }
     }
 }

@@ -3,10 +3,6 @@
  */
 package com.kniazkov.json;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-
 /**
  * Some auxiliary procedures.
  */
@@ -69,19 +65,4 @@ final class Utils {
         }
     }
 
-    /**
-     * Reads a file into a string. Does not throw exceptions.
-     * @param file The file
-     * @return The file contents or {@code null} if the file cannot be read for some reason
-     */
-    static String readFileToString(File file) {
-        if (file.exists()) {
-            try {
-                byte[] data = Files.readAllBytes(file.toPath());
-                return new String(data);
-            } catch (IOException ignored) {
-            }
-        }
-        return null;
-    }
 }

@@ -17,6 +17,16 @@ public final class JsonException extends Exception {
      * @param error The error occurred while parsing a JSON document
      */
     public JsonException(JsonError error) {
+        this(error, null);
+    }
+
+    /**
+     * Creates a parsing or input exception retaining the original cause.
+     * @param error Error description and location
+     * @param cause Original cause, or null
+     */
+    public JsonException(JsonError error, Throwable cause) {
+        super(cause);
         this.error = error;
     }
 
@@ -31,13 +41,13 @@ public final class JsonException extends Exception {
     @Override
     public String getMessage() {
         JsonLocation loc = error.location();
-        return String.format("%d.%d, %s", loc.row, loc.column, error.message());
+        return loc + ", " + error.message();
     }
 
     @Override
     public String getLocalizedMessage() {
         JsonLocation loc = error.location();
         String lang = System.getProperty("user.language");
-        return String.format("%d.%d, %s", loc.row, loc.column, error.localizedMessage(lang));
+        return loc + ", " + error.localizedMessage(lang);
     }
 }

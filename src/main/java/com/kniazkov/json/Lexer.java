@@ -35,13 +35,13 @@ final class Lexer {
      * @throws JsonException If parsing fails
      */
     public Token token() throws JsonException {
-        char ch = source.charValue();
+        int ch = source.charValue();
 
         while(isWhiteSpace(ch)) {
             ch = source.nextChar();
         }
 
-        if (ch == 0) {
+        if (ch == -1) {
             return null;
         }
 
@@ -50,7 +50,7 @@ final class Lexer {
         if (isLetter(ch)) {
             StringBuilder builder = new StringBuilder();
             do {
-                builder.append(ch);
+                builder.append((char) ch);
                 ch = source.nextChar();
             } while(isLetter(ch) || isDigit(ch));
             String identifier = builder.toString();
@@ -111,7 +111,7 @@ final class Lexer {
             return new TokenColon(loc);
         }
 
-        throw new JsonException(new JsonError.InvalidCharacter(loc, ch));
+        throw new JsonException(new JsonError.InvalidCharacter(loc, (char) ch));
     }
 
     /**
@@ -119,7 +119,7 @@ final class Lexer {
      * @param ch Character
      * @return Checking result
      */
-    private static boolean isWhiteSpace(char ch) {
+    private static boolean isWhiteSpace(int ch) {
         return ch == ' ' || ch == '\r' || ch == '\n' || ch == '\t';
     }
 
@@ -128,7 +128,7 @@ final class Lexer {
      * @param ch Character
      * @return Checking result
      */
-    private static boolean isLetter(char ch) {
+    private static boolean isLetter(int ch) {
         return ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z' || ch == '_';
     }
 
@@ -137,7 +137,7 @@ final class Lexer {
      * @param ch Character
      * @return Checking result
      */
-    private static boolean isDigit(char ch) {
+    private static boolean isDigit(int ch) {
         return ch >= '0' && ch <= '9';
     }
 
@@ -146,20 +146,20 @@ final class Lexer {
      * @param ch Character
      * @return Checking result
      */
-    private static boolean isHexDigit(char ch) {
+    private static boolean isHexDigit(int ch) {
         return isDigit(ch) || ch >= 'a' && ch <= 'f' || ch >= 'A' && ch <= 'F' ;
     }
 
     /** Parses a numeric lexeme without intermediate floating-point conversion. */
     private TokenNumber parseNumber(JsonLocation loc) throws JsonException {
         StringBuilder text = new StringBuilder();
-        char ch = source.charValue();
+        int ch = source.charValue();
         boolean negative = ch == '-';
         if (ch == '-' || ch == '+') {
             if (ch == '+' && mode == JsonParsingMode.STRICT) {
-                throw new JsonException(new JsonError.InvalidCharacter(loc, ch));
+                throw new JsonException(new JsonError.InvalidCharacter(loc, (char) ch));
             }
-            text.append(ch);
+            text.append((char) ch);
             ch = source.nextChar();
             if (!isDigit(ch) && ch != '.') {
                 throw new JsonException(negative
@@ -170,11 +170,11 @@ final class Lexer {
         boolean integerDigits = false;
         if (ch == '0') {
             integerDigits = true;
-            text.append(ch);
+            text.append((char) ch);
             ch = source.nextChar();
             if (ch == 'x' || ch == 'X') {
                 if (mode == JsonParsingMode.STRICT) {
-                    throw new JsonException(new JsonError.InvalidCharacter(loc, ch));
+                    throw new JsonException(new JsonError.InvalidCharacter(loc, (char) ch));
                 }
                 StringBuilder hex = new StringBuilder();
                 ch = source.nextChar();
@@ -182,7 +182,7 @@ final class Lexer {
                     throw new JsonException(new JsonError.ExpectedHexDigit(source.location()));
                 }
                 while (isHexDigit(ch)) {
-                    hex.append(ch);
+                    hex.append((char) ch);
                     ch = source.nextChar();
                 }
                 BigInteger value = new BigInteger(hex.toString(), 16);
@@ -194,17 +194,17 @@ final class Lexer {
         }
         while (isDigit(ch)) {
             integerDigits = true;
-            text.append(ch);
+            text.append((char) ch);
             ch = source.nextChar();
         }
         boolean real = false;
         if (ch == '.') {
             JsonLocation point = source.location();
             if (!integerDigits && mode == JsonParsingMode.STRICT) {
-                throw new JsonException(new JsonError.InvalidCharacter(loc, ch));
+                throw new JsonException(new JsonError.InvalidCharacter(loc, (char) ch));
             }
             real = true;
-            text.append(ch);
+            text.append((char) ch);
             ch = source.nextChar();
             if (!isDigit(ch)) {
                 if (!integerDigits) {
@@ -215,24 +215,24 @@ final class Lexer {
                 }
             }
             while (isDigit(ch)) {
-                text.append(ch);
+                text.append((char) ch);
                 ch = source.nextChar();
             }
         }
         if (ch == 'e' || ch == 'E') {
             real = true;
             JsonLocation exponent = source.location();
-            text.append(ch);
+            text.append((char) ch);
             ch = source.nextChar();
             if (ch == '+' || ch == '-') {
-                text.append(ch);
+                text.append((char) ch);
                 ch = source.nextChar();
             }
             if (!isDigit(ch)) {
                 throw new JsonException(new JsonError.IncorrectExponentNotation(exponent));
             }
             while (isDigit(ch)) {
-                text.append(ch);
+                text.append((char) ch);
                 ch = source.nextChar();
             }
         }
@@ -255,7 +255,7 @@ final class Lexer {
      */
     private TokenString parseString(JsonLocation loc, char quote) throws JsonException {
         StringBuilder value = new StringBuilder();
-        char ch = source.nextChar();
+        int ch = source.nextChar();
         while(ch != quote) {
             if (ch == '\\') {
                 ch = source.nextChar();
@@ -264,7 +264,7 @@ final class Lexer {
                     case '\'':
                     case '\\':
                     case '/':
-                        value.append(ch);
+                        value.append((char) ch);
                         break;
                     case 'b':
                         value.append('\b');
@@ -282,13 +282,13 @@ final class Lexer {
                         value.append('\t');
                         break;
                     case 'u':
-                        char hex0 = source.nextChar();
-                        char hex1 = source.nextChar();
-                        char hex2 = source.nextChar();
-                        char hex3 = source.nextChar();
+                        int hex0 = source.nextChar();
+                        int hex1 = source.nextChar();
+                        int hex2 = source.nextChar();
+                        int hex3 = source.nextChar();
                         if (!isHexDigit(hex0) || !isHexDigit(hex1) || !isHexDigit(hex2) || !isHexDigit(hex3)) {
-                            String errorSequence = "u" + (hex0 > ' ' ? hex0 : '?') + (hex1 > ' ' ? hex1 : '?')
-                                    + (hex2 > ' ' ? hex2 : '?') + (hex3 > ' ' ? hex3 : '?');
+                            String errorSequence = "u" + (hex0 > ' ' ? (char) hex0 : '?') + (hex1 > ' ' ? (char) hex1 : '?')
+                                    + (hex2 > ' ' ? (char) hex2 : '?') + (hex3 > ' ' ? (char) hex3 : '?');
                             throw new JsonException(new JsonError.IncorrectStringSequence(
                                     source.location(),
                                     errorSequence
@@ -319,13 +319,15 @@ final class Lexer {
                     default:
                         throw new JsonException(new JsonError.IncorrectStringSequence(
                                 source.location(),
-                                ch > ' ' ? "" + ch : "?"
+                                ch > ' ' ? "" + (char) ch : "?"
                         ));
                 }
-            } else if (ch == 0) {
+            } else if (ch == -1) {
                 throw new JsonException(new JsonError.UnclosedString(loc));
+            } else if (ch == 0) {
+                throw new JsonException(new JsonError.InvalidCharacter(source.location(), (char) ch));
             } else {
-                value.append(ch);
+                value.append((char) ch);
             }
             ch = source.nextChar();
         }
@@ -338,7 +340,7 @@ final class Lexer {
      * @param ch Hexadecimal number
      * @return Decimal number
      */
-    private static int hexToDecimal(char ch) {
+    private static int hexToDecimal(int ch) {
         if (ch >= '0' && ch <= '9') {
             return ch - '0';
         }

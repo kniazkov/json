@@ -65,6 +65,11 @@ public final class JsonParser {
         return parser.parseRoot();
     }
 
+    /** Parses an already opened source without closing it. */
+    static JsonElement parseSource(Source source, JsonParsingMode mode) throws JsonException {
+        return new JsonParser(source, mode, null).parseRoot();
+    }
+
     /**
      * Parses a Java object and tries to represent it as a JSON element.
      * @param obj Java object
