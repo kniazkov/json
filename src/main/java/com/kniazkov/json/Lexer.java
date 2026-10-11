@@ -3,6 +3,9 @@
  */
 package com.kniazkov.json;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
 /**
  * Splits JSON documents into separate tokens.
  */
@@ -63,66 +66,8 @@ final class Lexer {
             return new TokenIdentifier(loc, identifier);
         }
 
-        NumberParsing number = null;
-
-        if (ch == '-') {
-            ch = source.nextChar();
-            number = new NumberParsing(loc, true);
-        }
-        else if (ch == '+') {
-            if (mode == JsonParsingMode.STRICT) {
-                throw new JsonException(new JsonError.InvalidCharacter(loc, '+'));
-            }
-            ch = source.nextChar();
-            number = new NumberParsing(loc, false);
-        }
-
-        if (ch == '0') {
-            if (number == null) {
-                number = new NumberParsing(loc, false);
-            }
-            ch = source.nextChar();
-            if (ch == 'x') {
-                if (mode == JsonParsingMode.STRICT) {
-                    throw new JsonException(new JsonError.InvalidCharacter(loc, 'x'));
-                }
-                ch = source.nextChar();
-                if (isHexDigit(ch)) {
-                    return parseHexNumber(loc, ch, number.negative);
-                }
-                throw new JsonException(new JsonError.ExpectedHexDigit(source.getLocation()));
-            } else if (isDigit(ch)) {
-                return parseNumber(number, ch);
-            } else if (ch == '.') {
-                return parseRealNumber(number);
-            } else {
-                return new TokenNumber(loc, 0);
-            }
-        }
-
-        if (isDigit(ch)) {
-            if (number == null) {
-                number = new NumberParsing(loc, false);
-            }
-           return parseNumber(number, ch);
-        }
-
-        if (ch == '.') {
-            if (mode == JsonParsingMode.STRICT) {
-                throw new JsonException(new JsonError.InvalidCharacter(loc, '.'));
-            }
-            if (number == null) {
-                number = new NumberParsing(loc, false);
-            }
-            return parseRealNumber(number);
-        }
-
-        if (number != null) {
-            if (number.negative) {
-                throw new JsonException(new JsonError.ExpectedNumberAfterMinus(source.getLocation()));
-            } else {
-                throw new JsonException(new JsonError.ExpectedNumberAfterPlus(source.getLocation()));
-            }
+        if (ch == '-' || ch == '+' || ch == '.' || isDigit(ch)) {
+            return parseNumber(loc);
         }
 
         if (ch == '"') {
@@ -205,180 +150,100 @@ final class Lexer {
         return isDigit(ch) || ch >= 'a' && ch <= 'f' || ch >= 'A' && ch <= 'F' ;
     }
 
-    /**
-     * Data needed for parsing numbers.
-     */
-    private class NumberParsing {
-        /**
-         * Location in the JSON document.
-         */
-        final JsonLocation start;
-
-        /**
-         * Flag that determines that the number is negative.
-         */
-        final boolean negative;
-
-        /**
-         * Integer part of the number.
-         */
-        long intPart;
-
-        /**
-         * Flag that indicates that the number has an integer part.
-         */
-        boolean hasIntPart;
-
-        /**
-         * Fractional part of the number.
-         */
-        long fractPart;
-
-        /**
-         * Divisor by which the fractional part is to be divided.
-         */
-        long divisor;
-
-        /**
-         * Decimal point location.
-         */
-        JsonLocation point;
-
-        /**
-         * Exponent.
-         */
-        int exponent;
-
-        /**
-         * Constructor.
-         * @param start Location in the JSON document
-         * @param negative Flag that determines that the number is negative
-         */
-        NumberParsing(JsonLocation start, boolean negative) {
-            this.start = start;
-            this.negative = negative;
-            this.intPart = 0;
-            this.hasIntPart = false;
-            this.fractPart = 0;
-            this.divisor = 1;
-            this.point = null;
-            this.exponent = 0;
+    /** Parses a numeric lexeme without intermediate floating-point conversion. */
+    private TokenNumber parseNumber(JsonLocation loc) throws JsonException {
+        StringBuilder text = new StringBuilder();
+        char ch = source.getChar();
+        boolean negative = ch == '-';
+        if (ch == '-' || ch == '+') {
+            if (ch == '+' && mode == JsonParsingMode.STRICT) {
+                throw new JsonException(new JsonError.InvalidCharacter(loc, ch));
+            }
+            text.append(ch);
+            ch = source.nextChar();
+            if (!isDigit(ch) && ch != '.') {
+                throw new JsonException(negative
+                        ? new JsonError.ExpectedNumberAfterMinus(source.getLocation())
+                        : new JsonError.ExpectedNumberAfterPlus(source.getLocation()));
+            }
         }
-
-        /**
-         * Generates a token from the collected data.
-         * @return Token representing a number
-         * @throws JsonException If parsing fails
-         */
-        TokenNumber createToken() throws JsonException {
-            if (divisor == 1) {
-                if (!hasIntPart) {
-                    throw new JsonException(new JsonError.IncorrectNumberFormat(start));
+        boolean integerDigits = false;
+        if (ch == '0') {
+            integerDigits = true;
+            text.append(ch);
+            ch = source.nextChar();
+            if (ch == 'x' || ch == 'X') {
+                if (mode == JsonParsingMode.STRICT) {
+                    throw new JsonException(new JsonError.InvalidCharacter(loc, ch));
                 }
-                if (point != null && mode == JsonParsingMode.STRICT) {
+                StringBuilder hex = new StringBuilder();
+                ch = source.nextChar();
+                if (!isHexDigit(ch)) {
+                    throw new JsonException(new JsonError.ExpectedHexDigit(source.getLocation()));
+                }
+                while (isHexDigit(ch)) {
+                    hex.append(ch);
+                    ch = source.nextChar();
+                }
+                BigInteger value = new BigInteger(hex.toString(), 16);
+                return new TokenNumber(loc, JsonNumber.of(negative ? value.negate() : value));
+            }
+            if (isDigit(ch) && mode != JsonParsingMode.EXTENDED) {
+                throw new JsonException(new JsonError.IncorrectNumberFormat(loc));
+            }
+        }
+        while (isDigit(ch)) {
+            integerDigits = true;
+            text.append(ch);
+            ch = source.nextChar();
+        }
+        boolean real = false;
+        if (ch == '.') {
+            JsonLocation point = source.getLocation();
+            if (!integerDigits && mode == JsonParsingMode.STRICT) {
+                throw new JsonException(new JsonError.InvalidCharacter(loc, ch));
+            }
+            real = true;
+            text.append(ch);
+            ch = source.nextChar();
+            if (!isDigit(ch)) {
+                if (!integerDigits) {
+                    throw new JsonException(new JsonError.IncorrectNumberFormat(loc));
+                }
+                if (mode == JsonParsingMode.STRICT) {
                     throw new JsonException(new JsonError.ExpectedNumberAfterPoint(point));
                 }
             }
-            final double sign = negative ? -1 : 1;
-            double value = sign * (intPart + (double)fractPart / (double)divisor);
-            if (exponent != 0) {
-                value = value * Math.pow(10, exponent);
+            while (isDigit(ch)) {
+                text.append(ch);
+                ch = source.nextChar();
             }
-            return new TokenNumber(start, value);
-        }
-    }
-
-    /**
-     * Parses the character sequence as a number.
-     * @param data Data needed for parsing numbers
-     * @param firstDigit First digit
-     * @return A token representing a number
-     * @throws JsonException If parsing fails
-     */
-    private TokenNumber parseNumber(NumberParsing data, char firstDigit) throws JsonException {
-        data.hasIntPart = true;
-        char ch = firstDigit;
-        do {
-            data.intPart = data.intPart * 10 + (ch - '0');
-            ch = source.nextChar();
-        } while(isDigit(ch));
-        if (ch == '.') {
-            return parseRealNumber(data);
         }
         if (ch == 'e' || ch == 'E') {
-            return parseExponent(data);
-        }
-        return data.createToken();
-    }
-
-    /**
-     * Parses the character sequence as a real number.
-     * @param data Data needed for parsing numbers
-     * @return A token representing a number
-     * @throws JsonException If parsing fails
-     */
-    private TokenNumber parseRealNumber(NumberParsing data) throws JsonException {
-        char ch = source.getChar();
-        assert ch == '.';
-        data.point = source.getLocation();
-        ch = source.nextChar();
-        while (isDigit(ch)) {
-            data.fractPart = data.fractPart * 10 + (ch - '0');
-            data.divisor = data.divisor * 10;
+            real = true;
+            JsonLocation exponent = source.getLocation();
+            text.append(ch);
             ch = source.nextChar();
+            if (ch == '+' || ch == '-') {
+                text.append(ch);
+                ch = source.nextChar();
+            }
+            if (!isDigit(ch)) {
+                throw new JsonException(new JsonError.IncorrectExponentNotation(exponent));
+            }
+            while (isDigit(ch)) {
+                text.append(ch);
+                ch = source.nextChar();
+            }
         }
-        if (ch == 'e' || ch == 'E') {
-            return parseExponent(data);
+        try {
+            JsonNumber value = real ? JsonNumber.of(new BigDecimal(text.toString()))
+                    : JsonNumber.of(new BigInteger(text.toString()));
+            return new TokenNumber(loc, value);
+        } catch (NumberFormatException exception) {
+            // BigDecimal's exponent/scale range is finite; never wrap it silently.
+            throw new JsonException(new JsonError.IncorrectNumberFormat(loc));
         }
-        return data.createToken();
-    }
-
-    /**
-     * Parses the character sequence as an exponent (the part of number after 'e').
-     * @param data Data needed for parsing numbers
-     * @return A token representing a number
-     * @throws JsonException If parsing fails
-     */
-    private TokenNumber parseExponent(NumberParsing data) throws JsonException {
-        char ch = source.getChar();
-        assert ch == 'e' || ch == 'E';
-        JsonLocation loc = source.getLocation();
-        ch = source.nextChar();
-        int sign = 1;
-        if (ch == '+') {
-            ch = source.nextChar();
-        } else if (ch == '-') {
-            sign = -1;
-            ch = source.nextChar();
-        }
-        if (!isDigit(ch)) {
-            throw new JsonException(new JsonError.IncorrectExponentNotation(loc));
-        }
-        int value = 0;
-        while (isDigit(ch)) {
-            value = value * 10 + (ch - '0');
-            ch = source.nextChar();
-        }
-        data.exponent = value * sign;
-        return data.createToken();
-    }
-
-    /**
-     * Parses the character sequence as a hexadecimal number.
-     * @param loc Location of the first character of the token
-     * @param firstDigit First digit
-     * @param negative Is the number negative
-     * @return A token representing a number
-     */
-    private TokenNumber parseHexNumber(JsonLocation loc, char firstDigit, boolean negative) {
-        final long sign = negative ? -1 : 1;
-        char ch = firstDigit;
-        long value = 0;
-        do {
-            value = value * 16 + hexToDecimal(ch);
-            ch = source.nextChar();
-        } while(isHexDigit(ch));
-        return new TokenNumber(loc, sign * value);
     }
 
     /**

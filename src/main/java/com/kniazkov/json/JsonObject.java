@@ -324,7 +324,34 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
      * @param value Value of the number
      */
     public void addNumber(String key, double value) {
-        addChild(key, new JsonNumber(this, value));
+        addChild(key, JsonNumber.of(this, value));
+    }
+
+    /**
+     * Adds an exact number using its Java type.
+     * @param key Property key
+     * @param value Numeric value
+     */
+    public void addNumber(String key, float value) {
+        addChild(key, JsonNumber.of(this, value));
+    }
+
+    /**
+     * Adds an exact number using its Java type.
+     * @param key Property key
+     * @param value Numeric value
+     */
+    public void addNumber(String key, long value) {
+        addChild(key, JsonNumber.of(this, value));
+    }
+
+    /**
+     * Adds an exact number using its Java type.
+     * @param key Property key
+     * @param value Numeric value
+     */
+    public void addNumber(String key, Number value) {
+        addChild(key, JsonNumber.of(this, value));
     }
 
     /**

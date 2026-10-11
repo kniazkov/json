@@ -10,25 +10,25 @@ final class TokenNumber extends TokenLiteral {
     /**
      * Value of the number.
      */
-    private final double value;
+    private final JsonNumber value;
 
     /**
      * Constructor.
      * @param loc Location of the first character of the token
      * @param value Value of the number
      */
-    TokenNumber(JsonLocation loc, double value) {
+    TokenNumber(JsonLocation loc, JsonNumber value) {
         super(loc);
         this.value = value;
     }
 
     @Override
     public String toString() {
-        return Utils.doubleToString(value);
+        return value.toString();
     }
 
     @Override
     JsonElement toElement(JsonContainer parent) {
-        return new JsonNumber(parent, value);
+        return value.clone(parent);
     }
 }

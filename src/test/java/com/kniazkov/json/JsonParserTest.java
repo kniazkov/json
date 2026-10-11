@@ -304,7 +304,7 @@ public class JsonParserTest {
         Assert.assertFalse(oops);
         Assert.assertNotNull(elem);
         Assert.assertEquals(5e100, elem.getDoubleValue(), 0);
-        Assert.assertEquals(elem.toString(), "5.0E100");
+        Assert.assertEquals(elem.toString(), "5.0E+100");
 
         JsonError error = null;
         try {
