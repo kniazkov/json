@@ -252,7 +252,7 @@ public final class JsonArray extends JsonContainer implements List<JsonElement> 
      * @return Child element
      * @throws IndexOutOfBoundsException If the index goes out of bounds
      */
-    public JsonElement getElement(int index) throws IndexOutOfBoundsException {
+    public JsonElement element(int index) throws IndexOutOfBoundsException {
         return list.get(index);
     }
 
@@ -346,7 +346,7 @@ public final class JsonArray extends JsonContainer implements List<JsonElement> 
      * @param elem Element
      */
     void addChild(JsonElement elem) {
-        assert elem.getParent() == this;
+        assert elem.parent() == this;
         list.add(elem);
     }
 
@@ -370,49 +370,49 @@ public final class JsonArray extends JsonContainer implements List<JsonElement> 
             assert(parameters.length == 1);
             if (parameters[0] == java.lang.Byte.class) {
                 for (JsonElement jsonElement : array) {
-                    Byte obj = (byte)jsonElement.getIntValue();
+                    Byte obj = (byte)jsonElement.intValue();
                     list.add(obj);
                 }
             }
             else if (parameters[0] == java.lang.Short.class) {
                 for (JsonElement jsonElement : array) {
-                    Short obj = (short)jsonElement.getIntValue();
+                    Short obj = (short)jsonElement.intValue();
                     list.add(obj);
                 }
             }
             else if (parameters[0] == java.lang.Integer.class) {
                 for (JsonElement jsonElement : array) {
-                    Integer obj = jsonElement.getIntValue();
+                    Integer obj = jsonElement.intValue();
                     list.add(obj);
                 }
             }
             else if (parameters[0] == java.lang.Long.class) {
                 for (JsonElement jsonElement : array) {
-                    Long obj = jsonElement.getLongValue();
+                    Long obj = jsonElement.longValue();
                     list.add(obj);
                 }
             }
             else if (parameters[0] == java.lang.Float.class) {
                 for (JsonElement jsonElement : array) {
-                    Float obj = (float)jsonElement.getDoubleValue();
+                    Float obj = (float)jsonElement.doubleValue();
                     list.add(obj);
                 }
             }
             else if (parameters[0] == java.lang.Double.class) {
                 for (JsonElement jsonElement : array) {
-                    Double obj = jsonElement.getDoubleValue();
+                    Double obj = jsonElement.doubleValue();
                     list.add(obj);
                 }
             }
             else if (parameters[0] == java.lang.Boolean.class) {
                 for (JsonElement jsonElement : array) {
-                    Boolean obj = jsonElement.getBooleanValue();
+                    Boolean obj = jsonElement.booleanValue();
                     list.add(obj);
                 }
             }
             else if (parameters[0] == java.lang.String.class) {
                 for (JsonElement jsonElement : array) {
-                    String obj = jsonElement.getStringValue();
+                    String obj = jsonElement.stringValue();
                     list.add(obj);
                 }
             }

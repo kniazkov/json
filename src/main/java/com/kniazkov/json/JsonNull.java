@@ -46,7 +46,7 @@ public class JsonNull extends JsonElement {
     }
 
     @Override
-    public String getStringValue() {
+    public String stringValue() {
         return "null";
     }
 }

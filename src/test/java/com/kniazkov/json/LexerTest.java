@@ -16,7 +16,7 @@ public class LexerTest {
         boolean oops = false;
         Token token = null;
         try {
-            token = lexer.getToken();
+            token = lexer.token();
         } catch (JsonException exception) {
             oops = true;
         }
@@ -31,15 +31,15 @@ public class LexerTest {
         boolean oops = false;
         Token token = null;
         try {
-            token = lexer.getToken();
+            token = lexer.token();
         } catch (JsonException exception) {
             oops = true;
         }
         Assert.assertFalse(oops);
         Assert.assertNotNull(token);
-        JsonLocation loc = token.getLocation();
-        Assert.assertEquals(1, loc.getRow());
-        Assert.assertEquals(1, loc.getColumn());
+        JsonLocation loc = token.location();
+        Assert.assertEquals(1, loc.row());
+        Assert.assertEquals(1, loc.column());
     }
 
     @Test
@@ -48,15 +48,15 @@ public class LexerTest {
         boolean oops = false;
         Token token = null;
         try {
-            token = lexer.getToken();
+            token = lexer.token();
         } catch (JsonException exception) {
             oops = true;
         }
         Assert.assertFalse(oops);
         Assert.assertNotNull(token);
-        JsonLocation loc = token.getLocation();
-        Assert.assertEquals(1, loc.getRow());
-        Assert.assertEquals(4, loc.getColumn());
+        JsonLocation loc = token.location();
+        Assert.assertEquals(1, loc.row());
+        Assert.assertEquals(4, loc.column());
     }
 
     @Test
@@ -65,15 +65,15 @@ public class LexerTest {
         boolean oops = false;
         Token token = null;
         try {
-            token = lexer.getToken();
+            token = lexer.token();
         } catch (JsonException exception) {
             oops = true;
         }
         Assert.assertFalse(oops);
         Assert.assertNotNull(token);
-        JsonLocation loc = token.getLocation();
-        Assert.assertEquals(3, loc.getRow());
-        Assert.assertEquals(2, loc.getColumn());
+        JsonLocation loc = token.location();
+        Assert.assertEquals(3, loc.row());
+        Assert.assertEquals(2, loc.column());
     }
 
     @Test
@@ -81,15 +81,15 @@ public class LexerTest {
         Lexer lexer = new Lexer(new Source("\n\n\n\n\n\n\n\n\n\n   -abc"), JsonParsingMode.STRICT);
         JsonError error = null;
         try {
-            lexer.getToken();
+            lexer.token();
         } catch (JsonException exception) {
-            error = exception.getError();
+            error = exception.error();
         }
         Assert.assertTrue(error instanceof JsonError.ExpectedNumberAfterMinus);
-        String message = error.getMessage();
-        JsonLocation loc = error.getLocation();
+        String message = error.message();
+        JsonLocation loc = error.location();
         Assert.assertEquals("A number after the minus sign is expected", message);
-        Assert.assertEquals(11, loc.getRow());
-        Assert.assertEquals(5, loc.getColumn());
+        Assert.assertEquals(11, loc.row());
+        Assert.assertEquals(5, loc.column());
     }
 }

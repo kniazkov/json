@@ -193,7 +193,7 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
             } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException ignored) {
                 return null;
             }
-            final List<Field> fields = getAllFields(type);
+            final List<Field> fields = allFields(type);
             for (Field field : fields) {
                 String propertyName = field.getName();
                 if (field.isAnnotationPresent(JsonProperty.class)) {
@@ -206,56 +206,56 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
                     try {
                         field.setAccessible(true);
                         if (fieldType == byte.class) {
-                            field.setByte(result, (byte)child.getIntValue());
+                            field.setByte(result, (byte)child.intValue());
                         }
                         else if (fieldType == java.lang.Byte.class) {
-                            Byte obj = child.isNull() ? null : (byte)child.getIntValue();
+                            Byte obj = child.isNull() ? null : (byte)child.intValue();
                             field.set(result, obj);
                         }
                         else if (fieldType == short.class) {
-                            field.setShort(result, (short)child.getIntValue());
+                            field.setShort(result, (short)child.intValue());
                         }
                         else if (fieldType == java.lang.Short.class) {
-                            Short obj = child.isNull() ? null : (short)child.getIntValue();
+                            Short obj = child.isNull() ? null : (short)child.intValue();
                             field.set(result, obj);
                         }
                         else if (fieldType == int.class) {
-                            field.setInt(result, child.getIntValue());
+                            field.setInt(result, child.intValue());
                         }
                         else if (fieldType == java.lang.Integer.class) {
-                            Integer obj = child.isNull() ? null : child.getIntValue();
+                            Integer obj = child.isNull() ? null : child.intValue();
                             field.set(result, obj);
                         }
                         else if (fieldType == long.class) {
-                            field.setLong(result, child.getLongValue());
+                            field.setLong(result, child.longValue());
                         }
                         else if (fieldType == java.lang.Long.class) {
-                            Long obj = child.isNull() ? null : child.getLongValue();
+                            Long obj = child.isNull() ? null : child.longValue();
                             field.set(result, obj);
                         }
                         else if (fieldType == float.class) {
-                            field.setFloat(result, (float)child.getDoubleValue());
+                            field.setFloat(result, (float)child.doubleValue());
                         }
                         else if (fieldType == java.lang.Float.class) {
-                            Float obj = child.isNull() ? null : (float)child.getDoubleValue();
+                            Float obj = child.isNull() ? null : (float)child.doubleValue();
                             field.set(result, obj);
                         }
                         else if (fieldType == double.class) {
-                            field.setDouble(result, child.getDoubleValue());
+                            field.setDouble(result, child.doubleValue());
                         }
                         else if (fieldType == java.lang.Double.class) {
-                            Double obj = child.isNull() ? null : child.getDoubleValue();
+                            Double obj = child.isNull() ? null : child.doubleValue();
                             field.set(result, obj);
                         }
                         else if (fieldType == boolean.class) {
-                            field.setBoolean(result, child.getBooleanValue());
+                            field.setBoolean(result, child.booleanValue());
                         }
                         else if (fieldType == java.lang.Boolean.class) {
-                            Boolean obj =  child.isNull() ? null : child.getBooleanValue();
+                            Boolean obj =  child.isNull() ? null : child.booleanValue();
                             field.set(result, obj);
                         }
                         else if (fieldType == java.lang.String.class) {
-                            field.set(result, child.isNull() ? null : child.getStringValue());
+                            field.set(result, child.isNull() ? null : child.stringValue());
                         }
                         else if (fieldType == java.lang.Object.class) {
                             field.set(result, child.toJavaObject());
@@ -288,7 +288,7 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
      * @param key Key
      * @return Child element
      */
-    public JsonElement getElement(String key) {
+    public JsonElement element(String key) {
         return get(key);
     }
 
@@ -409,9 +409,9 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
      * @param type the class to analyze
      * @param map  the map to store fields by name
      */
-    private static void getAllFieldsMap(Class<?> type, Map<String, Field> map) {
+    private static void allFieldsMap(Class<?> type, Map<String, Field> map) {
         if (type.getSuperclass() != null) {
-            getAllFieldsMap(type.getSuperclass(), map);
+            allFieldsMap(type.getSuperclass(), map);
         }
         for (Field field : type.getDeclaredFields()) {
             map.put(field.getName(), field);
@@ -425,9 +425,9 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
      * @param type the class to analyze
      * @return a list of all unique fields in order of inheritance
      */
-    private static List<Field> getAllFields(Class<?> type) {
+    private static List<Field> allFields(Class<?> type) {
         final Map<String, Field> map = new TreeMap<>();
-        getAllFieldsMap(type, map);
+        allFieldsMap(type, map);
         return new ArrayList<>(map.values());
     }
 }

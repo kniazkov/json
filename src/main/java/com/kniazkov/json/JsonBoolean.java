@@ -27,7 +27,7 @@ public final class JsonBoolean extends JsonElement {
      * @param value Boolean value
      * @return An instance
      */
-    public static JsonBoolean getInstance(boolean value) {
+    public static JsonBoolean of(boolean value) {
         return value ? TRUE : FALSE;
     }
 
@@ -71,12 +71,12 @@ public final class JsonBoolean extends JsonElement {
     }
 
     @Override
-    public boolean getBooleanValue() {
+    public boolean booleanValue() {
         return value;
     }
 
     @Override
-    public String getStringValue() {
+    public String stringValue() {
         return value ? "true" : "false";
     }
 }

@@ -24,7 +24,7 @@ public abstract class JsonError {
      * Returns the location in the document where the error was found.
      * @return Location
      */
-    public JsonLocation getLocation() {
+    public JsonLocation location() {
         return loc;
     }
 
@@ -32,8 +32,8 @@ public abstract class JsonError {
      * Returns the text description of the error (in English).
      * @return Text description of the error
      */
-    public String getMessage() {
-        return getLocalizedMessage("en");
+    public String message() {
+        return localizedMessage("en");
     }
 
     /**
@@ -41,11 +41,11 @@ public abstract class JsonError {
      * @param lang Language of message ('en', 'ru'...)
      * @return Text description of the error
      */
-    public abstract String getLocalizedMessage(String lang);
+    public abstract String localizedMessage(String lang);
 
     @Override
     public String toString() {
-        return String.format("%d.%d, %s", loc.row, loc.column, getMessage());
+        return String.format("%d.%d, %s", loc.row, loc.column, message());
     }
 
     /**
@@ -61,7 +61,7 @@ public abstract class JsonError {
         }
 
         @Override
-        public String getLocalizedMessage(String lang) {
+        public String localizedMessage(String lang) {
             if ("ru".equals(lang)) {
                 return "После знака минуса должно быть число";
             }
@@ -82,7 +82,7 @@ public abstract class JsonError {
         }
 
         @Override
-        public String getLocalizedMessage(String lang) {
+        public String localizedMessage(String lang) {
             if ("ru".equals(lang)) {
                 return "После знака плюса должно быть число";
             }
@@ -103,7 +103,7 @@ public abstract class JsonError {
         }
 
         @Override
-        public String getLocalizedMessage(String lang) {
+        public String localizedMessage(String lang) {
             if ("ru".equals(lang)) {
                 return "После десятичной точки должно быть число";
             }
@@ -124,7 +124,7 @@ public abstract class JsonError {
         }
 
         @Override
-        public String getLocalizedMessage(String lang) {
+        public String localizedMessage(String lang) {
             if ("ru".equals(lang)) {
                 return "Неправильный формат экспоненты числа";
             }
@@ -145,7 +145,7 @@ public abstract class JsonError {
         }
 
         @Override
-        public String getLocalizedMessage(String lang) {
+        public String localizedMessage(String lang) {
             if ("ru".equals(lang)) {
                 return "После 'x' должна быть шестнадцатеричная цифра";
             }
@@ -166,7 +166,7 @@ public abstract class JsonError {
         }
 
         @Override
-        public String getLocalizedMessage(String lang) {
+        public String localizedMessage(String lang) {
             if ("ru".equals(lang)) {
                 return "Неправильный формат числа";
             }
@@ -193,7 +193,7 @@ public abstract class JsonError {
         }
 
         @Override
-        public String getLocalizedMessage(String lang) {
+        public String localizedMessage(String lang) {
             if ("ru".equals(lang)) {
                 return "Недопустимый символ: '" + ch + '\'';
             }
@@ -214,7 +214,7 @@ public abstract class JsonError {
         }
 
         @Override
-        public String getLocalizedMessage(String lang) {
+        public String localizedMessage(String lang) {
             if ("ru".equals(lang)) {
                 return "После запятой должен быть элемент";
             }
@@ -235,7 +235,7 @@ public abstract class JsonError {
         }
 
         @Override
-        public String getLocalizedMessage(String lang) {
+        public String localizedMessage(String lang) {
             if ("ru".equals(lang)) {
                 return "Пропущена закрывающая кавычка";
             }
@@ -262,7 +262,7 @@ public abstract class JsonError {
         }
 
         @Override
-        public String getLocalizedMessage(String lang) {
+        public String localizedMessage(String lang) {
             if ("ru".equals(lang)) {
                 return "Неправильная строковая последовательность: '\\" + sequence + '\'';
             }
@@ -283,7 +283,7 @@ public abstract class JsonError {
         }
 
         @Override
-        public String getLocalizedMessage(String lang) {
+        public String localizedMessage(String lang) {
             if ("ru".equals(lang)) {
                 return "После запятой должна быть пара ключ:значение";
             }
@@ -304,7 +304,7 @@ public abstract class JsonError {
         }
 
         @Override
-        public String getLocalizedMessage(String lang) {
+        public String localizedMessage(String lang) {
             if ("ru".equals(lang)) {
                 return "Ожидается ключ (строка)";
             }
@@ -325,7 +325,7 @@ public abstract class JsonError {
         }
 
         @Override
-        public String getLocalizedMessage(String lang) {
+        public String localizedMessage(String lang) {
             if ("ru".equals(lang)) {
                 return "После ключа должно быть двоеточие в качестве разделителя";
             }
@@ -346,7 +346,7 @@ public abstract class JsonError {
         }
 
         @Override
-        public String getLocalizedMessage(String lang) {
+        public String localizedMessage(String lang) {
             if ("ru".equals(lang)) {
                 return "После разделителя должен быть элемент";
             }
@@ -367,7 +367,7 @@ public abstract class JsonError {
         }
 
         @Override
-        public String getLocalizedMessage(String lang) {
+        public String localizedMessage(String lang) {
             if ("ru".equals(lang)) {
                 return "Пропущена запятая";
             }
@@ -396,7 +396,7 @@ public abstract class JsonError {
         }
 
         @Override
-        public String getLocalizedMessage(String lang) {
+        public String localizedMessage(String lang) {
             if ("ru".equals(lang)) {
                 return String.format(
                     "Неправильная последовательность, начинающаяся с токена '%s'",

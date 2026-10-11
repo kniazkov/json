@@ -3,6 +3,8 @@
  */
 package com.kniazkov.json;
 
+import java.math.BigDecimal;
+
 /**
  * Some JSON element, which can be an object, array, string, number, or literal.
  */
@@ -24,7 +26,7 @@ public abstract class JsonElement implements Cloneable {
      * Returns the parent of this element, that is, the element that contains this element.
      * @return The parent of this element
      */
-    public JsonContainer getParent() {
+    public JsonContainer parent() {
         return parent;
     }
 
@@ -72,6 +74,7 @@ public abstract class JsonElement implements Cloneable {
 
     /**
      * Represents the element as a Java object.
+     * Numeric values retain their exact BigInteger or BigDecimal representation.
      * @return Object containing element data
      */
     public abstract Object toJavaObject();
@@ -106,7 +109,7 @@ public abstract class JsonElement implements Cloneable {
      * @return The value of the element represented as a boolean,
      *   or {@code false} if the element is not boolean
      */
-    public boolean getBooleanValue() {
+    public boolean booleanValue() {
         return false;
     }
 
@@ -140,7 +143,7 @@ public abstract class JsonElement implements Cloneable {
      * @return The value of the element converted to a 32-bit integer,
      *   or 0 if no such conversion is possible
      */
-    public int getIntValue() {
+    public int intValue() {
         return 0;
     }
 
@@ -150,7 +153,7 @@ public abstract class JsonElement implements Cloneable {
      * @return The value of the element converted to a 64-bit integer,
      *   or 0 if no such conversion is possible
      */
-    public long getLongValue() {
+    public long longValue() {
         return 0;
     }
 
@@ -160,7 +163,7 @@ public abstract class JsonElement implements Cloneable {
      * @return The value of the element represented as a double-precision real number,
      *   or 0 if no such conversion is possible.
      */
-    public double getDoubleValue() {
+    public double doubleValue() {
         return 0;
     }
 
@@ -177,7 +180,7 @@ public abstract class JsonElement implements Cloneable {
      * @return The value of the element represented as a string,
      *   or empty string if no such conversion is possible
      */
-    public String getStringValue() {
+    public String stringValue() {
         return "";
     }
 
@@ -196,4 +199,143 @@ public abstract class JsonElement implements Cloneable {
     public JsonObject toJsonObject() {
         return null;
     }
+
+    /**
+     * Returns the exact stored number, or null for a non-numeric element.
+     * @return BigInteger for an integer, BigDecimal for a real, or null
+     */
+    public Number numberValue() {
+        return null;
+    }
+
+    /**
+     * Returns the exact decimal representation, or null for a non-numeric element.
+     * @return The decimal value, or null
+     */
+    public BigDecimal decimalValue() {
+        return null;
+    }
+
+    /**
+     * Returns a boolean without coercing other JSON types.
+     * @return Boolean value
+     * @throws JsonDataException If this element is not a boolean
+     */
+    public final boolean booleanValueOrThrow() {
+        if (!isBoolean()) {
+            throw invalidData("a boolean");
+        }
+        return booleanValue();
+    }
+
+    /**
+     * Returns an exactly representable signed 32-bit integer.
+     * @return Integer value
+     * @throws JsonDataException If the type, fraction or range does not fit
+     */
+    public final int intValueOrThrow() {
+        if (!isInteger()) {
+            throw invalidData("an exact signed 32-bit integer");
+        }
+        return intValue();
+    }
+
+    /**
+     * Returns an exactly representable signed 64-bit integer.
+     * @return Long value
+     * @throws JsonDataException If the type, fraction or range does not fit
+     */
+    public final long longValueOrThrow() {
+        if (!isLongInteger()) {
+            throw invalidData("an exact signed 64-bit integer");
+        }
+        return longValue();
+    }
+
+    /**
+     * Returns a double, permitting rounding but rejecting overflow and underflow to zero.
+     * @return Finite double value
+     * @throws JsonDataException If the element is not numeric or its magnitude cannot be represented
+     */
+    public final double doubleValueOrThrow() {
+        if (!isNumber()) {
+            throw invalidData("a number representable as a finite double");
+        }
+        double value = doubleValue();
+        if (!Double.isFinite(value) || (value == 0.0 && decimalValue().signum() != 0)) {
+            throw invalidData("a number representable as a finite double without underflow to zero");
+        }
+        return value;
+    }
+
+    /**
+     * Returns a JSON string without converting numbers, booleans or null to text.
+     * @return String value
+     * @throws JsonDataException If the element is not a JSON string or has a null string payload
+     */
+    public final String stringValueOrThrow() {
+        if (!isString() || stringValue() == null) {
+            throw invalidData("a string with a non-null value");
+        }
+        return stringValue();
+    }
+
+    /**
+     * Returns the exact stored number.
+     * @return BigInteger or BigDecimal value
+     * @throws JsonDataException If the element is not numeric
+     */
+    public final Number numberValueOrThrow() {
+        Number value = numberValue();
+        if (value == null) {
+            throw invalidData("a number");
+        }
+        return value;
+    }
+
+    /**
+     * Returns the exact decimal representation of a number.
+     * @return Decimal value
+     * @throws JsonDataException If the element is not numeric
+     */
+    public final BigDecimal decimalValueOrThrow() {
+        BigDecimal value = decimalValue();
+        if (value == null) {
+            throw invalidData("a number");
+        }
+        return value;
+    }
+
+    /**
+     * Returns this element as a JSON array.
+     * @return JSON array
+     * @throws JsonDataException If the element is not an array
+     */
+    public final JsonArray arrayValueOrThrow() {
+        JsonArray value = toJsonArray();
+        if (value == null) {
+            throw invalidData("an array");
+        }
+        return value;
+    }
+
+    /**
+     * Returns this element as a JSON object.
+     * @return JSON object
+     * @throws JsonDataException If the element is not an object
+     */
+    public final JsonObject objectValueOrThrow() {
+        JsonObject value = toJsonObject();
+        if (value == null) {
+            throw invalidData("an object");
+        }
+        return value;
+    }
+
+    private JsonDataException invalidData(String expected) {
+        // Do not serialize the value: it may be sensitive, very large, or cyclic.
+        return new JsonDataException("Expected " + expected + "; actual element: "
+                + getClass().getSimpleName());
+    }
+
 }

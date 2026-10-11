@@ -14,7 +14,7 @@ public class JsonStringTest {
     public void simpleString() {
         JsonString elem = new JsonString("hello");
         Assert.assertTrue(elem.isString());
-        Assert.assertEquals("hello", elem.getStringValue());
+        Assert.assertEquals("hello", elem.stringValue());
         Assert.assertEquals("\"hello\"", elem.toString());
     }
 

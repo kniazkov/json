@@ -36,7 +36,7 @@ final class TokenString extends TokenLiteral {
      * Returns value of the string.
      * @return Value of the string
      */
-    String getValue() {
+    String value() {
         return value;
     }
 }

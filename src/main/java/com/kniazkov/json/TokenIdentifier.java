@@ -31,7 +31,7 @@ final class TokenIdentifier extends Token {
      * Returns identifier.
      * @return An identifier
      */
-    String getIdentifier() {
+    String identifier() {
         return identifier;
     }
 }

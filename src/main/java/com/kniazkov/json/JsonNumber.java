@@ -122,36 +122,34 @@ public abstract class JsonNumber extends JsonElement {
         throw new IllegalArgumentException("Unsupported number type: " + value.getClass().getName());
     }
 
-    abstract Number numberValue();
-
-    abstract BigDecimal decimalValue();
-
     @Override
-    public Object toJavaObject() {
-        // Preserve the existing untyped conversion contract.
-        return getDoubleValue();
+    public Number toJavaObject() {
+        return numberValue();
     }
 
     @Override
     public <T> T toJavaObject(Class<T> type) {
         Object result;
-        if (type == Byte.class) {
-            result = (byte) getIntValue();
+        if (type == Object.class || type == Number.class) {
+            result = numberValue();
+        }
+        else if (type == Byte.class) {
+            result = (byte) intValue();
         }
         else if (type == Short.class) {
-            result = (short) getIntValue();
+            result = (short) intValue();
         }
         else if (type == Integer.class) {
-            result = getIntValue();
+            result = intValue();
         }
         else if (type == Long.class) {
-            result = getLongValue();
+            result = longValue();
         }
         else if (type == Float.class) {
             result = numberValue().floatValue();
         }
         else if (type == Double.class) {
-            result = getDoubleValue();
+            result = doubleValue();
         }
         else if (type == BigDecimal.class) {
             result = decimalValue();
@@ -190,7 +188,7 @@ public abstract class JsonNumber extends JsonElement {
     }
 
     @Override
-    public int getIntValue() {
+    public int intValue() {
         BigDecimal value = decimalValue();
         if (value.compareTo(BigDecimal.valueOf(Integer.MIN_VALUE)) < 0) {
             return Integer.MIN_VALUE;
@@ -202,7 +200,7 @@ public abstract class JsonNumber extends JsonElement {
     }
 
     @Override
-    public long getLongValue() {
+    public long longValue() {
         BigDecimal value = decimalValue();
         if (value.compareTo(BigDecimal.valueOf(Long.MIN_VALUE)) < 0) {
             return Long.MIN_VALUE;
@@ -214,12 +212,12 @@ public abstract class JsonNumber extends JsonElement {
     }
 
     @Override
-    public double getDoubleValue() {
+    public double doubleValue() {
         return numberValue().doubleValue();
     }
 
     @Override
-    public String getStringValue() {
+    public String stringValue() {
         return toString();
     }
 }
