@@ -30,12 +30,12 @@ public final class JsonInteger extends JsonNumber {
     }
 
     @Override
-    Number numberValue() {
+    public BigInteger numberValue() {
         return value;
     }
 
     @Override
-    BigDecimal decimalValue() {
+    public BigDecimal decimalValue() {
         return new BigDecimal(value);
     }
 

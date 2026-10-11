@@ -32,7 +32,7 @@ abstract class Token {
      * Returns the location of the first character of the token.
      * @return Location
      */
-    JsonLocation getLocation() {
+    JsonLocation location() {
         return loc;
     }
 }

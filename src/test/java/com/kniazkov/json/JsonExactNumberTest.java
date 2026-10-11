@@ -121,17 +121,17 @@ public class JsonExactNumberTest {
 
     @Test
     public void existingGettersTruncateAndSaturateWithoutDoubleRounding() {
-        Assert.assertEquals(9007199254740993L, JsonNumber.of(9007199254740993L).getLongValue());
-        Assert.assertEquals(9007199254740993L, JsonNumber.of(new BigDecimal("9007199254740993.9")).getLongValue());
-        Assert.assertEquals(-13, JsonNumber.of(new BigDecimal("-13.99")).getIntValue());
-        Assert.assertEquals(Long.MAX_VALUE, JsonNumber.of(new BigInteger("18446744073709551616")).getLongValue());
-        Assert.assertEquals(Long.MIN_VALUE, JsonNumber.of(new BigInteger("-18446744073709551616")).getLongValue());
-        Assert.assertEquals(Integer.MAX_VALUE, JsonNumber.of(Long.MAX_VALUE).getIntValue());
-        Assert.assertEquals(Integer.MIN_VALUE, JsonNumber.of(Long.MIN_VALUE).getIntValue());
-        Assert.assertEquals(0L, JsonNumber.of(new BigDecimal("1e-400")).getLongValue());
-        Assert.assertEquals(Double.POSITIVE_INFINITY, JsonNumber.of(new BigDecimal("1e400")).getDoubleValue(), 0);
-        Assert.assertEquals(0.0, JsonNumber.of(new BigDecimal("1e-400")).getDoubleValue(), 0);
-        Assert.assertEquals(13.0, JsonNumber.of(13).toJavaObject());
+        Assert.assertEquals(9007199254740993L, JsonNumber.of(9007199254740993L).longValue());
+        Assert.assertEquals(9007199254740993L, JsonNumber.of(new BigDecimal("9007199254740993.9")).longValue());
+        Assert.assertEquals(-13, JsonNumber.of(new BigDecimal("-13.99")).intValue());
+        Assert.assertEquals(Long.MAX_VALUE, JsonNumber.of(new BigInteger("18446744073709551616")).longValue());
+        Assert.assertEquals(Long.MIN_VALUE, JsonNumber.of(new BigInteger("-18446744073709551616")).longValue());
+        Assert.assertEquals(Integer.MAX_VALUE, JsonNumber.of(Long.MAX_VALUE).intValue());
+        Assert.assertEquals(Integer.MIN_VALUE, JsonNumber.of(Long.MIN_VALUE).intValue());
+        Assert.assertEquals(0L, JsonNumber.of(new BigDecimal("1e-400")).longValue());
+        Assert.assertEquals(Double.POSITIVE_INFINITY, JsonNumber.of(new BigDecimal("1e400")).doubleValue(), 0);
+        Assert.assertEquals(0.0, JsonNumber.of(new BigDecimal("1e-400")).doubleValue(), 0);
+        Assert.assertEquals(BigInteger.valueOf(13), JsonNumber.of(13).toJavaObject());
         Assert.assertNull(JsonNumber.of(new BigDecimal("1.5")).toJavaObject(BigInteger.class));
         Assert.assertEquals(BigInteger.TEN, JsonNumber.of(new BigDecimal("10.0")).toJavaObject(BigInteger.class));
     }
@@ -154,22 +154,22 @@ public class JsonExactNumberTest {
         object.addNumber("double", 1.0);
         array.addElement(object);
         JsonArray copy = (JsonArray) array.clone();
-        Assert.assertNull(copy.getParent());
+        Assert.assertNull(copy.parent());
         Assert.assertEquals(array.toString(), copy.toString());
         for (int i = 0; i < copy.size(); i++) {
-            Assert.assertSame(copy, copy.get(i).getParent());
+            Assert.assertSame(copy, copy.get(i).parent());
             Assert.assertNotSame(array.get(i), copy.get(i));
         }
         JsonObject nested = copy.get(5).toJsonObject();
-        Assert.assertSame(nested, nested.get("integer").getParent());
+        Assert.assertSame(nested, nested.get("integer").parent());
         Assert.assertEquals(integer, nested.get("integer").toJavaObject(BigInteger.class));
         Assert.assertEquals(real, nested.get("real").toJavaObject(BigDecimal.class));
-        Assert.assertEquals(9007199254740993L, copy.get(0).getLongValue());
+        Assert.assertEquals(9007199254740993L, copy.get(0).longValue());
         Assert.assertEquals(array.toString(), Json.parse(array.toString(), JsonParsingMode.STRICT).toString());
         Assert.assertTrue(copy.get(0) instanceof JsonInteger);
         Assert.assertTrue(copy.get(2) instanceof JsonReal);
-        Assert.assertNull(copy.get(0).clone().getParent());
-        Assert.assertNull(copy.get(2).clone().getParent());
+        Assert.assertNull(copy.get(0).clone().parent());
+        Assert.assertNull(copy.get(2).clone().parent());
     }
 
     static class Values {

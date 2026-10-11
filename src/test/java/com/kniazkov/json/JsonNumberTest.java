@@ -16,11 +16,11 @@ public class JsonNumberTest {
         Assert.assertTrue(elem.isInteger());
         Assert.assertTrue(elem.isLongInteger());
         Assert.assertTrue(elem.isNumber());
-        Assert.assertEquals(13, elem.getIntValue());
-        Assert.assertEquals(13L, elem.getLongValue());
-        Assert.assertEquals(13, elem.getDoubleValue(), 0);
+        Assert.assertEquals(13, elem.intValue());
+        Assert.assertEquals(13L, elem.longValue());
+        Assert.assertEquals(13, elem.doubleValue(), 0);
         Assert.assertEquals("13", elem.toString());
-        Assert.assertEquals("13", elem.getStringValue());
+        Assert.assertEquals("13", elem.stringValue());
     }
 
     @Test
@@ -29,8 +29,8 @@ public class JsonNumberTest {
         Assert.assertFalse(elem.isInteger());
         Assert.assertTrue(elem.isLongInteger());
         Assert.assertTrue(elem.isNumber());
-        Assert.assertEquals(10000000000L, elem.getLongValue());
-        Assert.assertEquals((double)10000000000L, elem.getDoubleValue(), 0);
+        Assert.assertEquals(10000000000L, elem.longValue());
+        Assert.assertEquals((double)10000000000L, elem.doubleValue(), 0);
         Assert.assertEquals("10000000000", elem.toString());
     }
 
@@ -40,9 +40,9 @@ public class JsonNumberTest {
         Assert.assertFalse(elem.isInteger());
         Assert.assertFalse(elem.isLongInteger());
         Assert.assertTrue(elem.isNumber());
-        Assert.assertEquals(13, elem.getIntValue());
-        Assert.assertEquals(13L, elem.getLongValue());
-        Assert.assertEquals(13.01, elem.getDoubleValue(), 0);
+        Assert.assertEquals(13, elem.intValue());
+        Assert.assertEquals(13L, elem.longValue());
+        Assert.assertEquals(13.01, elem.doubleValue(), 0);
         Assert.assertEquals("13.01", elem.toString());
     }
 

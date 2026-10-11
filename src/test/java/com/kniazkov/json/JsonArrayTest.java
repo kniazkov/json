@@ -35,9 +35,9 @@ public class JsonArrayTest {
         Assert.assertEquals(2, array.size());
         boolean oops = false;
         try {
-            JsonElement first = array.getElement(0);
-            Assert.assertEquals(13, first.getIntValue());
-            array.getElement(7);
+            JsonElement first = array.element(0);
+            Assert.assertEquals(13, first.intValue());
+            array.element(7);
         } catch (IndexOutOfBoundsException exception) {
             oops = true;
         }

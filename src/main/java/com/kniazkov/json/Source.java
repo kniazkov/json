@@ -48,7 +48,7 @@ final class Source {
      * Returns the character from the current position.
      * @return A symbol
      */
-    char getChar() {
+    char charValue() {
         if (index < lastIndex) {
             char ch = data.charAt(index);
             if (ch == '\n') {
@@ -88,7 +88,7 @@ final class Source {
      * Returns the location of the current character in the JSON document.
      * @return Location instance
      */
-    JsonLocation getLocation() {
+    JsonLocation location() {
         return new JsonLocation(loc);
     }
 }

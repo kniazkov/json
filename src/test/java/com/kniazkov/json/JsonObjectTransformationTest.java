@@ -3,6 +3,9 @@
  */
 package com.kniazkov.json;
 
+import java.math.BigInteger;
+import java.math.BigDecimal;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -229,8 +232,8 @@ public class JsonObjectTransformationTest {
         Assert.assertTrue(compareTwoLists(Arrays.asList(1.01,2.02,3.03), obj.doubles));
         Assert.assertTrue(compareTwoLists(Arrays.asList(true, false), obj.booleans));
         Assert.assertTrue(compareTwoLists(Arrays.asList("one", "two", "three"), obj.strings));
-        Assert.assertTrue(compareTwoLists(Arrays.asList((Object)"test", (Object)1.0), obj.generic));
-        Assert.assertTrue(compareTwoLists(Arrays.asList((Object)false, (Object)2.0), obj.objects));
+        Assert.assertTrue(compareTwoLists(Arrays.asList((Object)"test", (Object)BigInteger.ONE), obj.generic));
+        Assert.assertTrue(compareTwoLists(Arrays.asList((Object)false, (Object)BigInteger.TWO), obj.objects));
         Assert.assertTrue(serializeAndThenParse(obj));
     }
 
@@ -266,7 +269,7 @@ public class JsonObjectTransformationTest {
     @Test
     public void serializeLists() {
         final List<Object> objects = new LinkedList<>();
-        objects.add(1.01);
+        objects.add(new BigDecimal("1.01"));
         objects.add(true);
         objects.add("test");
         Assert.assertTrue(serializeAndThenParse(objects));

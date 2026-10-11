@@ -34,8 +34,8 @@ final class Lexer {
      * @return A token.
      * @throws JsonException If parsing fails
      */
-    public Token getToken() throws JsonException {
-        char ch = source.getChar();
+    public Token token() throws JsonException {
+        char ch = source.charValue();
 
         while(isWhiteSpace(ch)) {
             ch = source.nextChar();
@@ -45,7 +45,7 @@ final class Lexer {
             return null;
         }
 
-        JsonLocation loc = source.getLocation();
+        JsonLocation loc = source.location();
 
         if (isLetter(ch)) {
             StringBuilder builder = new StringBuilder();
@@ -153,7 +153,7 @@ final class Lexer {
     /** Parses a numeric lexeme without intermediate floating-point conversion. */
     private TokenNumber parseNumber(JsonLocation loc) throws JsonException {
         StringBuilder text = new StringBuilder();
-        char ch = source.getChar();
+        char ch = source.charValue();
         boolean negative = ch == '-';
         if (ch == '-' || ch == '+') {
             if (ch == '+' && mode == JsonParsingMode.STRICT) {
@@ -163,8 +163,8 @@ final class Lexer {
             ch = source.nextChar();
             if (!isDigit(ch) && ch != '.') {
                 throw new JsonException(negative
-                        ? new JsonError.ExpectedNumberAfterMinus(source.getLocation())
-                        : new JsonError.ExpectedNumberAfterPlus(source.getLocation()));
+                        ? new JsonError.ExpectedNumberAfterMinus(source.location())
+                        : new JsonError.ExpectedNumberAfterPlus(source.location()));
             }
         }
         boolean integerDigits = false;
@@ -179,7 +179,7 @@ final class Lexer {
                 StringBuilder hex = new StringBuilder();
                 ch = source.nextChar();
                 if (!isHexDigit(ch)) {
-                    throw new JsonException(new JsonError.ExpectedHexDigit(source.getLocation()));
+                    throw new JsonException(new JsonError.ExpectedHexDigit(source.location()));
                 }
                 while (isHexDigit(ch)) {
                     hex.append(ch);
@@ -199,7 +199,7 @@ final class Lexer {
         }
         boolean real = false;
         if (ch == '.') {
-            JsonLocation point = source.getLocation();
+            JsonLocation point = source.location();
             if (!integerDigits && mode == JsonParsingMode.STRICT) {
                 throw new JsonException(new JsonError.InvalidCharacter(loc, ch));
             }
@@ -221,7 +221,7 @@ final class Lexer {
         }
         if (ch == 'e' || ch == 'E') {
             real = true;
-            JsonLocation exponent = source.getLocation();
+            JsonLocation exponent = source.location();
             text.append(ch);
             ch = source.nextChar();
             if (ch == '+' || ch == '-') {
@@ -290,7 +290,7 @@ final class Lexer {
                             String errorSequence = "u" + (hex0 > ' ' ? hex0 : '?') + (hex1 > ' ' ? hex1 : '?')
                                     + (hex2 > ' ' ? hex2 : '?') + (hex3 > ' ' ? hex3 : '?');
                             throw new JsonException(new JsonError.IncorrectStringSequence(
-                                    source.getLocation(),
+                                    source.location(),
                                     errorSequence
                             ));
                         }
@@ -298,7 +298,7 @@ final class Lexer {
                                 + hexToDecimal(hex2) * 0x10 + hexToDecimal(hex3)));
                         break;
                     case ' ':
-                        JsonLocation start = source.getLocation();
+                        JsonLocation start = source.location();
                         if (mode == JsonParsingMode.STRICT) {
                             throw new JsonException(new JsonError.IncorrectStringSequence(start, "?"));
                         }
@@ -312,13 +312,13 @@ final class Lexer {
                     case '\n':
                         if (mode == JsonParsingMode.STRICT) {
                             throw new JsonException(
-                                    new JsonError.IncorrectStringSequence(source.getLocation(), "?")
+                                    new JsonError.IncorrectStringSequence(source.location(), "?")
                             );
                         }
                         break;
                     default:
                         throw new JsonException(new JsonError.IncorrectStringSequence(
-                                source.getLocation(),
+                                source.location(),
                                 ch > ' ' ? "" + ch : "?"
                         ));
                 }

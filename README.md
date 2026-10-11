@@ -3,7 +3,7 @@
 -->
 # User-friendly JSON parser/serializer
 
-Version 1.2
+Version 2.0-SNAPSHOT (in development)
 
 ## Goal
 
@@ -378,7 +378,7 @@ then this element is a valid JSON tree consisting of a single element.
 
 An element has the following methods (which are respectively inherited by all entities):
 
-- `JsonContainer getParent()`
+- `JsonContainer parent()`
 
     Returns a *container*, that is, either a JSON object or a JSON array that owns this element.
     If this element is the root of the tree, the method returns `null`.
@@ -413,7 +413,7 @@ An element has the following methods (which are respectively inherited by all en
 - `Object toJavaObject()`
 
     Converts the element to a suitable Java object. For example, a string is converted to a
-    `String` instance, a number is converted to a `Double` instance, and so on.
+    `String` instance, an integer is converted to `BigInteger` and a real number to `BigDecimal`, and so on.
     Complex objects are converted into associative arrays (like `Map`).
 
 
@@ -454,7 +454,7 @@ An element has the following methods (which are respectively inherited by all en
     Checks if the element contains boolean value.
 
 
-- `boolean getBooleanValue()`
+- `boolean booleanValue()`
 
     If the element contains boolean value (`element.isBoolean() == true`), returns this value.
     If not (for example, element is a string), returns `false`.
@@ -480,17 +480,17 @@ An element has the following methods (which are respectively inherited by all en
     (the reverse is not true).
 
 
-- `int getIntValue()`
+- `int intValue()`
 
     Returns the value of the element converted to a 32-bit integer, or 0 if no such conversion is possible.
 
 
-- `long getLongValue()`
+- `long longValue()`
 
     Returns the value of the element converted to a 64-bit integer, or 0 if no such conversion is possible.
 
 
-- `double getDoubleValue()`
+- `double doubleValue()`
 
     Returns the value of the element represented as a double-precision real number, or 0 if no such conversion is possible.
 
@@ -500,7 +500,7 @@ An element has the following methods (which are respectively inherited by all en
     Checks if the element is a string.
 
 
-- `String getStringValue()`
+- `String stringValue()`
 
     Returns the value of the element represented as a string, or empty string if no such conversion
     is possible. Primitive types (numbers, boolean values) can be represented as a string.
@@ -516,6 +516,64 @@ An element has the following methods (which are respectively inherited by all en
 
     Safely casts an element to the `JsonObject` type. Returns an instance of `JsonObject` or `null` if the element
     is not a JSON object.
+
+### Version 2 value access and migration
+
+Library-defined getters no longer use the `get` prefix; old aliases are removed:
+
+| Previous API | Version 2 |
+| --- | --- |
+| `getIntValue()`, `getLongValue()`, `getDoubleValue()` | `intValue()`, `longValue()`, `doubleValue()` |
+| `getBooleanValue()`, `getStringValue()` | `booleanValue()`, `stringValue()` |
+| `getParent()` | `parent()` |
+| `getElement(index)` / `getElement(key)` | `element(index)` / `element(key)` |
+| `JsonLocation.getRow()` / `getColumn()` | `row()` / `column()` |
+| `JsonError.getLocation()` / `getMessage()` / `getLocalizedMessage(lang)` | `location()` / `message()` / `localizedMessage(lang)` |
+| `JsonException.getError()` | `error()` |
+| `JsonBoolean.getInstance(value)` | `JsonBoolean.of(value)` |
+
+Standard Java contracts remain intact: `List.get`, `Map.get`, and Throwable's
+`getMessage()` / `getLocalizedMessage()` retain their standard names. In particular,
+`JsonException.getMessage()` still includes the syntax-error location.
+
+All `JsonElement` instances now expose `numberValue()` (Number) and `decimalValue()`
+(BigDecimal). Numeric nodes return their exact value; other kinds return null.
+`JsonInteger.numberValue()` returns BigInteger and `JsonReal.numberValue()` returns
+BigDecimal. Converting an integer to a decimal remains exact.
+
+Soft accessors retain their documented defaults and conversions. For callers that
+want a value or an exception, these methods are also available on `JsonElement`:
+
+| Strict accessor | Accepted data |
+| --- | --- |
+| `booleanValueOrThrow()` | JSON boolean |
+| `stringValueOrThrow()` | JSON string with a non-null payload; no number/boolean/null-to-text coercion |
+| `intValueOrThrow()` | Exact integral numeric value within the signed 32-bit range |
+| `longValueOrThrow()` | Exact integral numeric value within the signed 64-bit range |
+| `doubleValueOrThrow()` | Numeric value convertible to finite double without underflow to zero; ordinary rounding is allowed |
+| `numberValueOrThrow()` | Any JSON number; returns BigInteger or BigDecimal |
+| `decimalValueOrThrow()` | Any JSON number; returns an exact BigDecimal |
+| `arrayValueOrThrow()` | JSON array |
+| `objectValueOrThrow()` | JSON object |
+
+A type or numeric-format mismatch throws `JsonDataException`, a RuntimeException
+separate from syntax errors (`JsonException`). Error messages describe the expected
+format and actual element class. They do not serialize the payload. Valid zero,
+false and empty strings/containers are returned normally; JSON null is rejected.
+
+```java
+JsonElement root = Json.parse("{\"id\":9007199254740993}");
+long id = root.objectValueOrThrow().element("id").longValueOrThrow();
+// A missing key still returns Java null from element(); check it separately.
+```
+
+The conversion method remains named `toJavaObject()`. Its untyped result no longer
+rounds numbers to Double: both roots and nested Map/List values retain BigInteger or
+BigDecimal. The same applies to Object fields, raw lists and List<Object> in typed
+mapping. Explicit `toJavaObject(Double.class)` still requests a potentially lossy
+conversion. Number.class and Object.class conversions of numeric nodes return the
+exact stored number. Typed DTO mapping otherwise retains its existing conversion
+policy; strict getters do not silently change that separate policy.
 
 ### JsonContainer
 
@@ -555,7 +613,7 @@ in the IDE window as a drop-down list, which is very convenient for debugging.
 
 The class has the following methods, in addition to inherited methods:
 
-- `JsonElement getElement(String key)`
+- `JsonElement element(String key)`
 
     Returns a child element by its key.
 
@@ -630,7 +688,7 @@ of elements:
 
 The class has the following methods, in addition to inherited methods:
 
-- `JsonElement getElement(int index)`
+- `JsonElement element(int index)`
 
     Returns a child element by its index.
 
@@ -686,7 +744,7 @@ Represents a boolean JSON element, i.e `true` or `false` literals.
 
 Doesn't have a public constructor. An element without a parent that represents `true` is a singleton that
 can be accessed by `JsonBoolean.TRUE`, element that represents `false` can be accessed by `JsonBoolean.FALSE`. 
-Also, element can be retrieved using the `getInstance` method.
+Also, element can be retrieved using the `of` method.
 
 ### JsonNumber
 
@@ -714,7 +772,7 @@ with `IllegalArgumentException`; null is rejected with `NullPointerException`.
 
 **Migration:** replace `new JsonNumber(value)` with `JsonNumber.of(value)`.
 Making `JsonNumber` abstract is a source and binary compatibility change; consumers must
-be recompiled. No new numeric getters are introduced.
+be recompiled. Version 2 also renames getters and introduces strict accessors described below.
 
 The existing methods retain these contracts:
 
@@ -722,10 +780,10 @@ The existing methods retain these contracts:
 | --- | --- |
 | `isInteger()` | True only for an exact integral value in the signed 32-bit range |
 | `isLongInteger()` | True only for an exact integral value in the signed 64-bit range |
-| `getIntValue()` / `getLongValue()` | Truncate toward zero; saturate at the destination range boundaries, without an intermediate `double` |
-| `getDoubleValue()` | Convert to `double`; rounding, underflow to zero and overflow to infinity are possible |
-| `getStringValue()` / `toString()` | Serialize the stored exact value |
-| `toJavaObject()` | Still returns `Double` for compatibility; this conversion can lose precision |
+| `intValue()` / `longValue()` | Truncate toward zero; saturate at the destination range boundaries, without an intermediate `double` |
+| `doubleValue()` | Convert to `double`; rounding, underflow to zero and overflow to infinity are possible |
+| `stringValue()` / `toString()` | Serialize the stored exact value |
+| `toJavaObject()` | Returns the stored `BigInteger` or `BigDecimal`, including recursively inside arrays and objects |
 | `toJavaObject(Class)` | Existing wrapper conversions remain supported; `BigInteger` and `BigDecimal` provide exact numeric access through the existing method |
 
 Conversion to `BigInteger` returns null for a fractional real or a value that cannot be
@@ -759,16 +817,17 @@ Represents a JSON element containing string.
 
 ### Classes for error handling
 
-There are three classes for error handling: `JsonLocation`, `JsonError` and `JsonException`.
+Syntax diagnostics use `JsonLocation`, `JsonError` and the checked `JsonException`.
+Strict value access uses the unchecked `JsonDataException`.
 
 The location is determined by the row number and column number of the JSON document in which the error was found.
 The actual error is described by the `JsonError` class, which contains a location and has the following methods:
 
-- `String getMessage()`
+- `String message()`
 
     Returns the text description of the error (in English).
 
-- `String getLocalizedMessage(String lang)`
+- `String localizedMessage(String lang)`
 
     Returns the localized text description of the error. English (`en`) and Russian (`ru`) languages
     are now supported.

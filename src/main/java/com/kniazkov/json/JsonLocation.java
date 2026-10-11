@@ -40,7 +40,7 @@ public final class JsonLocation {
      * Returns the row number.
      * @return Row number
      */
-    public int getRow() {
+    public int row() {
         return row;
     }
 
@@ -48,7 +48,7 @@ public final class JsonLocation {
      * Returns the column number.
      * @return Column number
      */
-    public int getColumn() {
+    public int column() {
         return column;
     }
 }

@@ -61,7 +61,7 @@ public class JsonApiTest {
         JsonObject obj = root.toJsonObject();
         Assert.assertNotNull(obj);
         Assert.assertTrue(obj.containsKey("str"));
-        Assert.assertEquals("hello", obj.get("str").getStringValue());
+        Assert.assertEquals("hello", obj.get("str").stringValue());
     }
 
     @Test

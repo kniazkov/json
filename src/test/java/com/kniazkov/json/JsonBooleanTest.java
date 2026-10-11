@@ -12,7 +12,7 @@ import org.junit.Test;
 public class JsonBooleanTest {
     @Test
     public void booleanToObject() {
-        JsonBoolean elem = JsonBoolean.getInstance(false);
+        JsonBoolean elem = JsonBoolean.of(false);
         Boolean boolValue = elem.toJavaObject(Boolean.class);
         Assert.assertNotNull(boolValue);
         Assert.assertEquals(false, boolValue);

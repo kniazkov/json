@@ -25,7 +25,7 @@ public class JsonParserTest {
         Assert.assertFalse(oops);
         Assert.assertNotNull(elem);
         Assert.assertTrue(elem.isInteger());
-        Assert.assertEquals(0, elem.getIntValue());
+        Assert.assertEquals(0, elem.intValue());
     }
 
     @Test
@@ -40,7 +40,7 @@ public class JsonParserTest {
         Assert.assertFalse(oops);
         Assert.assertNotNull(elem);
         Assert.assertTrue(elem.isInteger());
-        Assert.assertEquals(13, elem.getIntValue());
+        Assert.assertEquals(13, elem.intValue());
     }
 
     @Test
@@ -56,7 +56,7 @@ public class JsonParserTest {
         Assert.assertNotNull(elem);
         Assert.assertFalse(elem.isInteger());
         Assert.assertTrue(elem.isLongInteger());
-        Assert.assertEquals(666000000000L, elem.getLongValue());
+        Assert.assertEquals(666000000000L, elem.longValue());
     }
 
     @Test
@@ -71,7 +71,7 @@ public class JsonParserTest {
         Assert.assertFalse(oops);
         Assert.assertNotNull(elem);
         Assert.assertTrue(elem.isInteger());
-        Assert.assertEquals(-13, elem.getIntValue());
+        Assert.assertEquals(-13, elem.intValue());
     }
 
     @Test
@@ -86,16 +86,16 @@ public class JsonParserTest {
         Assert.assertFalse(oops);
         Assert.assertNotNull(elem);
         Assert.assertTrue(elem.isInteger());
-        Assert.assertEquals(13, elem.getIntValue());
+        Assert.assertEquals(13, elem.intValue());
 
         JsonError error = null;
         try {
             JsonParser.parseString("+13", JsonParsingMode.STRICT);
         } catch (JsonException exception) {
-            error = exception.getError();
+            error = exception.error();
         }
         Assert.assertTrue(error instanceof JsonError.InvalidCharacter);
-        String message = error.getMessage();
+        String message = error.message();
         Assert.assertEquals("Invalid character: '+'", message);
     }
 
@@ -111,7 +111,7 @@ public class JsonParserTest {
         Assert.assertFalse(oops);
         Assert.assertNotNull(elem);
         Assert.assertTrue(elem.isInteger());
-        Assert.assertEquals(13, elem.getIntValue());
+        Assert.assertEquals(13, elem.intValue());
     }
 
     @Test
@@ -127,7 +127,7 @@ public class JsonParserTest {
         Assert.assertNotNull(elem);
         Assert.assertFalse(elem.isInteger());
         Assert.assertTrue(elem.isNumber());
-        Assert.assertEquals(13.001, elem.getDoubleValue(), 0);
+        Assert.assertEquals(13.001, elem.doubleValue(), 0);
     }
 
     @Test
@@ -143,7 +143,7 @@ public class JsonParserTest {
         Assert.assertNotNull(elem);
         Assert.assertFalse(elem.isInteger());
         Assert.assertTrue(elem.isNumber());
-        Assert.assertEquals(-13.001, elem.getDoubleValue(), 0);
+        Assert.assertEquals(-13.001, elem.doubleValue(), 0);
     }
 
     @Test
@@ -157,7 +157,7 @@ public class JsonParserTest {
         }
         Assert.assertFalse(oops);
         Assert.assertNotNull(elem);
-        Assert.assertEquals(0.5, elem.getDoubleValue(), 0);
+        Assert.assertEquals(0.5, elem.doubleValue(), 0);
 
         elem = null;
         try {
@@ -167,7 +167,7 @@ public class JsonParserTest {
         }
         Assert.assertFalse(oops);
         Assert.assertNotNull(elem);
-        Assert.assertEquals(0.5, elem.getDoubleValue(), 0);
+        Assert.assertEquals(0.5, elem.doubleValue(), 0);
 
         elem = null;
         try {
@@ -177,13 +177,13 @@ public class JsonParserTest {
         }
         Assert.assertFalse(oops);
         Assert.assertNotNull(elem);
-        Assert.assertEquals(-0.5, elem.getDoubleValue(), 0);
+        Assert.assertEquals(-0.5, elem.doubleValue(), 0);
 
         JsonError error = null;
         try {
             JsonParser.parseString(".5", JsonParsingMode.STRICT);
         } catch (JsonException exception) {
-            error = exception.getError();
+            error = exception.error();
         }
         Assert.assertTrue(error instanceof JsonError.InvalidCharacter);
     }
@@ -200,13 +200,13 @@ public class JsonParserTest {
         Assert.assertFalse(oops);
         Assert.assertNotNull(elem);
         Assert.assertTrue(elem.isInteger());
-        Assert.assertEquals(13, elem.getIntValue());
+        Assert.assertEquals(13, elem.intValue());
 
         JsonError error = null;
         try {
             JsonParser.parseString("13.", JsonParsingMode.STRICT);
         } catch (JsonException exception) {
-            error = exception.getError();
+            error = exception.error();
         }
         Assert.assertTrue(error instanceof JsonError.ExpectedNumberAfterPoint);
 
@@ -214,7 +214,7 @@ public class JsonParserTest {
         try {
             JsonParser.parseString(" . ");
         } catch (JsonException exception) {
-            error = exception.getError();
+            error = exception.error();
         }
         Assert.assertTrue(error instanceof JsonError.IncorrectNumberFormat);
     }
@@ -231,23 +231,23 @@ public class JsonParserTest {
         Assert.assertFalse(oops);
         Assert.assertNotNull(elem);
         Assert.assertTrue(elem.isInteger());
-        Assert.assertEquals(254, elem.getIntValue());
+        Assert.assertEquals(254, elem.intValue());
 
         JsonError error = null;
         try {
             JsonParser.parseString("0xFe", JsonParsingMode.STRICT);
         } catch (JsonException exception) {
-            error = exception.getError();
+            error = exception.error();
         }
         Assert.assertTrue(error instanceof JsonError.InvalidCharacter);
-        String message = error.getMessage();
+        String message = error.message();
         Assert.assertEquals("Invalid character: 'x'", message);
 
         error = null;
         try {
             JsonParser.parseString("0xZ1");
         } catch (JsonException exception) {
-            error = exception.getError();
+            error = exception.error();
         }
         Assert.assertTrue(error instanceof JsonError.ExpectedHexDigit);
     }
@@ -263,7 +263,7 @@ public class JsonParserTest {
         }
         Assert.assertFalse(oops);
         Assert.assertNotNull(elem);
-        Assert.assertEquals(1000, elem.getDoubleValue(), 0);
+        Assert.assertEquals(1000, elem.doubleValue(), 0);
 
         elem = null;
         try {
@@ -273,7 +273,7 @@ public class JsonParserTest {
         }
         Assert.assertFalse(oops);
         Assert.assertNotNull(elem);
-        Assert.assertEquals(1024, elem.getDoubleValue(), 0);
+        Assert.assertEquals(1024, elem.doubleValue(), 0);
 
         elem = null;
         try {
@@ -283,7 +283,7 @@ public class JsonParserTest {
         }
         Assert.assertFalse(oops);
         Assert.assertNotNull(elem);
-        Assert.assertEquals(1024, elem.getDoubleValue(), 0);
+        Assert.assertEquals(1024, elem.doubleValue(), 0);
 
         elem = null;
         try {
@@ -293,7 +293,7 @@ public class JsonParserTest {
         }
         Assert.assertFalse(oops);
         Assert.assertNotNull(elem);
-        Assert.assertEquals(0.001, elem.getDoubleValue(), 0);
+        Assert.assertEquals(0.001, elem.doubleValue(), 0);
 
         elem = null;
         try {
@@ -303,14 +303,14 @@ public class JsonParserTest {
         }
         Assert.assertFalse(oops);
         Assert.assertNotNull(elem);
-        Assert.assertEquals(5e100, elem.getDoubleValue(), 0);
+        Assert.assertEquals(5e100, elem.doubleValue(), 0);
         Assert.assertEquals(elem.toString(), "5.0E+100");
 
         JsonError error = null;
         try {
             JsonParser.parseString("1e");
         } catch (JsonException exception) {
-            error = exception.getError();
+            error = exception.error();
         }
         Assert.assertTrue(error instanceof JsonError.IncorrectExponentNotation);
     }
@@ -406,10 +406,10 @@ public class JsonParserTest {
         try {
             JsonParser.parseString("\"abc\\d\"");
         } catch (JsonException exception) {
-            error = exception.getError();
+            error = exception.error();
         }
         Assert.assertTrue(error instanceof JsonError.IncorrectStringSequence);
-        Assert.assertEquals("Incorrect string sequence: '\\d'", error.getMessage());
+        Assert.assertEquals("Incorrect string sequence: '\\d'", error.message());
     }
 
     @Test
@@ -418,10 +418,10 @@ public class JsonParserTest {
         try {
             JsonParser.parseString("\"abc\\ujh\"");
         } catch (JsonException exception) {
-            error = exception.getError();
+            error = exception.error();
         }
         Assert.assertTrue(error instanceof JsonError.IncorrectStringSequence);
-        Assert.assertEquals("Incorrect string sequence: '\\ujh\"?'", error.getMessage());
+        Assert.assertEquals("Incorrect string sequence: '\\ujh\"?'", error.message());
     }
 
     @Test
@@ -563,12 +563,12 @@ public class JsonParserTest {
         try {
             JsonParser.parseString(json);
         } catch (JsonException exception) {
-            error = exception.getError();
+            error = exception.error();
         }
         if (error != null) {
-            JsonLocation loc = error.getLocation();
+            JsonLocation loc = error.location();
             return errorType.isInstance(error) &&
-                    loc.getRow() == row && loc.getColumn() == column;
+                    loc.row() == row && loc.column() == column;
         }
         return false;
     }
@@ -600,12 +600,12 @@ public class JsonParserTest {
         try {
             JsonParser.parseString(json, JsonParsingMode.STRICT);
         } catch (JsonException exception) {
-            error = exception.getError();
+            error = exception.error();
         }
         if (error != null) {
-            JsonLocation loc = error.getLocation();
+            JsonLocation loc = error.location();
             return errorType.isInstance(error) &&
-                    loc.getRow() == row && loc.getColumn() == column;
+                    loc.row() == row && loc.column() == column;
         }
         return false;
     }

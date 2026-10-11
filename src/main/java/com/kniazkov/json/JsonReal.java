@@ -29,12 +29,12 @@ public final class JsonReal extends JsonNumber {
     }
 
     @Override
-    Number numberValue() {
+    public BigDecimal numberValue() {
         return value;
     }
 
     @Override
-    BigDecimal decimalValue() {
+    public BigDecimal decimalValue() {
         return value;
     }
 

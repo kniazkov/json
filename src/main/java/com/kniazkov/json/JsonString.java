@@ -59,7 +59,7 @@ public final class JsonString extends JsonElement {
     }
 
     @Override
-    public String getStringValue() {
+    public String stringValue() {
         return value;
     }
 }
