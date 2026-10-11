@@ -12,19 +12,6 @@ import java.nio.file.Files;
  */
 final class Utils {
     /**
-     * Converts a number to a string.
-     * @param value A number
-     * @return A string representing number
-     */
-    static String doubleToString(double value) {
-        long intVal = (long)value;
-        if (value == intVal) {
-            return String.valueOf(intVal);
-        }
-        return String.valueOf(value);
-    }
-
-    /**
      * Escapes entities that are not allowed in a string into special sequences.
      * @param value A string
      * @return String with escaped entities

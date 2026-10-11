@@ -136,6 +136,7 @@ public abstract class JsonElement implements Cloneable {
 
     /**
      * Tries to convert the value of the element to a 32-bit integer.
+     * Numeric fractions are truncated toward zero and overflow saturates at the range boundaries.
      * @return The value of the element converted to a 32-bit integer,
      *   or 0 if no such conversion is possible
      */
@@ -145,6 +146,7 @@ public abstract class JsonElement implements Cloneable {
 
     /**
      * Tries to convert the value of the element to a 64-bit integer.
+     * Numeric fractions are truncated toward zero and overflow saturates at the range boundaries.
      * @return The value of the element converted to a 64-bit integer,
      *   or 0 if no such conversion is possible
      */
@@ -154,6 +156,7 @@ public abstract class JsonElement implements Cloneable {
 
     /**
      * Tries to represent the value of the element as a double-precision real number.
+     * Exact numeric values may round, underflow to zero, or overflow to infinity.
      * @return The value of the element represented as a double-precision real number,
      *   or 0 if no such conversion is possible.
      */

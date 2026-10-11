@@ -1,111 +1,195 @@
 /*
- * Copyright (c) 2024 Ivan Kniazkov
+ * Copyright (c) 2026 Ivan Kniazkov
  */
 package com.kniazkov.json;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.Objects;
+
 /**
- * JSON element representing a number.
+ * Base class for exact JSON numbers. Use {@code of(...)} to create a number.
+ * Existing primitive getters truncate fractions and saturate integer overflow,
+ * as Java floating-point casts did in earlier versions. Double conversion can
+ * round, underflow to zero, or overflow to infinity.
  */
-public final class JsonNumber extends JsonElement {
-    /**
-     * Value of the number.
-     */
-    private final double value;
-
-    /**
-     * Constructor.
-     * @param value Value of the number.
-     */
-    public JsonNumber(double value) {
-        this(null, value);
-    }
-
-    /**
-     * Constructor (for internal use).
-     * @param parent The parent of this element
-     * @param value Value of the number.
-     */
-    JsonNumber(JsonContainer parent, double value) {
+public abstract class JsonNumber extends JsonElement {
+    JsonNumber(JsonContainer parent) {
         super(parent);
-        this.value = value;
     }
 
-    @Override
-    JsonElement clone(JsonContainer anotherParent) {
-        return new JsonNumber(anotherParent, value);
+    /**
+     * Creates an integer.
+     * @param value Integer value
+     * @return An integer element
+     */
+    public static JsonInteger of(long value) {
+        return of(BigInteger.valueOf(value));
     }
 
-    @Override
-    public String toString() {
-        return Utils.doubleToString(value);
+    /**
+     * Creates an arbitrary-precision integer.
+     * @param value Integer value, not null
+     * @return An integer element
+     */
+    public static JsonInteger of(BigInteger value) {
+        return new JsonInteger(value);
     }
+
+    /**
+     * Creates a real number from the canonical decimal representation of a double.
+     * @param value Finite value
+     * @return A real element, even when the value is mathematically integral
+     * @throws NumberFormatException If the value is NaN or infinite
+     */
+    public static JsonReal of(double value) {
+        return of(BigDecimal.valueOf(value));
+    }
+
+    /**
+     * Creates a real number without first widening a float to double.
+     * @param value Finite value
+     * @return A real element
+     * @throws NumberFormatException If the value is NaN or infinite
+     */
+    public static JsonReal of(float value) {
+        return of(new BigDecimal(Float.toString(value)));
+    }
+
+    /**
+     * Creates an exact decimal number.
+     * @param value Decimal value, not null
+     * @return A real element
+     */
+    public static JsonReal of(BigDecimal value) {
+        return new JsonReal(value);
+    }
+
+    /**
+     * Creates a number according to its runtime Java type.
+     * @param value Byte, Short, Integer, Long, Float, Double, BigInteger or BigDecimal
+     * @return The corresponding integer or real element
+     * @throws IllegalArgumentException If the Number implementation is unsupported
+     */
+    public static JsonNumber of(Number value) {
+        Objects.requireNonNull(value, "value");
+        if (value instanceof BigInteger integer) {
+            return of(integer);
+        }
+        if (value instanceof BigDecimal decimal) {
+            return of(decimal);
+        }
+        if (value instanceof Byte || value instanceof Short
+                || value instanceof Integer || value instanceof Long) {
+            return of(value.longValue());
+        }
+        if (value instanceof Float real) {
+            return of(real.floatValue());
+        }
+        if (value instanceof Double real) {
+            return of(real.doubleValue());
+        }
+        throw new IllegalArgumentException("Unsupported number type: " + value.getClass().getName());
+    }
+
+    abstract Number numberValue();
+
+    abstract BigDecimal decimalValue();
 
     @Override
     public Object toJavaObject() {
-        return value;
+        // Preserve the existing untyped conversion contract.
+        return getDoubleValue();
     }
 
     @Override
     public <T> T toJavaObject(Class<T> type) {
-        if (type == java.lang.Byte.class) {
-            Byte byteValue = (byte)getIntValue();
-            return (T)byteValue;
+        Object result;
+        if (type == Byte.class) {
+            result = (byte) getIntValue();
         }
-        if (type == java.lang.Short.class) {
-            Short shortValue = (short)getIntValue();
-            return (T)shortValue;
+        else if (type == Short.class) {
+            result = (short) getIntValue();
         }
-        if (type == java.lang.Integer.class) {
-            Integer intValue = getIntValue();
-            return (T)intValue;
+        else if (type == Integer.class) {
+            result = getIntValue();
         }
-        if (type == java.lang.Long.class) {
-            Long longValue = getLongValue();
-            return (T)longValue;
+        else if (type == Long.class) {
+            result = getLongValue();
         }
-        if (type == java.lang.Float.class) {
-            Float floatValue = (float)value;
-            return (T)floatValue;
+        else if (type == Float.class) {
+            result = numberValue().floatValue();
         }
-        if (type == java.lang.Double.class) {
-            Double doubleValue = value;
-            return (T)doubleValue;
+        else if (type == Double.class) {
+            result = getDoubleValue();
         }
-        return null;
+        else if (type == BigDecimal.class) {
+            result = decimalValue();
+        }
+        else if (type == BigInteger.class) {
+            try {
+                result = numberValue() instanceof BigInteger ? numberValue() : decimalValue().toBigIntegerExact();
+            } catch (ArithmeticException exception) {
+                return null;
+            }
+        } else {
+            return null;
+        }
+        return type.cast(result);
     }
 
     @Override
     public boolean isInteger() {
-        return value == (int)value;
+        BigDecimal value = decimalValue();
+        return value.compareTo(BigDecimal.valueOf(Integer.MIN_VALUE)) >= 0
+                && value.compareTo(BigDecimal.valueOf(Integer.MAX_VALUE)) <= 0
+                && value.stripTrailingZeros().scale() <= 0;
     }
 
     @Override
     public boolean isLongInteger() {
-        return value == (long)value;
+        BigDecimal value = decimalValue();
+        return value.compareTo(BigDecimal.valueOf(Long.MIN_VALUE)) >= 0
+                && value.compareTo(BigDecimal.valueOf(Long.MAX_VALUE)) <= 0
+                && value.stripTrailingZeros().scale() <= 0;
     }
 
     @Override
-    public boolean isNumber() {
+    public final boolean isNumber() {
         return true;
     }
 
     @Override
     public int getIntValue() {
-        return (int)value;
+        BigDecimal value = decimalValue();
+        if (value.compareTo(BigDecimal.valueOf(Integer.MIN_VALUE)) < 0) {
+            return Integer.MIN_VALUE;
+        }
+        if (value.compareTo(BigDecimal.valueOf(Integer.MAX_VALUE)) > 0) {
+            return Integer.MAX_VALUE;
+        }
+        return numberValue().intValue();
     }
 
     @Override
     public long getLongValue() {
-        return (long)value;
+        BigDecimal value = decimalValue();
+        if (value.compareTo(BigDecimal.valueOf(Long.MIN_VALUE)) < 0) {
+            return Long.MIN_VALUE;
+        }
+        if (value.compareTo(BigDecimal.valueOf(Long.MAX_VALUE)) > 0) {
+            return Long.MAX_VALUE;
+        }
+        return numberValue().longValue();
     }
 
     @Override
     public double getDoubleValue() {
-        return (double)value;
+        return numberValue().doubleValue();
     }
 
     @Override
     public String getStringValue() {
-        return Utils.doubleToString(value);
+        return toString();
     }
 }

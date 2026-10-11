@@ -113,9 +113,9 @@ public class JsonApiTest {
     @Test
     public void serialization() {
         String expected = "{" + separator +
-                "  \"x\": 100,"  + separator +
-                "  \"y\": 200,"  + separator +
-                "  \"z\": 300"  + separator +
+                "  \"x\": 100.0,"  + separator +
+                "  \"y\": 200.0,"  + separator +
+                "  \"z\": 300.0"  + separator +
                 "}";
         Vector v = new Vector();
         v.x = 100;

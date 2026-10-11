@@ -487,7 +487,7 @@ An element has the following methods (which are respectively inherited by all en
 
 - `long getLongValue()`
 
-    Returns the value of the element converted to a 62-bit integer, or 0 if no such conversion is possible.
+    Returns the value of the element converted to a 64-bit integer, or 0 if no such conversion is possible.
 
 
 - `double getDoubleValue()`
@@ -690,7 +690,68 @@ Also, element can be retrieved using the `getInstance` method.
 
 ### JsonNumber
 
-Represents a JSON element containing number.
+An abstract base class for two exact numeric representations:
+
+- `JsonInteger` stores a `BigInteger` (including small integers; there is no `long` fast path).
+- `JsonReal` stores a `BigDecimal`.
+
+Create numbers through the factory:
+
+```java
+JsonNumber integer = JsonNumber.of(42);
+JsonNumber largeId = JsonNumber.of(9007199254740993L);
+JsonNumber huge = JsonNumber.of(new BigInteger("18446744073709551616"));
+JsonNumber real = JsonNumber.of(42.0);
+JsonNumber decimal = JsonNumber.of(new BigDecimal("0.12345678901234567890"));
+```
+
+Import `java.math.BigInteger` and `java.math.BigDecimal` for the arbitrary-precision types.
+The `long` and `BigInteger` overloads create `JsonInteger`; the `float`, `double`, and
+`BigDecimal` overloads create `JsonReal`, even for integral values such as `42.0`.
+The `Number` overload dispatches by runtime type and supports `Byte`, `Short`, `Integer`,
+`Long`, `Float`, `Double`, `BigInteger`, and `BigDecimal`. Other implementations are rejected
+with `IllegalArgumentException`; null is rejected with `NullPointerException`.
+
+**Migration:** replace `new JsonNumber(value)` with `JsonNumber.of(value)`.
+Making `JsonNumber` abstract is a source and binary compatibility change; consumers must
+be recompiled. No new numeric getters are introduced.
+
+The existing methods retain these contracts:
+
+| Method | Behavior |
+| --- | --- |
+| `isInteger()` | True only for an exact integral value in the signed 32-bit range |
+| `isLongInteger()` | True only for an exact integral value in the signed 64-bit range |
+| `getIntValue()` / `getLongValue()` | Truncate toward zero; saturate at the destination range boundaries, without an intermediate `double` |
+| `getDoubleValue()` | Convert to `double`; rounding, underflow to zero and overflow to infinity are possible |
+| `getStringValue()` / `toString()` | Serialize the stored exact value |
+| `toJavaObject()` | Still returns `Double` for compatibility; this conversion can lose precision |
+| `toJavaObject(Class)` | Existing wrapper conversions remain supported; `BigInteger` and `BigDecimal` provide exact numeric access through the existing method |
+
+Conversion to `BigInteger` returns null for a fractional real or a value that cannot be
+materialized as a `BigInteger`. Byte/Short conversion retains the existing narrowing behavior.
+The predicates describe value/range, not the subclass: `JsonNumber.of(13.0).isInteger()` is true.
+
+Parsing chooses `JsonInteger` for decimal integers and JSON5 hexadecimal integers, and
+`JsonReal` for lexemes containing a point or exponent (`1.0`, `1e3`). Numeric lexemes are
+converted directly to `BigInteger`/`BigDecimal`, without primitive accumulators. BigDecimal's
+scale/exponent limits still apply; exceeding its supported range produces `JsonException`
+instead of an overflowing value. STRICT and JSON5 reject leading-zero decimal integers;
+EXTENDED retains support for them.
+
+Serialization preserves the numeric value and numeric kind, not the original spelling.
+Real output includes a point or exponent (for example `42.0`); exponent formatting follows
+`BigDecimal.toString()` (for example `5.0E+100`). A scale-zero BigDecimal is written with
+`.0` so it remains real on parsing. Negative zero is normalized, because neither backing
+type distinguishes its sign. Double factories use `BigDecimal.valueOf`; float factories
+use `Float.toString` without widening first. Precision already lost before the factory
+call cannot be recovered. NaN and infinities are rejected with `NumberFormatException`,
+including during Java-object serialization; no non-finite JSON5 representation is added.
+
+`JsonArray.addNumber` and `JsonObject.addNumber` retain the `double` overload and add
+`long`, `float`, and `Number` overloads so integers and arbitrary-precision values do not
+pass through `double`. Java-object serialization and typed mapping also support `BigInteger`
+and `BigDecimal` fields and list elements.
 
 ### JsonString
 

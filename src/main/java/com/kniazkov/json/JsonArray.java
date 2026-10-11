@@ -284,7 +284,31 @@ public final class JsonArray extends JsonContainer implements List<JsonElement> 
      * @param value Value of the number
      */
     public void addNumber(double value) {
-        list.add(new JsonNumber(this, value));
+        list.add(JsonNumber.of(value).clone(this));
+    }
+
+    /**
+     * Adds an exact number using its Java type.
+     * @param value Numeric value
+     */
+    public void addNumber(float value) {
+        list.add(JsonNumber.of(value).clone(this));
+    }
+
+    /**
+     * Adds an exact number using its Java type.
+     * @param value Numeric value
+     */
+    public void addNumber(long value) {
+        list.add(JsonNumber.of(value).clone(this));
+    }
+
+    /**
+     * Adds an exact number using its Java type.
+     * @param value Numeric value
+     */
+    public void addNumber(Number value) {
+        list.add(JsonNumber.of(value).clone(this));
     }
 
     /**

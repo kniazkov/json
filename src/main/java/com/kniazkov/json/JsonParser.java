@@ -219,23 +219,8 @@ public final class JsonParser {
     private static JsonElement parseJavaObject(Object obj, JsonContainer parent) {
         if (obj != null) {
             Class<?> cls = obj.getClass();
-            if (cls == Byte.class) {
-                return new JsonNumber(parent, (Byte) obj);
-            }
-            if (cls == Short.class) {
-                return new JsonNumber(parent, (Short) obj);
-            }
-            if (cls == Integer.class) {
-                return new JsonNumber(parent, (Integer) obj);
-            }
-            if (cls == Long.class) {
-                return new JsonNumber(parent, (Long) obj);
-            }
-            if (cls == Float.class) {
-                return new JsonNumber(parent, (Float) obj);
-            }
-            if (cls == Double.class) {
-                return new JsonNumber(parent, (Double) obj);
+            if (obj instanceof Number number) {
+                return JsonNumber.of(number).clone(parent);
             }
             if (cls == Boolean.class) {
                 return new JsonBoolean(parent, (Boolean) obj);
