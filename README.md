@@ -815,12 +815,79 @@ and `BigDecimal` fields and list elements.
 
 Represents a JSON element containing string.
 
+### Input sources and locations (version 2)
+
+Strings, files, readers and byte streams share the same sequential input implementation.
+Existing file overloads use UTF-8 regardless of the platform default. Examples:
+
+```java
+JsonElement root = Json.parse(reader, "server response", JsonParsingMode.STRICT);
+JsonElement named = Json.parse(jsonText, "settings", JsonParsingMode.STRICT);
+JsonElement utf8 = Json.parse(inputStream, JsonParsingMode.STRICT);
+JsonElement encoded = Json.parse(inputStream, "response", StandardCharsets.UTF_16LE,
+        JsonParsingMode.STRICT);
+JsonElement fromFile = Json.parse(file, StandardCharsets.UTF_8, JsonParsingMode.STRICT);
+```
+
+`parse(Reader)` and `parse(InputStream)` default to `EXTENDED`, just like the existing
+string and file methods. Reader and stream overloads also accept a mode without a name;
+byte-stream overloads accept an explicit charset without a name. Use `toJavaObject(type)`
+on the result for typed conversion. For a named overload, a null name means unnamed input;
+`sourceName()` always returns an `Optional`, never null.
+
+The input contract is:
+
+1. Internal `Source` operates on a `Reader`. Strings use `StringReader`; byte input uses
+   an explicit decoder, UTF-8 by default.
+2. `charValue()` and `nextChar()` return `int`: 0..65535 is a UTF-16 code unit, -1 is EOF.
+   A real NUL is 0, never EOF. These are code units, not Unicode code points.
+3. The first code unit is current immediately after construction; an empty source starts
+   at EOF. `charValue()` does not advance, read more input, or change coordinates.
+4. `nextChar()` skips the current unit and returns the next one. Repeated advancement at
+   EOF returns -1 without changing the position.
+5. Rows and columns start at 1. Coordinates identify the current unit; EOF is the position
+   immediately after the last unit. Empty input has EOF at `1:1`.
+6. CRLF counts as one line break. Standalone CR, LF, U+2028 and U+2029 are also line breaks.
+   Advancing past CR moves to the next row, column 1; advancing past its following LF
+   leaves that position unchanged. Coordinate tracking is independent of syntax mode
+   and does not grant permission to use a character as whitespace.
+7. Columns count UTF-16 code units, not display width: a tab takes one position and a
+   surrogate pair takes two.
+8. `location()` produces an immutable `JsonLocation` snapshot with `row()`, `column()` and
+   `Optional<String> sourceName()`. Advancing the source never changes previous snapshots.
+9. The optional name is diagnostic text. Files use the path supplied by the caller;
+   strings and streams may have an arbitrary name. Locations do not need subclasses.
+10. Location formatting is `source.json, 1:20`, or `1:20` without a name.
+11. Opening, reading, decoding and closing failures propagate through `JsonException`
+    with the original cause. Malformed or unmappable bytes are reported, never silently
+    replaced. This guarantee applies to decoders created by the library; a supplied
+    `Reader` has already performed its own decoding. Buffered decoding may discover an
+    error ahead of the current character; its location is the position where the reader
+    failed to supply input, not a precise offset of the offending byte. After a source
+    read failure, further reads rethrow the same failure without moving the position.
+12. The library closes files it opens, on success and failure. It never closes a caller's
+    `Reader` or `InputStream`.
+13. `Source` only supplies characters and coordinates. The lexer and parser decide which
+    characters and syntax are legal.
+14. Input is sequential with bounded buffering, without loading the entire document into
+    a string. No rewind or concurrent access is supported. Buffering may consume data
+    beyond the parsed value; these overloads are not a resumable multi-document API.
+    The resulting JSON tree and individual token values still occupy memory.
+
+This refactoring prepares input handling for full-document validation. Rejecting trailing
+content after the root (issue #3), incomplete syntax (issues #4/#5), and completing JSON5
+support (issue #7) remain separate parser changes.
+
 ### Classes for error handling
 
 Syntax diagnostics use `JsonLocation`, `JsonError` and the checked `JsonException`.
 Strict value access uses the unchecked `JsonDataException`.
 
-The location is determined by the row number and column number of the JSON document in which the error was found.
+`JsonLocation` is immutable and exposes `int row()`, `int column()` and
+`Optional<String> sourceName()`. Its text form is `source.json, 1:20`, or `1:20`
+for unnamed input. Exceptions and error descriptions use the same location format.
+Input failures use `JsonError.InputFailure`; `JsonException.getCause()` preserves the
+original I/O or decoding exception. File-reading failures throw instead of returning null.
 The actual error is described by the `JsonError` class, which contains a location and has the following methods:
 
 - `String message()`

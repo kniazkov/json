@@ -11,7 +11,7 @@ import org.junit.Test;
  */
 public class LexerTest {
     @Test
-    public void integer() {
+    public void integer() throws JsonException {
         Lexer lexer = new Lexer(new Source("  13"), JsonParsingMode.STRICT);
         boolean oops = false;
         Token token = null;
@@ -26,7 +26,7 @@ public class LexerTest {
     }
 
     @Test
-    public void location11() {
+    public void location11() throws JsonException {
         Lexer lexer = new Lexer(new Source("0"), JsonParsingMode.STRICT);
         boolean oops = false;
         Token token = null;
@@ -43,7 +43,7 @@ public class LexerTest {
     }
 
     @Test
-    public void location14() {
+    public void location14() throws JsonException {
         Lexer lexer = new Lexer(new Source(" \t 0"), JsonParsingMode.STRICT);
         boolean oops = false;
         Token token = null;
@@ -60,7 +60,7 @@ public class LexerTest {
     }
 
     @Test
-    public void location32() {
+    public void location32() throws JsonException {
         Lexer lexer = new Lexer(new Source(" \r\n\n 0"), JsonParsingMode.STRICT);
         boolean oops = false;
         Token token = null;
@@ -77,7 +77,7 @@ public class LexerTest {
     }
 
     @Test
-    public void expectedNumberAfterMinus() {
+    public void expectedNumberAfterMinus() throws JsonException {
         Lexer lexer = new Lexer(new Source("\n\n\n\n\n\n\n\n\n\n   -abc"), JsonParsingMode.STRICT);
         JsonError error = null;
         try {
