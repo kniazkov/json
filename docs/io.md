@@ -19,15 +19,26 @@ destination has a particular encoding, diagnostic name or formatting requirement
 | `setCollectWarnings(boolean)` | false | Collect per-call diagnostics |
 
 ```java
+String firstJson = "{target:'M31'}";
+String secondJson = "{target:'M42'}";
+
 JsonParser parser = new JsonParser()
         .setMode(JsonParsingMode.JSON5)
         .setCharset(StandardCharsets.UTF_8)
         .setSourceName("observatory.json5")
         .setCollectWarnings(true);
-JsonObject first = parser.parse("{target:'M31'}").objectValueOrThrow();
-JsonObject second = parser.parse("{target:'M42'}").objectValueOrThrow();
-assert first.element("target").orElseThrow().stringValueOrThrow().equals("M31");
-assert second.element("target").orElseThrow().stringValueOrThrow().equals("M42");
+JsonObject first = parser.parse(firstJson)
+        .objectValueOrThrow();
+JsonObject second = parser.parse(secondJson)
+        .objectValueOrThrow();
+assert first.element("target")
+        .orElseThrow()
+        .stringValueOrThrow()
+        .equals("M31");
+assert second.element("target")
+        .orElseThrow()
+        .stringValueOrThrow()
+        .equals("M42");
 ```
 
 Setters return the same instance. Parser and serializer instances are reusable but
@@ -46,10 +57,14 @@ a File uses its supplied path; strings and borrowed streams are unnamed.
 | `setEscapeNonAscii(boolean)` | false | Escape non-ASCII in keys and string values |
 
 ```java
-JsonSerializer writer = new JsonSerializer().setIndentation("  ");
-JsonElement tree = Json.parse("{station:{name:'Hilltop'},targets:['M31','M42']}");
+String json = "{station:{name:'Hilltop'},targets:['M31','M42']}";
+
+JsonSerializer writer = new JsonSerializer()
+        .setIndentation("  ");
+JsonElement tree = Json.parse(json);
 String text = writer.serialize(tree);
-assert Json.parse(text).equals(tree);
+assert Json.parse(text)
+        .equals(tree);
 ```
 
 Indentation may contain only JSON whitespace: space, tab, CR or LF.
@@ -63,10 +78,17 @@ Small containers may remain inline. To keep a conventional layout, use spaces or
 Path path = Files.createTempFile("observatory-", ".json");
 try {
     File file = path.toFile();
-    new JsonSerializer().setIndentation("  ").serialize(Map.of("target", "M31"), file);
-    JsonObject value = new JsonParser().setMode(JsonParsingMode.STRICT)
-            .parse(file).objectValueOrThrow();
-    assert value.element("target").orElseThrow().stringValueOrThrow().equals("M31");
+    new JsonSerializer()
+            .setIndentation("  ")
+            .serialize(Map.of("target", "M31"), file);
+    JsonObject value = new JsonParser()
+            .setMode(JsonParsingMode.STRICT)
+            .parse(file)
+            .objectValueOrThrow();
+    assert value.element("target")
+            .orElseThrow()
+            .stringValueOrThrow()
+            .equals("M31");
 } finally {
     Files.deleteIfExists(path);
 }
@@ -88,11 +110,18 @@ provides the required decoder/encoder:
 ```java
 Charset cp1251 = Charset.forName("windows-1251");
 ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-new JsonSerializer().setCharset(cp1251).serialize(Map.of("город", "Москва"), bytes);
-JsonObject value = new JsonParser().setCharset(cp1251)
+new JsonSerializer()
+        .setCharset(cp1251)
+        .serialize(Map.of("город", "Москва"), bytes);
+JsonObject value = new JsonParser()
+        .setCharset(cp1251)
         .setMode(JsonParsingMode.STRICT)
-        .parse(new ByteArrayInputStream(bytes.toByteArray())).objectValueOrThrow();
-assert value.element("город").orElseThrow().stringValueOrThrow().equals("Москва");
+        .parse(new ByteArrayInputStream(bytes.toByteArray()))
+        .objectValueOrThrow();
+assert value.element("город")
+        .orElseThrow()
+        .stringValueOrThrow()
+        .equals("Москва");
 ```
 
 Charset settings apply only to bytes. They do not reinterpret a String or change
@@ -115,13 +144,19 @@ Explicit LE/BE charsets reject an opposite-endian marker. Duplicate initial mark
 fail in every syntax mode.
 
 ```java
+String expectedJson = "[1, 2]";
+
 ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-new JsonSerializer().setCharset(StandardCharsets.UTF_16LE).setWriteBom(true)
+new JsonSerializer()
+        .setCharset(StandardCharsets.UTF_16LE)
+        .setWriteBom(true)
         .serialize(List.of(1, 2), bytes);
-JsonElement value = new JsonParser().setCharset(StandardCharsets.UTF_16LE)
+JsonElement value = new JsonParser()
+        .setCharset(StandardCharsets.UTF_16LE)
         .setBomPolicy(JsonBomPolicy.REQUIRE)
         .parse(new ByteArrayInputStream(bytes.toByteArray()));
-assert value.toString().equals("[1, 2]");
+assert value.toString()
+        .equals(expectedJson);
 ```
 
 For String/Reader input the policy applies to the first U+FEFF character. A Reader
@@ -145,9 +180,14 @@ JsonSerializer writer = new JsonSerializer()
 ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 writer.serialize(Map.of("target", "Луна 😀"), bytes);
 String ascii = bytes.toString(StandardCharsets.US_ASCII);
-assert ascii.chars().allMatch(ch -> ch < 128);
-assert Json.parse(ascii).objectValueOrThrow().element("target").orElseThrow()
-        .stringValueOrThrow().equals("Луна 😀");
+assert ascii.chars()
+        .allMatch(ch -> ch < 128);
+assert Json.parse(ascii)
+        .objectValueOrThrow()
+        .element("target")
+        .orElseThrow()
+        .stringValueOrThrow()
+        .equals("Луна 😀");
 ```
 
 Escapes operate on UTF-16 code units, including surrogate pairs for supplementary

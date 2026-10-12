@@ -13,16 +13,30 @@ schema, or edit only a few properties.
 ## Navigate deliberately
 
 ```java
-JsonObject root = Json.parse("""
+String json = """
         {"station":{"name":"Hilltop"},"readings":[12,13],"note":null}
-        """).objectValueOrThrow();
-String name = root.element("station").orElseThrow().objectValueOrThrow()
-        .element("name").orElseThrow().stringValueOrThrow();
-int second = root.element("readings").orElseThrow().arrayValueOrThrow().element(1).intValueOrThrow();
+        """;
+
+JsonObject root = Json.parse(json)
+        .objectValueOrThrow();
+String name = root.element("station")
+        .orElseThrow()
+        .objectValueOrThrow()
+        .element("name")
+        .orElseThrow()
+        .stringValueOrThrow();
+int second = root.element("readings")
+        .orElseThrow()
+        .arrayValueOrThrow()
+        .element(1)
+        .intValueOrThrow();
 assert name.equals("Hilltop");
 assert second == 13;
-assert root.element("note").orElseThrow().isNull();
-assert root.element("missing").isEmpty();
+assert root.element("note")
+        .orElseThrow()
+        .isNull();
+assert root.element("missing")
+        .isEmpty();
 ```
 
 **Missing and JSON null are different.** `get(key)` follows `Map` and returns Java
@@ -30,7 +44,10 @@ null for an absent member. `element(key)` returns an empty `Optional` instead.
 An explicit JSON null is a `JsonNull` node inside a present `Optional`.
 
 ```java
-JsonObject root = Json.parse("{}").objectValueOrThrow();
+String json = "{}";
+
+JsonObject root = Json.parse(json)
+        .objectValueOrThrow();
 String displayTitle = root.element("title")
         .filter(value -> !value.isNull())
         .map(JsonElement::stringValueOrThrow)
@@ -81,8 +98,10 @@ exposures.addNumber(new BigDecimal("0.1"));
 exposures.addNumber(new BigDecimal("0.2"));
 JsonObject metadata = root.createObject("metadata");
 metadata.addString("filter", "H-alpha");
-assert metadata.parent().orElseThrow() == root;
-assert exposures.parent().orElseThrow() == root;
+assert metadata.parent()
+        .orElseThrow() == root;
+assert exposures.parent()
+        .orElseThrow() == root;
 ```
 
 `addNumber` has `long`, `float`, `double` and `Number` overloads. Scalars can
@@ -102,15 +121,20 @@ template.addNumber(1);
 JsonObject root = new JsonObject();
 root.addElement("copy", template);
 template.addNumber(2);
-JsonArray stored = root.element("copy").orElseThrow().arrayValueOrThrow();
+JsonArray stored = root.element("copy")
+        .orElseThrow()
+        .arrayValueOrThrow();
 assert stored.size() == 1;
 assert stored != template;
-assert stored.parent().orElseThrow() == root;
-assert template.parent().isEmpty();
+assert stored.parent()
+        .orElseThrow() == root;
+assert template.parent()
+        .isEmpty();
 
 JsonElement detachedCopy = root.clone();
 assert detachedCopy.equals(root);
-assert detachedCopy.parent().isEmpty();
+assert detachedCopy.parent()
+        .isEmpty();
 ```
 
 For a child you intend to fill immediately, `createArray`/`createObject` avoids
@@ -125,10 +149,19 @@ iterator removal change the object. Views cannot add entries. Entry `setValue`
 clones the replacement; it never exposes an unguarded insertion path.
 
 ```java
-JsonObject root = Json.parse("{a:1,b:2}").objectValueOrThrow();
-root.entrySet().iterator().next().setValue(JsonNumber.of(10));
-root.keySet().remove("b");
-assert root.element("a").orElseThrow().intValueOrThrow() == 10;
+String json = "{a:1,b:2}";
+
+JsonObject root = Json.parse(json)
+        .objectValueOrThrow();
+root.entrySet()
+        .iterator()
+        .next()
+        .setValue(JsonNumber.of(10));
+root.keySet()
+        .remove("b");
+assert root.element("a")
+        .orElseThrow()
+        .intValueOrThrow() == 10;
 assert root.size() == 1;
 ```
 
@@ -139,10 +172,15 @@ methods throw `UnsupportedOperationException`. Replacement through the array
 itself clones each new node.
 
 ```java
-JsonArray values = Json.parse("[3,1,2]").arrayValueOrThrow();
+String json = "[3,1,2]";
+String expectedJson = "[1, 3]";
+
+JsonArray values = Json.parse(json)
+        .arrayValueOrThrow();
 values.sort(Comparator.comparingInt(JsonElement::intValueOrThrow));
 values.removeIf(value -> value.intValueOrThrow() == 2);
-assert values.toString().equals("[1, 3]");
+assert values.toString()
+        .equals(expectedJson);
 ```
 
 ## Equality is about data
@@ -153,9 +191,16 @@ Finite numbers compare mathematically, ignoring integer/real kind and decimal sc
 this model; infinities compare by sign. Parent references do not participate.
 
 ```java
-assert Json.parse("{a:1,b:[2]}").equals(Json.parse("{b:[2.0],a:1e0}"));
-assert JsonNumber.of(1).hashCode() == JsonNumber.of(new BigDecimal("1.00")).hashCode();
-assert !JsonNumber.of(1).equals(Integer.valueOf(1));
+String firstJson = "{a:1,b:[2]}";
+String secondJson = "{b:[2.0],a:1e0}";
+
+assert Json.parse(firstJson)
+        .equals(Json.parse(secondJson));
+assert JsonNumber.of(1)
+        .hashCode() == JsonNumber.of(new BigDecimal("1.00"))
+        .hashCode();
+assert !JsonNumber.of(1)
+        .equals(Integer.valueOf(1));
 ```
 
 Container equality follows Map/List contracts, including comparison with ordinary

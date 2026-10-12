@@ -12,13 +12,18 @@ The parser does not invent values to fill holes or guess a missing object key.
 ## See the repaired tree and its warnings
 
 ```java
+String secondJson = "[1,,2 3] trailing note";
+String expectedJson = "[1, 2, 3]";
+
 JsonParser parser = new JsonParser()
         .setMode(JsonParsingMode.EXTENDED)
-        .setSourceName("import.json")
+        .setSourceName("import.firstJson")
         .setCollectWarnings(true);
-JsonElement value = parser.parse("[1,,2 3] trailing note");
-assert value.toString().equals("[1, 2, 3]");
-assert parser.warnings().size() == 3;
+JsonElement value = parser.parse(secondJson);
+assert value.toString()
+        .equals(expectedJson);
+assert parser.warnings()
+        .size() == 3;
 for (JsonError warning : parser.warnings()) {
     System.out.println(warning.location() + ": " + warning.message());
 }
@@ -53,9 +58,13 @@ A missing array element does **not** become `null`. If positions matter, use
 explicit nulls and a stricter syntax mode:
 
 ```java
-JsonArray positions = Json.parse("[1,null,2]", JsonParsingMode.STRICT).arrayValueOrThrow();
+String json = "[1,null,2]";
+
+JsonArray positions = Json.parse(json, JsonParsingMode.STRICT)
+        .arrayValueOrThrow();
 assert positions.size() == 3;
-assert positions.element(1).isNull();
+assert positions.element(1)
+        .isNull();
 ```
 
 ## Where recovery stops
@@ -75,9 +84,12 @@ assert positions.element(1).isNull();
 | Only whitespace | No root value |
 
 ```java
-JsonParser parser = new JsonParser().setCollectWarnings(true);
+String json = "{\"a\":[1";
+
+JsonParser parser = new JsonParser()
+        .setCollectWarnings(true);
 try {
-    parser.parse("{\"a\":[1");
+    parser.parse(json);
     throw new AssertionError("Nested EOF recovery is not allowed");
 } catch (JsonException expected) {
     assert expected.error() instanceof JsonError.UnexpectedEnd;

@@ -33,10 +33,17 @@ String document = """
           "enabled": true
         }
         """;
-JsonObject root = Json.parse(document, JsonParsingMode.STRICT).objectValueOrThrow();
-String name = root.element("name").orElseThrow().stringValueOrThrow();
-JsonArray instruments = root.element("instruments").orElseThrow().arrayValueOrThrow();
-BigDecimal budget = root.element("budget").orElseThrow().decimalValueOrThrow();
+JsonObject root = Json.parse(document, JsonParsingMode.STRICT)
+        .objectValueOrThrow();
+String name = root.element("name")
+        .orElseThrow()
+        .stringValueOrThrow();
+JsonArray instruments = root.element("instruments")
+        .orElseThrow()
+        .arrayValueOrThrow();
+BigDecimal budget = root.element("budget")
+        .orElseThrow()
+        .decimalValueOrThrow();
 assert name.equals("Hilltop Observatory");
 assert instruments.size() == 2;
 assert budget.equals(new BigDecimal("1250.75"));
@@ -59,7 +66,8 @@ filters.addString("blue");
 observation.addBoolean("complete", false);
 String compact = Json.serialize(observation);
 String readable = Json.serialize(observation, "  ");
-assert Json.parse(compact, JsonParsingMode.STRICT).equals(observation);
+assert Json.parse(compact, JsonParsingMode.STRICT)
+        .equals(observation);
 assert readable.contains("Jupiter");
 ```
 
@@ -69,24 +77,35 @@ original numeric spelling are not stored, so serialization is not a source-code 
 ## Work with a Java class
 
 ```java
-class Observation {
-    String target;
-    BigDecimal exposureSeconds;
-    List<String> filters;
-    boolean complete;
-}
-Observation value = Json.parse("""
+String json = """
         {
           "target": "Jupiter",
           "exposureSeconds": 0.025,
           "filters": ["red", "blue"],
           "complete": false
         }
-        """, Observation.class, JsonParsingMode.STRICT).orElseThrow();
+        """;
+
+class Observation {
+    String target;
+    BigDecimal exposureSeconds;
+    List<String> filters;
+    boolean complete;
+}
+Observation value = Json.parse(
+        json,
+        Observation.class,
+        JsonParsingMode.STRICT)
+        .orElseThrow();
 assert value.target.equals("Jupiter");
 assert value.exposureSeconds.equals(new BigDecimal("0.025"));
-assert Json.parse(Json.serialize(value)).objectValueOrThrow()
-        .element("filters").orElseThrow().arrayValueOrThrow().size() == 2;
+String serializedJson = Json.serialize(value);
+assert Json.parse(serializedJson)
+        .objectValueOrThrow()
+        .element("filters")
+        .orElseThrow()
+        .arrayValueOrThrow()
+        .size() == 2;
 ```
 
 Mapping uses fields, including inherited private fields, and a no-argument constructor.
@@ -101,14 +120,21 @@ This is valid JSON, but the application expects an integer:
 ```
 
 ```java
+String json = "{\"port\":\"8080\"}";
+
 class Settings {
     int port;
 }
 try {
-    Json.parse("{\"port\":\"8080\"}", Settings.class, JsonParsingMode.STRICT).orElseThrow();
+    Json.parse(
+            json,
+            Settings.class,
+            JsonParsingMode.STRICT)
+            .orElseThrow();
     throw new AssertionError("A string is not an integer");
 } catch (JsonDataException expected) {
-    assert expected.getMessage().contains("$[\"port\"]");
+    assert expected.getMessage()
+            .contains("$[\"port\"]");
 }
 ```
 
@@ -129,9 +155,16 @@ Use JSON5 intentionally:
 ```
 
 ```java
-JsonParser parser = new JsonParser().setMode(JsonParsingMode.JSON5);
-JsonElement value = parser.parse("{target:'Jupiter', filters:['red','blue',],}");
-assert value.objectValueOrThrow().element("target").orElseThrow().stringValueOrThrow().equals("Jupiter");
+String json = "{target:'Jupiter', filters:['red','blue',],}";
+
+JsonParser parser = new JsonParser()
+        .setMode(JsonParsingMode.JSON5);
+JsonElement value = parser.parse(json);
+assert value.objectValueOrThrow()
+        .element("target")
+        .orElseThrow()
+        .stringValueOrThrow()
+        .equals("Jupiter");
 ```
 
 For damaged documents, start with the [recovery gallery](recovery.md).

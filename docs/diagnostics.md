@@ -23,16 +23,20 @@ and unsupported view mutations may produce the ordinary Java exceptions.
 ## Syntax errors and locations
 
 ```java
+String secondJson = "{\"port\":}";
+
 JsonParser parser = new JsonParser()
         .setMode(JsonParsingMode.STRICT)
-        .setSourceName("settings.json");
+        .setSourceName("settings.firstJson");
 try {
-    parser.parse("{\"port\":}");
+    parser.parse(secondJson);
     throw new AssertionError("A value is required");
 } catch (JsonException failure) {
     JsonError error = failure.error();
     JsonLocation location = error.location();
-    assert location.sourceName().orElseThrow().equals("settings.json");
+    assert location.sourceName()
+            .orElseThrow()
+            .equals("settings.firstJson");
     assert location.row() == 1;
     System.out.println(location + ": " + error.message());
     System.out.println(error.localizedMessage("ru"));
@@ -62,14 +66,19 @@ the precise byte offset of the malformed sequence.
 ## Inspect warnings, including after a failure
 
 ```java
-JsonParser parser = new JsonParser().setCollectWarnings(true);
-parser.parse("[1 2]");
+String firstJson = "[1 2]";
+String secondJson = "[3,4]";
+
+JsonParser parser = new JsonParser()
+        .setCollectWarnings(true);
+parser.parse(firstJson);
 List<JsonError> firstWarnings = parser.warnings();
 assert firstWarnings.size() == 1;
 assert firstWarnings.get(0) instanceof JsonError.MissingComma;
 
-parser.parse("[3,4]");
-assert parser.warnings().isEmpty();
+parser.parse(secondJson);
+assert parser.warnings()
+        .isEmpty();
 assert firstWarnings.size() == 1; // An immutable snapshot, not a live list.
 ```
 
@@ -81,21 +90,33 @@ The static `JsonParser.parseString(text, mode, warnings)` API appends to a calle
 list without clearing existing entries, including on failure:
 
 ```java
+String firstJson = "[1 2]";
+String secondJson = "[3 4]";
+
 List<JsonError> warnings = new ArrayList<>();
-JsonParser.parseString("[1 2]", JsonParsingMode.EXTENDED, warnings);
-JsonParser.parseString("[3 4]", JsonParsingMode.EXTENDED, warnings);
+JsonParser.parseString(
+        firstJson,
+        JsonParsingMode.EXTENDED,
+        warnings);
+JsonParser.parseString(
+        secondJson,
+        JsonParsingMode.EXTENDED,
+        warnings);
 assert warnings.size() == 2;
 ```
 
 ## Mapping paths are not source positions
 
 ```java
+String json = "{north:[1,'oops']}";
+
 try {
-    Json.parse("{north:[1,'oops']}")
+    Json.parse(json)
             .toJavaObject(new JsonType<Map<String, List<Integer>>>() {});
     throw new AssertionError("The second element must be numeric");
 } catch (JsonDataException failure) {
-    assert failure.getMessage().contains("$[\"north\"][1]");
+    assert failure.getMessage()
+            .contains("$[\"north\"][1]");
 }
 ```
 

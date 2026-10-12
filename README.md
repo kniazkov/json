@@ -40,10 +40,15 @@ The Java fragments below belong inside a method that declares `throws JsonExcept
 import the named types from `com.kniazkov.json`.
 
 ```java
-JsonObject settings = Json.parse("""
+String json = """
         {"name": "Observatory", "port": 8080}
-        """, JsonParsingMode.STRICT).objectValueOrThrow();
-String name = settings.element("name").orElseThrow().stringValueOrThrow();
+        """;
+
+JsonObject settings = Json.parse(json, JsonParsingMode.STRICT)
+        .objectValueOrThrow();
+String name = settings.element("name")
+        .orElseThrow()
+        .stringValueOrThrow();
 settings.addBoolean("enabled", true);
 System.out.println(Json.serialize(settings, "  "));
 assert name.equals("Observatory");
@@ -52,11 +57,14 @@ assert name.equals("Observatory");
 Or go straight to a Java object:
 
 ```java
+String json = "{name: 'Observatory'}";
+
 class Settings {
     String name;
     int port = 8080;
 }
-Settings settings = Json.parse("{name: 'Observatory'}", Settings.class).orElseThrow();
+Settings settings = Json.parse(json, Settings.class)
+        .orElseThrow();
 assert settings.port == 8080;
 ```
 

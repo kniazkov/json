@@ -17,7 +17,7 @@ inside several containers, with a path to the failing element.
 | Java value → tree | `JsonParser.parseJavaObject(value)` |
 | Tree → natural Java values | `tree.toJavaObject()` |
 | Tree → explicit class | `tree.toJavaObject(Target.class)` |
-| Text → explicit class | `Json.parse(text, Target.class).orElseThrow()`, optionally with a mode |
+| Text → explicit class | `Json.parse(text, Target.class)`, optionally with a mode |
 | Tree → generic root type | `tree.toJavaObject(new JsonType<...>() {})` |
 
 When serializing an existing tree, pass it directly to `Json.serialize` or
@@ -26,6 +26,10 @@ When serializing an existing tree, pass it directly to `Json.serialize` or
 ## A model without ceremony
 
 ```java
+String json = """
+        {"exposure-ms":250,"target":"M31","filters":["red","green"]}
+        """;
+
 class Telescope {
     @JsonProperty(name = "exposure-ms")
     int exposure = 100;
@@ -33,12 +37,15 @@ class Telescope {
     List<String> filters;
     transient String sessionToken;
 }
-Telescope telescope = Json.parse("""
-        {"exposure-ms":250,"target":"M31","filters":["red","green"]}
-        """, Telescope.class, JsonParsingMode.STRICT).orElseThrow();
+Telescope telescope = Json.parse(
+        json,
+        Telescope.class,
+        JsonParsingMode.STRICT)
+        .orElseThrow();
 assert telescope.exposure == 250;
 assert telescope.filters.equals(List.of("red", "green"));
-JsonObject tree = JsonParser.parseJavaObject(telescope).objectValueOrThrow();
+JsonObject tree = JsonParser.parseJavaObject(telescope)
+        .objectValueOrThrow();
 assert tree.containsKey("exposure-ms");
 assert !tree.containsKey("sessionToken");
 ```
@@ -74,15 +81,24 @@ do not use POJO field order as a wire-format contract.
 ## Arrays, including primitive arrays
 
 ```java
-int[][] rows = Json.parse("[[1,2],null,[],[3]]", int[][].class).orElseThrow();
+String rowsJson = "[[1,2],null,[],[3]]";
+String expectedJson = "[[1, 2], null, [], [3]]";
+String lettersJson = "['A',null,'Б']";
+String bytesJson = "[-128,0,127]";
+
+int[][] rows = Json.parse(rowsJson, int[][].class)
+        .orElseThrow();
 assert Arrays.equals(rows[0], new int[] {1, 2});
 assert rows[1] == null;
 assert rows[2].length == 0;
-assert Json.serialize(rows).equals("[[1, 2], null, [], [3]]");
+assert Json.serialize(rows)
+        .equals(expectedJson);
 
-Character[] letters = Json.parse("['A',null,'Б']", Character[].class).orElseThrow();
+Character[] letters = Json.parse(lettersJson, Character[].class)
+        .orElseThrow();
 assert letters[1] == null;
-byte[] bytes = Json.parse("[-128,0,127]", byte[].class).orElseThrow();
+byte[] bytes = Json.parse(bytesJson, byte[].class)
+        .orElseThrow();
 assert bytes[0] == -128;
 ```
 
@@ -96,17 +112,24 @@ of one-unit strings, not a single string. `byte[]` is an array of signed numbers
 not implicit Base64.
 
 ```java
+String nullElementJson = "[1,null,2]";
+String surrogatePairJson = "['😀']";
+
 try {
-    Json.parse("[1,null,2]", int[].class).orElseThrow();
+    Json.parse(nullElementJson, int[].class)
+            .orElseThrow();
     throw new AssertionError("A primitive slot cannot hold null");
 } catch (JsonDataException expected) {
-    assert expected.getMessage().contains("$[1]");
+    assert expected.getMessage()
+            .contains("$[1]");
 }
 try {
-    Json.parse("['😀']", char[].class).orElseThrow();
+    Json.parse(surrogatePairJson, char[].class)
+            .orElseThrow();
     throw new AssertionError("A surrogate pair is not one char");
 } catch (JsonDataException expected) {
-    assert expected.getMessage().contains("$[0]");
+    assert expected.getMessage()
+            .contains("$[0]");
 }
 ```
 
@@ -116,14 +139,22 @@ Class alone cannot describe `Map<String, List<Integer>>`. Capture the type with 
 direct anonymous subclass of `JsonType<T>`:
 
 ```java
-Map<String, List<Integer>> groups = Json.parse("{north:[1,null,2],south:[]}")
+String groupsJson = "{north:[1,null,2],south:[]}";
+String rowsJson = "[{samples:[3,4]}]";
+
+Map<String, List<Integer>> groups = Json.parse(groupsJson)
         .toJavaObject(new JsonType<Map<String, List<Integer>>>() {});
-assert groups.get("north").equals(Arrays.asList(1, null, 2));
+assert groups.get("north")
+        .equals(Arrays.asList(
+                1,
+                null,
+                2));
 groups.put("west", new ArrayList<>());
 
-List<Map<String, int[]>> rows = Json.parse("[{samples:[3,4]}]")
+List<Map<String, int[]>> rows = Json.parse(rowsJson)
         .toJavaObject(new JsonType<List<Map<String, int[]>>>() {});
-assert rows.get(0).get("samples")[1] == 4;
+assert rows.get(0)
+        .get("samples")[1] == 4;
 ```
 
 | Target | Mutable implementation |
@@ -139,13 +170,17 @@ Generic arrays such as `List<Integer>[]` also preserve their element type.
 Declared generic field types work without a root token:
 
 ```java
+String json = "{measurements:{a:[[1,2]]},batches:[[3,null],[]]}";
+
 class Catalog {
     Map<String, List<int[]>> measurements;
     List<Integer>[] batches;
 }
-Catalog catalog = Json.parse("{measurements:{a:[[1,2]]},batches:[[3,null],[]]}",
-        Catalog.class).orElseThrow();
-assert catalog.measurements.get("a").get(0)[1] == 2;
+Catalog catalog = Json.parse(json,
+        Catalog.class)
+        .orElseThrow();
+assert catalog.measurements.get("a")
+        .get(0)[1] == 2;
 assert catalog.batches[0].get(1) == null;
 ```
 
@@ -161,11 +196,15 @@ Container declarations are checked even for null/empty input; absent fields are
 not mapped. Generic type-variable substitution is not implemented.
 
 ```java
+String json = "{}";
+
 try {
-    Json.parse("{}").toJavaObject(new JsonType<Map<Integer, String>>() {});
+    Json.parse(json)
+            .toJavaObject(new JsonType<Map<Integer, String>>() {});
     throw new AssertionError("JSON keys must map to String");
 } catch (JsonDataException expected) {
-    assert expected.getMessage().contains("String");
+    assert expected.getMessage()
+            .contains("String");
 }
 ```
 
@@ -191,6 +230,8 @@ it fails for primitives. Errors include a path such as `$["groups"]["north"][2]`
 A default is useful only when you have deliberately chosen it:
 
 ```java
+String json = "{retries:'many',samples:[1,'bad',3]}";
+
 class Preferences {
     @JsonProperty(onNull = JsonMappingAction.KEEP_DEFAULT,
             onInvalid = JsonMappingAction.KEEP_DEFAULT)
@@ -199,8 +240,9 @@ class Preferences {
     @JsonProperty(onInvalid = JsonMappingAction.SET_NULL)
     List<Integer> samples = new ArrayList<>();
 }
-Preferences preferences = Json.parse("{retries:'many',samples:[1,'bad',3]}",
-        Preferences.class).orElseThrow();
+Preferences preferences = Json.parse(json,
+        Preferences.class)
+        .orElseThrow();
 assert preferences.retries == 3;
 assert preferences.samples == null; // The whole field, not just the invalid element.
 ```
@@ -235,24 +277,34 @@ Map<String, Object> payload = new LinkedHashMap<>();
 payload.put("id", new BigInteger("18446744073709551616"));
 payload.put("samples", new int[] {3, 5, 8});
 payload.put("note", null);
-JsonObject tree = JsonParser.parseJavaObject(payload).objectValueOrThrow();
-assert tree.element("id").orElseThrow().numberValueOrThrow().equals(payload.get("id"));
-assert tree.element("note").orElseThrow().isNull();
+JsonObject tree = JsonParser.parseJavaObject(payload)
+        .objectValueOrThrow();
+assert tree.element("id")
+        .orElseThrow()
+        .numberValueOrThrow()
+        .equals(payload.get("id"));
+assert tree.element("note")
+        .orElseThrow()
+        .isNull();
 ```
 
 Cycles are errors, but reusing an object in separate branches is allowed:
 
 ```java
+String expectedJson = "[[1, 2], [1, 2]]";
+
 List<Object> cycle = new ArrayList<>();
 cycle.add(cycle);
 try {
     Json.serialize(cycle);
     throw new AssertionError("JSON cannot represent an object cycle");
 } catch (JsonDataException expected) {
-    assert expected.getMessage().contains("$[0]");
+    assert expected.getMessage()
+            .contains("$[0]");
 }
 List<Integer> shared = List.of(1, 2);
-assert Json.serialize(List.of(shared, shared)).equals("[[1, 2], [1, 2]]");
+assert Json.serialize(List.of(shared, shared))
+        .equals(expectedJson);
 ```
 
 Cycle detection uses object identity on the active ancestor path. Mapping and
@@ -268,10 +320,15 @@ still rejects it. A successful non-null conversion produces a present optional.
 The same rules apply to the overloads accepting a syntax mode.
 
 ```java
-assert Json.parse("null", String.class).isEmpty();
-String title = Json.parse("null", String.class).orElse("Untitled");
+String json = "null";
+
+assert Json.parse(json, String.class)
+        .isEmpty();
+String title = Json.parse(json, String.class)
+        .orElse("Untitled");
 assert title.equals("Untitled");
-assert Json.parse("null").toJavaObject(String.class) == null;
+assert Json.parse(json)
+        .toJavaObject(String.class) == null;
 ```
 
 `toJavaObject` deliberately returns ordinary Java values, including Java null.
