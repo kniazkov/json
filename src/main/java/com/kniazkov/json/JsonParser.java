@@ -331,6 +331,9 @@ public final class JsonParser {
                 JsonObject result = new JsonObject(parent);
                 Field[] fields = cls.getDeclaredFields();
                 for (Field field : fields) {
+                    if (!Utils.isReadableField(field)) {
+                        continue;
+                    }
                     String propertyName = field.getName();
                     if (field.isAnnotationPresent(JsonProperty.class)) {
                         JsonProperty annotation = field.getAnnotation(JsonProperty.class);

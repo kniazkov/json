@@ -282,6 +282,34 @@ The exact rules are:
    Warnings are appended in recovery order. Without a supplied list, the same recovery
    occurs without collecting warnings. Input/decoding failures remain exceptions.
 
+### Automatic Java field mapping
+
+Automatic mapping applies the same eligibility policy before accessing a field or
+processing `@JsonProperty`:
+
+| Field | Java → JSON | JSON → Java |
+| --- | --- | --- |
+| Ordinary instance field, including private fields | Read | Write |
+| static | Ignore | Ignore |
+| transient | Ignore | Ignore |
+| Compiler-generated synthetic field | Ignore | Ignore |
+| final instance field | Read | Ignore; preserve the constructor's value |
+
+`@JsonProperty` only renames an eligible field; it never overrides these exclusions.
+JSON properties matching excluded fields are ignored. The library does not read or
+write them through reflection. Constructors still execute normally and may have their
+own side effects. Immutable-object constructor mapping is not implemented.
+
+When mapping JSON to an inherited Java type, fields declared by a child hide fields
+with the same Java name in its parents **before** filtering. An excluded child field
+therefore does not expose the hidden parent field. This rule also applies to final
+fields when reading JSON. Inherited-field serialization remains tracked separately
+in issue #11; this change does not broaden the set of fields visited during serialization.
+
+Synthetic enclosing-instance references of inner classes are excluded from serialization.
+Deserializing a non-static inner class still requires an enclosing instance and is not
+supported by the existing no-argument-constructor mapper.
+
 ### Parsing to Java object
 
 Actually, in most cases, you're not interested in the intermediate result as a tree of JSON elements.

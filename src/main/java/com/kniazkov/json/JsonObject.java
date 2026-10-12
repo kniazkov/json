@@ -195,6 +195,10 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
             }
             final List<Field> fields = allFields(type);
             for (Field field : fields) {
+                // Filter after resolving field hiding; excluded child fields must not expose ancestors.
+                if (!Utils.isWritableField(field)) {
+                    continue;
+                }
                 String propertyName = field.getName();
                 if (field.isAnnotationPresent(JsonProperty.class)) {
                     JsonProperty annotation = field.getAnnotation(JsonProperty.class);
