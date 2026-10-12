@@ -148,72 +148,24 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
 
     @Override
     JsonElement clone(JsonContainer anotherParent) {
-        JsonObject copy = new JsonObject(anotherParent);
-        for (String key : elements.keySet()) {
-            copy.addElement(key, elements.get(key));
-        }
-        return copy;
+        return TreeTraversal.copy(this, anotherParent);
     }
 
     @Override
     public String toString() {
-        StringBuilder result = new StringBuilder();
-        result.append('{');
-        boolean flag = false;
-        for (String key : elements.keySet()) {
-            if (flag) {
-                result.append(", ");
-            }
-            flag = true;
-            result.append('"').append(Utils.escapeEntities(key)).append("\": ")
-                    .append(elements.get(key).toString());
-        }
-        result.append('}');
-        return result.toString();
+        StringBuilder builder = new StringBuilder();
+        TreeTraversal.write(this, builder, null, 0);
+        return builder.toString();
     }
 
     @Override
     protected void toText(StringBuilder builder, String indentation, int level) {
-        final String separator = System.lineSeparator();
-        final int size = elements.size();
-        boolean converted = false;
-        if (size == 0) {
-            builder.append("{}");
-            converted = true;
-        } else if (size == 1) {
-            final String key = elements.keySet().iterator().next();
-            final JsonElement child = elements.get(key);
-            if (child.toJsonArray() == null && child.toJsonObject() == null) {
-                builder.append("{\"").append(Utils.escapeEntities(key)).append("\": ")
-                        .append(child.toString()).append('}');
-                converted = true;
-            }
-        }
-        if (!converted) {
-            builder.append('{').append(separator);
-            boolean flag = false;
-            for (String key : elements.keySet()) {
-                if (flag) {
-                    builder.append(',').append(separator);
-                }
-                flag = true;
-                Utils.addRepeatingString(builder, indentation, level + 1);
-                builder.append('"').append(Utils.escapeEntities(key)).append("\": ");
-                elements.get(key).toText(builder, indentation, level + 1);
-            }
-            builder.append(separator);
-            Utils.addRepeatingString(builder, indentation, level);
-            builder.append('}');
-        }
+        TreeTraversal.write(this, builder, indentation, level);
     }
 
     @Override
     public Object toJavaObject() {
-        Map<String, Object> result = new TreeMap<>();
-        for (String key : elements.keySet()) {
-            result.put(key, elements.get(key).toJavaObject());
-        }
-        return Collections.unmodifiableMap(result);
+        return TreeTraversal.natural(this);
     }
 
     /**

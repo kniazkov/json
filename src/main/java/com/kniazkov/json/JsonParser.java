@@ -3,10 +3,8 @@
  */
 package com.kniazkov.json;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.Field;
+import java.util.ArrayDeque;
 import java.util.List;
-import java.util.Map;
 
 /**
  * JSON parser.
@@ -22,6 +20,9 @@ public final class JsonParser {
 
     /** Closing token retained for an enclosing container during recovery. */
     private Token pendingToken;
+
+    private int openArrays;
+    private int openObjects;
 
     /**
      * Parsing mode.
@@ -99,7 +100,7 @@ public final class JsonParser {
      * @return JSON element
      */
     public static JsonElement parseJavaObject(Object obj) {
-        return parseJavaObject(obj, null);
+        return JavaSerializer.convert(obj);
     }
 
     /**
@@ -125,6 +126,7 @@ public final class JsonParser {
             throw new JsonException(new JsonError.ExpectedRoot(first.location()));
         }
         JsonElement root = parseJsonElement(null, first);
+        if (root instanceof JsonContainer container) { parseContainers(container); }
         lexer.skipPadding(true);
         if (source.charValue() != -1) {
             JsonError error = new JsonError.TrailingContent(source.location());
@@ -157,10 +159,10 @@ public final class JsonParser {
             return ((TokenLiteral) firstToken).toElement(parent);
         }
         if (firstToken instanceof TokenOpeningSquareBracket) {
-            return parseJsonArray(parent);
+            return new JsonArray(parent);
         }
         if (firstToken instanceof TokenOpeningCurlyBracket) {
-            return parseJsonObject(parent);
+            return new JsonObject(parent);
         }
         throw new JsonException(new JsonError.UnexpectedToken(firstToken.location(), firstToken));
     }
@@ -208,12 +210,11 @@ public final class JsonParser {
             return true;
         }
         if (token instanceof TokenClosingSquareBracket || token instanceof TokenClosingCurlyBracket) {
-            for (JsonContainer ancestor = container.parent(); ancestor != null; ancestor = ancestor.parent()) {
-                if (matches(ancestor, token)) {
-                    recover(new JsonError.MissingClosingBracket(token.location(), bracket));
-                    pendingToken = token;
-                    return true;
-                }
+            boolean hasAncestor = token instanceof TokenClosingSquareBracket ? openArrays > 0 : openObjects > 0;
+            if (hasAncestor) {
+                recover(new JsonError.MissingClosingBracket(token.location(), bracket));
+                pendingToken = token;
+                return true;
             }
             throw new JsonException(new JsonError.UnexpectedToken(token.location(), token));
         }
@@ -226,168 +227,68 @@ public final class JsonParser {
                 || token instanceof TokenOpeningCurlyBracket;
     }
 
-    /** Parses array elements and separators without manufacturing values for empty slots. */
-    private JsonArray parseJsonArray(JsonContainer parent) throws JsonException {
-        JsonArray array = new JsonArray(parent);
-        boolean expectValue = true;
-        boolean afterComma = false;
-        Token token = nextToken();
-        while (true) {
-            if (matches(array, token) && afterComma && mode == JsonParsingMode.STRICT) {
-                throw new JsonException(new JsonError.ExpectedElementAfterComma(token.location()));
-            }
-            if (closeContainer(array, token)) {
-                return array;
-            }
-            if (token instanceof TokenComma) {
-                if (expectValue) {
-                    recover(new JsonError.MissingArrayElement(token.location()));
-                }
-                expectValue = true;
-                afterComma = true;
-                token = nextToken();
-                continue;
-            }
-            if (!expectValue && startsValue(token)) {
-                recover(new JsonError.MissingComma(token.location()));
-            }
-            array.addChild(parseJsonElement(array, token));
-            expectValue = false;
-            afterComma = false;
-            token = nextToken();
-        }
+    /** Heap-backed parser continuation; only complete pairs/values reach this state. */
+    private static final class Frame {
+        final JsonContainer container;
+        boolean expect = true;
+        boolean afterComma;
+        Frame(JsonContainer container) { this.container = container; }
     }
 
-    /** Parses complete key:value pairs; missing keys, colons and values are never invented. */
-    private JsonObject parseJsonObject(JsonContainer parent) throws JsonException {
-        JsonObject obj = new JsonObject(parent);
-        boolean expectPair = true;
-        boolean afterComma = false;
-        Token token = nextToken();
-        while (true) {
-            if (matches(obj, token) && afterComma && mode == JsonParsingMode.STRICT) {
-                throw new JsonException(new JsonError.ExpectedPairAfterComma(token.location()));
+    private void parseContainers(JsonContainer root) throws JsonException {
+        ArrayDeque<Frame> stack = new ArrayDeque<>();
+        stack.push(new Frame(root));
+        if (root instanceof JsonArray) { openArrays++; } else { openObjects++; }
+        while (!stack.isEmpty()) {
+            Frame frame = stack.peek();
+            JsonContainer container = frame.container;
+            Token token = nextToken();
+            if (matches(container, token) && frame.afterComma && mode == JsonParsingMode.STRICT) {
+                throw new JsonException(container instanceof JsonArray
+                        ? new JsonError.ExpectedElementAfterComma(token.location())
+                        : new JsonError.ExpectedPairAfterComma(token.location()));
             }
-            if (closeContainer(obj, token)) {
-                return obj;
-            }
-            if (!expectPair && token instanceof TokenComma) {
-                expectPair = true;
-                afterComma = true;
-                token = nextToken();
+            if (closeContainer(container, token)) {
+                stack.pop();
+                if (container instanceof JsonArray) { openArrays--; } else { openObjects--; }
                 continue;
             }
-            String key;
-            if (token instanceof TokenString string) {
-                key = string.value();
-            } else if (mode != JsonParsingMode.STRICT && token.identifierName() != null) {
-                key = token.identifierName();
+            JsonElement child;
+            if (container instanceof JsonArray array) {
+                if (token instanceof TokenComma) {
+                    if (frame.expect) { recover(new JsonError.MissingArrayElement(token.location())); }
+                    frame.expect = true;
+                    frame.afterComma = true;
+                    continue;
+                }
+                if (!frame.expect && startsValue(token)) { recover(new JsonError.MissingComma(token.location())); }
+                child = parseJsonElement(array, token);
+                array.addChild(child);
             } else {
-                throw new JsonException(new JsonError.ExpectedKey(token.location()));
-            }
-            if (!expectPair) {
-                recover(new JsonError.MissingComma(token.location()));
-            }
-            token = nextToken();
-            if (!(token instanceof TokenColon)) {
-                throw new JsonException(new JsonError.ExpectedSeparator(
-                        token.location()));
-            }
-            token = nextToken();
-            if (token instanceof TokenEnd) {
-                throw new JsonException(new JsonError.ExpectedElementAfterSeparator(token.location()));
-            }
-            obj.addChild(key, parseJsonElement(obj, token));
-            expectPair = false;
-            afterComma = false;
-            token = nextToken();
-        }
-    }
-
-    /**
-     * Parses a Java object and tries to represent it as a JSON element (internal method).
-     * @param obj Java object
-     * @param parent The container that will contain the parsed object
-     * @return JSON element
-     */
-    private static JsonElement parseJavaObject(Object obj, JsonContainer parent) {
-        if (obj != null) {
-            Class<?> cls = obj.getClass();
-            if (obj instanceof Number number) {
-                return JsonNumber.of(parent, number);
-            }
-            if (cls == Boolean.class) {
-                return new JsonBoolean(parent, (Boolean) obj);
-            }
-            if (cls == String.class) {
-                return new JsonString(parent, (String) obj);
-            }
-            if (obj instanceof Character character) {
-                return new JsonString(parent, character.toString());
-            }
-            if (cls.isArray()) {
-                JsonArray result = new JsonArray(parent);
-                int length = Array.getLength(obj);
-                for (int index = 0; index < length; index++) {
-                    result.addChild(parseJavaObject(Array.get(obj, index), result));
+                JsonObject object = (JsonObject) container;
+                if (!frame.expect && token instanceof TokenComma) {
+                    frame.expect = true;
+                    frame.afterComma = true;
+                    continue;
                 }
-                return result;
+                String key;
+                if (token instanceof TokenString string) { key = string.value(); }
+                else if (mode != JsonParsingMode.STRICT && token.identifierName() != null) { key = token.identifierName(); }
+                else { throw new JsonException(new JsonError.ExpectedKey(token.location())); }
+                if (!frame.expect) { recover(new JsonError.MissingComma(token.location())); }
+                token = nextToken();
+                if (!(token instanceof TokenColon)) { throw new JsonException(new JsonError.ExpectedSeparator(token.location())); }
+                token = nextToken();
+                if (token instanceof TokenEnd) { throw new JsonException(new JsonError.ExpectedElementAfterSeparator(token.location())); }
+                child = parseJsonElement(object, token);
+                object.addChild(key, child);
             }
-            if (obj instanceof Map<?, ?> map) {
-                JsonObject result = new JsonObject(parent);
-                for (Map.Entry<?, ?> entry : map.entrySet()) {
-                    if (!(entry.getKey() instanceof String key)) {
-                        throw new IllegalArgumentException("JSON object keys must be non-null strings");
-                    }
-                    if (result.containsKey(key)) {
-                        throw new IllegalArgumentException("Duplicate JSON object key: " + key);
-                    }
-                    result.addChild(key, parseJavaObject(entry.getValue(), result));
-                }
-                return result;
-            }
-            if (obj instanceof List) {
-                JsonArray result = new JsonArray(parent);
-                for (Object item : (List<?>) obj) {
-                    result.addChild(parseJavaObject(item, result));
-                }
-                return result;
-            }
-            if (!cls.isInterface() && !cls.isPrimitive()) {
-                JsonObject result = new JsonObject(parent);
-                for (var entry : Utils.mappedFields(cls).entrySet()) {
-                    String propertyName = entry.getKey();
-                    Field field = entry.getValue();
-                    Class<?> fieldType = field.getType();
-                    try {
-                        field.setAccessible(true);
-                        if (fieldType == byte.class) {
-                            result.addNumber(propertyName, field.getByte(obj));
-                        } else if (fieldType == short.class) {
-                            result.addNumber(propertyName, field.getShort(obj));
-                        } else if (fieldType == int.class) {
-                            result.addNumber(propertyName, field.getInt(obj));
-                        } else if (fieldType == long.class) {
-                            result.addNumber(propertyName, field.getLong(obj));
-                        } else if (fieldType == float.class) {
-                            result.addNumber(propertyName, field.getFloat(obj));
-                        } else if (fieldType == double.class) {
-                            result.addNumber(propertyName, field.getDouble(obj));
-                        } else if (fieldType == boolean.class) {
-                            result.addBoolean(propertyName, field.getBoolean(obj));
-                        } else {
-                            result.addChild(propertyName, parseJavaObject(field.get(obj), result));
-                        }
-                    } catch (IllegalAccessException ignored) {
-                        return result;
-                    }
-                }
-                return result;
+            frame.expect = false;
+            frame.afterComma = false;
+            if (child instanceof JsonContainer nested) {
+                stack.push(new Frame(nested));
+                if (nested instanceof JsonArray) { openArrays++; } else { openObjects++; }
             }
         }
-        if (parent == null) {
-            return JsonNull.INSTANCE;
-        }
-        return new JsonNull(parent);
     }
 }
