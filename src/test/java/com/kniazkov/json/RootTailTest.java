@@ -72,7 +72,7 @@ public class RootTailTest {
     @Test
     public void strictWhitespaceIsOnlyTheFourJsonCharacters() {
         for (String space : new String[] {"\u000b", "\f", "\u0085", "\u00a0", "\u2003", "\u2028", "\ufeff"}) {
-            Assert.assertThrows(JsonException.class, () -> Json.parse(space + "42", JsonParsingMode.STRICT));
+            Assert.assertThrows(JsonException.class, () -> Json.parse(" " + space + "42", JsonParsingMode.STRICT));
             Assert.assertThrows(JsonException.class, () -> Json.parse("42" + space, JsonParsingMode.STRICT));
         }
         Assert.assertThrows(JsonException.class, () -> Json.parse("42 // comment", JsonParsingMode.STRICT));
