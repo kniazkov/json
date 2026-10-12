@@ -282,6 +282,35 @@ The exact rules are:
    Warnings are appended in recovery order. Without a supplied list, the same recovery
    occurs without collecting warnings. Input/decoding failures remain exceptions.
 
+### Serializing Java arrays and maps
+
+`Json.serialize` and `JsonParser.parseJavaObject` support these types at the root,
+in object fields and recursively inside arrays, lists and maps:
+
+| Java value | JSON representation |
+| --- | --- |
+| Primitive numeric array | Array of numbers; `byte[]` uses signed numbers, not Base64 |
+| `boolean[]` | Array of booleans |
+| `char[]` / `Character[]` | Array of one-character strings (one UTF-16 code unit per character) |
+| `Character` or a `char` field | One-character string |
+| Object array, including user-defined objects | Array of recursively serialized values |
+| Multidimensional or ragged array | Nested arrays |
+| Empty array / empty map | `[]` / `{}` |
+| Null reference or null element/value | `null` |
+| `Map` implementation | Object, in the map's entry iteration order |
+
+Map keys must be non-null strings. Null and non-string keys cause
+`IllegalArgumentException`; keys are never converted with `toString()`. Maps using
+identity or unusual equality rules may contain distinct string keys with identical
+text; these are also rejected rather than silently overwriting a JSON property.
+Keys and character values use normal JSON string escaping. Arrays and maps are
+accessed through their public APIs, without reflective access to JDK internals.
+Numeric values retain the existing exact-number and JSON5 non-finite-number policy.
+
+This support is for serialization. It does not add typed deserialization into Java
+arrays or concrete map classes, support for arbitrary `Iterable`/`Set` types, or
+cycle detection (tracked separately in issue #15).
+
 ### Automatic Java field mapping
 
 Automatic mapping applies the same eligibility policy before accessing a field or

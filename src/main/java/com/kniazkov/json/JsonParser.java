@@ -3,8 +3,10 @@
  */
 package com.kniazkov.json;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Map;
 
 /**
  * JSON parser.
@@ -319,6 +321,30 @@ public final class JsonParser {
             }
             if (cls == String.class) {
                 return new JsonString(parent, (String) obj);
+            }
+            if (obj instanceof Character character) {
+                return new JsonString(parent, character.toString());
+            }
+            if (cls.isArray()) {
+                JsonArray result = new JsonArray(parent);
+                int length = Array.getLength(obj);
+                for (int index = 0; index < length; index++) {
+                    result.addChild(parseJavaObject(Array.get(obj, index), result));
+                }
+                return result;
+            }
+            if (obj instanceof Map<?, ?> map) {
+                JsonObject result = new JsonObject(parent);
+                for (Map.Entry<?, ?> entry : map.entrySet()) {
+                    if (!(entry.getKey() instanceof String key)) {
+                        throw new IllegalArgumentException("JSON object keys must be non-null strings");
+                    }
+                    if (result.containsKey(key)) {
+                        throw new IllegalArgumentException("Duplicate JSON object key: " + key);
+                    }
+                    result.addChild(key, parseJavaObject(entry.getValue(), result));
+                }
+                return result;
             }
             if (obj instanceof List) {
                 JsonArray result = new JsonArray(parent);
