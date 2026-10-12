@@ -225,6 +225,7 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
             return (T) toJavaObject();
         }
         if (!type.isPrimitive() && !type.isInterface()) {
+            final Map<String, Field> fields = Utils.mappedFields(type);
             T result = null;
             try {
                 Constructor<T> constructor = type.getDeclaredConstructor();
@@ -233,17 +234,12 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
             } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException ignored) {
                 return null;
             }
-            final List<Field> fields = allFields(type);
-            for (Field field : fields) {
-                // Filter after resolving field hiding; excluded child fields must not expose ancestors.
+            for (Map.Entry<String, Field> entry : fields.entrySet()) {
+                Field field = entry.getValue();
                 if (!Utils.isWritableField(field)) {
                     continue;
                 }
-                String propertyName = field.getName();
-                if (field.isAnnotationPresent(JsonProperty.class)) {
-                    JsonProperty annotation = field.getAnnotation(JsonProperty.class);
-                    propertyName = annotation.name();
-                }
+                String propertyName = entry.getKey();
                 if (elements.containsKey(propertyName)) {
                     Class<?> fieldType = field.getType();
                     JsonElement child = elements.get(propertyName);
@@ -443,32 +439,4 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
         return this;
     }
 
-    /**
-     * Recursively collects all fields from the given class and its superclasses.
-     * Fields in subclasses override fields with the same name from superclasses.
-     *
-     * @param type the class to analyze
-     * @param map  the map to store fields by name
-     */
-    private static void allFieldsMap(Class<?> type, Map<String, Field> map) {
-        if (type.getSuperclass() != null) {
-            allFieldsMap(type.getSuperclass(), map);
-        }
-        for (Field field : type.getDeclaredFields()) {
-            map.put(field.getName(), field);
-        }
-    }
-
-    /**
-     * Returns a list of all fields from the given class and its superclasses.
-     * Fields in subclasses override fields with the same name from superclasses.
-     *
-     * @param type the class to analyze
-     * @return a list of all unique fields in order of inheritance
-     */
-    private static List<Field> allFields(Class<?> type) {
-        final Map<String, Field> map = new TreeMap<>();
-        allFieldsMap(type, map);
-        return new ArrayList<>(map.values());
-    }
 }

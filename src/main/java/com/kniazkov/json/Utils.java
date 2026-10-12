@@ -5,6 +5,8 @@ package com.kniazkov.json;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Some auxiliary procedures.
@@ -19,6 +21,41 @@ final class Utils {
     /** Final instance fields may be read, but must retain their constructor-provided values. */
     static boolean isWritableField(Field field) {
         return isReadableField(field) && !Modifier.isFinal(field.getModifiers());
+    }
+
+    /**
+     * Resolves Java-name hiding before filtering, then maps readable fields to JSON names.
+     * Both directions validate the same schema, including final fields.
+     * @throws IllegalArgumentException if distinct visible fields have the same JSON name
+     */
+    static Map<String, Field> mappedFields(Class<?> type) {
+        Map<String, Field> visible = new LinkedHashMap<>();
+        collectFields(type, visible);
+        Map<String, Field> result = new LinkedHashMap<>();
+        for (Field field : visible.values()) {
+            if (!isReadableField(field)) {
+                continue;
+            }
+            JsonProperty annotation = field.getAnnotation(JsonProperty.class);
+            String name = annotation == null ? field.getName() : annotation.name();
+            Field previous = result.putIfAbsent(name, field);
+            if (previous != null) {
+                throw new IllegalArgumentException("Duplicate JSON property '" + name + "': "
+                        + previous.getDeclaringClass().getName() + "." + previous.getName()
+                        + " and " + field.getDeclaringClass().getName() + "." + field.getName());
+            }
+        }
+        return result;
+    }
+
+    private static void collectFields(Class<?> type, Map<String, Field> fields) {
+        if (type == null || type == Object.class) {
+            return;
+        }
+        collectFields(type.getSuperclass(), fields);
+        for (Field field : type.getDeclaredFields()) {
+            fields.put(field.getName(), field);
+        }
     }
 
     /**

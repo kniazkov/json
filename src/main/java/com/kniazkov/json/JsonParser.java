@@ -329,16 +329,9 @@ public final class JsonParser {
             }
             if (!cls.isInterface() && !cls.isPrimitive()) {
                 JsonObject result = new JsonObject(parent);
-                Field[] fields = cls.getDeclaredFields();
-                for (Field field : fields) {
-                    if (!Utils.isReadableField(field)) {
-                        continue;
-                    }
-                    String propertyName = field.getName();
-                    if (field.isAnnotationPresent(JsonProperty.class)) {
-                        JsonProperty annotation = field.getAnnotation(JsonProperty.class);
-                        propertyName = annotation.name();
-                    }
+                for (var entry : Utils.mappedFields(cls).entrySet()) {
+                    String propertyName = entry.getKey();
+                    Field field = entry.getValue();
                     Class<?> fieldType = field.getType();
                     try {
                         field.setAccessible(true);

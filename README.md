@@ -300,11 +300,23 @@ JSON properties matching excluded fields are ignored. The library does not read 
 write them through reflection. Constructors still execute normally and may have their
 own side effects. Immutable-object constructor mapping is not implemented.
 
-When mapping JSON to an inherited Java type, fields declared by a child hide fields
-with the same Java name in its parents **before** filtering. An excluded child field
-therefore does not expose the hidden parent field. This rule also applies to final
-fields when reading JSON. Inherited-field serialization remains tracked separately
-in issue #11; this change does not broaden the set of fields visited during serialization.
+Both directions visit the entire superclass hierarchy, including private and annotated
+inherited fields. Fields declared by a child hide fields with the same **Java name**
+in its parents before filtering or applying `@JsonProperty`. An excluded child field
+therefore does not expose the hidden parent field, even under a different JSON name.
+This rule also applies to final fields when reading JSON.
+
+After hiding and excluding static, transient and synthetic fields, every JSON name
+must identify exactly one field. Two distinct fields with the same JSON name cause
+`IllegalArgumentException` in **both** directions, including collisions involving
+final fields. The message identifies the JSON name and both declaring fields.
+Validation happens before reading fields or invoking the target constructor; it does
+not depend on which properties are present in the input. Final fields are skipped
+for assignment only after this common validation. Excluded fields do not reserve names.
+
+Serialization visits parent fields before new child fields; a hiding child field
+keeps the parent's position. Within a class, reflection's declared-field order is used
+and is not guaranteed by Java. JSON object member order has no semantic significance.
 
 Synthetic enclosing-instance references of inner classes are excluded from serialization.
 Deserializing a non-static inner class still requires an enclosing instance and is not
