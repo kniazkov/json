@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2026 Ivan Kniazkov
+ */
 package com.kniazkov.json;
 
 import java.lang.annotation.Retention;

@@ -1,4 +1,6 @@
-/* Copyright (c) 2026 Ivan Kniazkov */
+/*
+ * Copyright (c) 2026 Ivan Kniazkov
+ */
 package com.kniazkov.json;
 
 /** Field-level policy for null or invalid JSON data. */

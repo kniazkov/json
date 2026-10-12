@@ -1,4 +1,6 @@
-/* Copyright (c) 2026 Ivan Kniazkov */
+/*
+ * Copyright (c) 2026 Ivan Kniazkov
+ */
 package com.kniazkov.json;
 
 /** Policy for a byte-order mark at the beginning of each input document. */

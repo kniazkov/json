@@ -1,4 +1,6 @@
-/* Copyright (c) 2026 Ivan Kniazkov */
+/*
+ * Copyright (c) 2026 Ivan Kniazkov
+ */
 package com.kniazkov.json;
 
 /** JSON5 not-a-number value. Its textual representation is not strict JSON. */

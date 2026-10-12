@@ -1,4 +1,6 @@
-/* Copyright (c) 2026 Ivan Kniazkov */
+/*
+ * Copyright (c) 2026 Ivan Kniazkov
+ */
 package com.kniazkov.json;
 
 /** Signed JSON5 infinity. Its textual representation is not strict JSON. */
