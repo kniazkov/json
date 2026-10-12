@@ -4,6 +4,8 @@
 package com.kniazkov.json;
 
 import java.util.*;
+import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 
 /**
  * Array of JSON elements.
@@ -75,18 +77,12 @@ public final class JsonArray extends JsonContainer implements List<JsonElement> 
 
     @Override
     public boolean addAll(Collection<? extends JsonElement> collection) {
-        if (collection.isEmpty()) {
-            return false;
-        }
-        for (JsonElement elem : collection) {
-            JsonElement copy = elem.clone(this);
-            list.add(copy);
-        }
-        return true;
+        return addAll(list.size(), collection);
     }
 
     @Override
     public boolean addAll(int index, Collection<? extends JsonElement> collection) {
+        Objects.checkIndex(index, list.size() + 1);
         if (collection.isEmpty()) {
             return false;
         }
@@ -106,6 +102,22 @@ public final class JsonArray extends JsonContainer implements List<JsonElement> 
     @Override
     public boolean retainAll(Collection<?> collection) {
         return list.retainAll(collection);
+    }
+
+    @Override
+    public boolean removeIf(Predicate<? super JsonElement> filter) {
+        return list.removeIf(filter);
+    }
+
+    @Override
+    public void replaceAll(UnaryOperator<JsonElement> operator) {
+        Objects.requireNonNull(operator, "operator");
+        list.replaceAll(value -> Objects.requireNonNull(operator.apply(value), "value").clone(this));
+    }
+
+    @Override
+    public void sort(Comparator<? super JsonElement> comparator) {
+        list.sort(comparator);
     }
 
     @Override

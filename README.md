@@ -285,7 +285,7 @@ The exact rules are:
 ### Deep documents and cyclic Java graphs
 
 There is no fixed nesting-depth limit. Built-in JSON parsing, compact and formatted
-writing, cloning (including container insertion), Java-object serialization, and both
+writing, cloning (including container insertion), equality/hashing, Java-object serialization, and both
 natural and typed Java conversion use iterative traversal with heap-backed frames.
 Call-stack usage does not grow with document depth. All syntax-mode recovery rules,
 parent ownership, field policies and collection ordering remain in effect.
@@ -901,6 +901,38 @@ and underflow to zero. Number.class and Object.class conversions of numeric node
 return the stored number. Typed mapping uses the strict rules documented above;
 convenience getters keep their existing behavior.
 
+### Equality and collection contracts
+
+JSON elements compare by content, never by their parent links. Cloning therefore
+preserves equality and hashCode. Scalar JSON nodes compare only with JSON nodes of
+the appropriate kind: `new JsonString("x")` is not equal to Java `"x"`, JsonNull is
+not Java null, and a JsonNumber is not a Java Integer/BigDecimal.
+
+- Finite numbers use exact mathematical equality across JsonInteger/JsonReal and
+  decimal scales: `1`, `1.0` and `1e0` are equal and have the same hash. Zero has one
+  equality class. No conversion through double is used.
+- All JsonNaN nodes are equal, including to themselves. Positive and negative
+  infinities form separate equality classes; neither equals a finite number or NaN.
+- Strings compare by their text and booleans by their value. All JsonNull nodes are equal.
+- JsonArray follows the List contract: order matters, and it can equal a standard
+  Java List containing equal elements, with the same hashCode.
+- JsonObject follows the Map contract: member order does not affect equality or hash.
+  It can equal a standard Java Map containing the same keys and equal values.
+
+For example, a JsonArray containing JsonNumber(1) equals a List containing an equal
+JsonNumber, but does not equal `List.of(1)`. Nested standard Lists/Maps participate
+in the same structural comparison. As usual, this assumes the other collection
+obeys its own equals/hashCode contract.
+
+Equality and hashing of JSON trees use iterative traversal, including 20,000-level
+regression coverage; parent links are excluded. No content hashes are cached:
+containers and their descendants are mutable. Do not modify them while they are keys
+in a HashMap or members of a HashSet. Stack-safety of methods invoked directly on
+arbitrary external Java collections remains the responsibility of those collections.
+
+This makes contains/indexOf/lastIndexOf/remove, bulk List operations, Map value
+lookup, conditional remove/replace and entry views work with equal clones.
+
 ### JsonContainer
 
 A container is an element that can store other elements. Thus, only an element of container type
@@ -1032,6 +1064,19 @@ of elements:
 - contains;
 - iterator;
 - listIterator.
+
+`JsonArray.removeIf`, `replaceAll` and `sort` are supported on the array itself.
+`replaceAll` clones each replacement with the array as parent and rejects Java null;
+use JsonNull for a JSON null. `sort` rearranges existing children without cloning;
+provide a comparator because JsonElement has no natural Comparable ordering.
+Callback/comparator failures do not promise a transactional rollback of earlier work.
+`addAll` snapshots and clones the input before insertion, including self-insertion.
+
+`iterator`, `listIterator` and `subList` remain read-only views: their structural
+mutation methods (including subList removeIf/replaceAll/sort) are unsupported.
+Contained JSON nodes may still be mutable; these views are not deep immutable copies.
+Existing non-structural parent changes are visible; structural changes can invalidate
+a subList/iterator according to the backing ArrayList's rules.
 
 The class has the following methods, in addition to inherited methods:
 
