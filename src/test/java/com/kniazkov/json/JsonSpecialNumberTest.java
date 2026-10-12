@@ -42,8 +42,8 @@ public class JsonSpecialNumberTest {
             Assert.assertEquals(value.numberValue(), value.toJavaObject(Double.class));
             Assert.assertEquals((float) value.doubleValue(), value.toJavaObject(Float.class), 0);
             Assert.assertNull(value.decimalValue());
-            Assert.assertNull(value.toJavaObject(BigDecimal.class));
-            Assert.assertNull(value.toJavaObject(BigInteger.class));
+            Assert.assertThrows(JsonDataException.class, () -> value.toJavaObject(BigDecimal.class));
+            Assert.assertThrows(JsonDataException.class, () -> value.toJavaObject(BigInteger.class));
             Assert.assertEquals((int) value.doubleValue(), value.intValue());
             Assert.assertEquals((long) value.doubleValue(), value.longValue());
             Assert.assertThrows(JsonDataException.class, value::intValueOrThrow);

@@ -16,7 +16,6 @@ public class JsonBooleanTest {
         Boolean boolValue = elem.toJavaObject(Boolean.class);
         Assert.assertNotNull(boolValue);
         Assert.assertEquals(false, boolValue);
-        Integer intValue = elem.toJavaObject(Integer.class);
-        Assert.assertNull(intValue);
+        Assert.assertThrows(JsonDataException.class, () -> elem.toJavaObject(Integer.class));
     }
 }

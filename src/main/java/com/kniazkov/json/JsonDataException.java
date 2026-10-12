@@ -6,7 +6,7 @@ package com.kniazkov.json;
 /**
  * A JSON value has the wrong type or cannot be represented in the requested format.
  * Unlike JsonException (document syntax errors), this unchecked exception reports
- * errors when accessing data in an already constructed JSON tree.
+ * errors when accessing a JSON tree or mapping it to Java values.
  */
 public final class JsonDataException extends RuntimeException {
     private static final long serialVersionUID = 1L;
@@ -17,5 +17,13 @@ public final class JsonDataException extends RuntimeException {
      */
     public JsonDataException(String message) {
         super(message);
+    }
+    /**
+     * Creates a mapping error retaining its underlying cause.
+     * @param message Description including the data path
+     * @param cause Underlying conversion or reflection failure
+     */
+    public JsonDataException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

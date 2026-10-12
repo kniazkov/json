@@ -131,6 +131,6 @@ public class MappingFieldPolicyTest {
         }
         Assert.assertTrue("Fixture must actually contain a synthetic outer reference", found);
         // No enclosing instance can be supplied to the existing no-argument mapper.
-        Assert.assertNull(Json.parse("{value:9}", Outer.Inner.class));
+        Assert.assertThrows(JsonDataException.class, () -> Json.parse("{value:9}", Outer.Inner.class));
     }
 }

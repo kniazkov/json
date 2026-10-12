@@ -3,9 +3,6 @@
  */
 package com.kniazkov.json;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -217,104 +214,6 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
             result.put(key, elements.get(key).toJavaObject());
         }
         return Collections.unmodifiableMap(result);
-    }
-
-    @Override
-    public <T> T toJavaObject(Class<T> type) {
-        if (type == java.util.Map.class) {
-            return (T) toJavaObject();
-        }
-        if (!type.isPrimitive() && !type.isInterface()) {
-            final Map<String, Field> fields = Utils.mappedFields(type);
-            T result = null;
-            try {
-                Constructor<T> constructor = type.getDeclaredConstructor();
-                constructor.setAccessible(true);
-                result = constructor.newInstance();
-            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException ignored) {
-                return null;
-            }
-            for (Map.Entry<String, Field> entry : fields.entrySet()) {
-                Field field = entry.getValue();
-                if (!Utils.isWritableField(field)) {
-                    continue;
-                }
-                String propertyName = entry.getKey();
-                if (elements.containsKey(propertyName)) {
-                    Class<?> fieldType = field.getType();
-                    JsonElement child = elements.get(propertyName);
-                    try {
-                        field.setAccessible(true);
-                        if (fieldType == byte.class) {
-                            field.setByte(result, (byte)child.intValue());
-                        }
-                        else if (fieldType == java.lang.Byte.class) {
-                            Byte obj = child.isNull() ? null : (byte)child.intValue();
-                            field.set(result, obj);
-                        }
-                        else if (fieldType == short.class) {
-                            field.setShort(result, (short)child.intValue());
-                        }
-                        else if (fieldType == java.lang.Short.class) {
-                            Short obj = child.isNull() ? null : (short)child.intValue();
-                            field.set(result, obj);
-                        }
-                        else if (fieldType == int.class) {
-                            field.setInt(result, child.intValue());
-                        }
-                        else if (fieldType == java.lang.Integer.class) {
-                            Integer obj = child.isNull() ? null : child.intValue();
-                            field.set(result, obj);
-                        }
-                        else if (fieldType == long.class) {
-                            field.setLong(result, child.longValue());
-                        }
-                        else if (fieldType == java.lang.Long.class) {
-                            Long obj = child.isNull() ? null : child.longValue();
-                            field.set(result, obj);
-                        }
-                        else if (fieldType == float.class) {
-                            field.setFloat(result, (float)child.doubleValue());
-                        }
-                        else if (fieldType == java.lang.Float.class) {
-                            Float obj = child.isNull() ? null : (float)child.doubleValue();
-                            field.set(result, obj);
-                        }
-                        else if (fieldType == double.class) {
-                            field.setDouble(result, child.doubleValue());
-                        }
-                        else if (fieldType == java.lang.Double.class) {
-                            Double obj = child.isNull() ? null : child.doubleValue();
-                            field.set(result, obj);
-                        }
-                        else if (fieldType == boolean.class) {
-                            field.setBoolean(result, child.booleanValue());
-                        }
-                        else if (fieldType == java.lang.Boolean.class) {
-                            Boolean obj =  child.isNull() ? null : child.booleanValue();
-                            field.set(result, obj);
-                        }
-                        else if (fieldType == java.lang.String.class) {
-                            field.set(result, child.isNull() ? null : child.stringValue());
-                        }
-                        else if (fieldType == java.lang.Object.class) {
-                            field.set(result, child.toJavaObject());
-                        }
-                        else if (List.class.isAssignableFrom(fieldType)) {
-                            field.set(result, JsonArray.convertList(field.getGenericType(), child,
-                                    "$[" + new JsonString(propertyName).toString() + "]"));
-                        }
-                        else {
-                            field.set(result, child.toJavaObject(fieldType));
-                        }
-                    } catch (IllegalAccessException ignored) {
-                        return null;
-                    }
-                }
-            }
-            return result;
-        }
-        return null;
     }
 
     /**

@@ -37,7 +37,7 @@ final class Utils {
                 continue;
             }
             JsonProperty annotation = field.getAnnotation(JsonProperty.class);
-            String name = annotation == null ? field.getName() : annotation.name();
+            String name = annotation == null || annotation.name().isEmpty() ? field.getName() : annotation.name();
             Field previous = result.putIfAbsent(name, field);
             if (previous != null) {
                 throw new IllegalArgumentException("Duplicate JSON property '" + name + "': "

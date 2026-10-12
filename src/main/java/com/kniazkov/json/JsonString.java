@@ -46,14 +46,6 @@ public final class JsonString extends JsonElement {
     }
 
     @Override
-    public <T> T toJavaObject(Class<T> type) {
-        if (type == java.lang.String.class) {
-            return (T)value;
-        }
-        return null;
-    }
-
-    @Override
     public boolean isString() {
         return true;
     }
