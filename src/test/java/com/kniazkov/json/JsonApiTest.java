@@ -3,14 +3,11 @@
  */
 package com.kniazkov.json;
 
+import java.io.File;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.File;
-
-/**
- * Tests covering {@link Json} class.
- */
+/** Tests covering {@link Json} class. */
 public class JsonApiTest {
     private static final String resources = "src/test/resources/";
 
@@ -19,8 +16,7 @@ public class JsonApiTest {
     static class Simple {
         String str;
 
-        private Simple() {
-        }
+        private Simple() {}
     }
 
     @Test
@@ -112,11 +108,16 @@ public class JsonApiTest {
 
     @Test
     public void serialization() {
-        String expected = "{" + separator +
-                "  \"x\": 100.0,"  + separator +
-                "  \"y\": 200.0,"  + separator +
-                "  \"z\": 300.0"  + separator +
-                "}";
+        String expected =
+                "{"
+                        + separator
+                        + "  \"x\": 100.0,"
+                        + separator
+                        + "  \"y\": 200.0,"
+                        + separator
+                        + "  \"z\": 300.0"
+                        + separator
+                        + "}";
         Vector v = new Vector();
         v.x = 100;
         v.y = 200;

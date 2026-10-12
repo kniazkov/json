@@ -3,18 +3,16 @@
  */
 package com.kniazkov.json;
 
-/**
- * Token representing a number.
- */
+/** Token representing a number. */
 final class TokenNumber extends TokenLiteral {
-    /**
-     * Value of the number.
-     */
+    /** Value of the number. */
     private final JsonNumber value;
+
     private final String identifierName;
 
     /**
      * Constructor.
+     *
      * @param loc Location of the first character of the token
      * @param value Value of the number
      */
@@ -29,7 +27,9 @@ final class TokenNumber extends TokenLiteral {
     }
 
     @Override
-    String identifierName() { return identifierName; }
+    String identifierName() {
+        return identifierName;
+    }
 
     @Override
     public String toString() {

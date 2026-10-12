@@ -3,12 +3,11 @@
  */
 package com.kniazkov.json;
 
-/**
- * Token representing a {@code null} literal.
- */
+/** Token representing a {@code null} literal. */
 final class TokenNull extends TokenLiteral {
     /**
      * Constructor.
+     *
      * @param loc Location of the first character of the token
      */
     TokenNull(JsonLocation loc) {
@@ -16,7 +15,9 @@ final class TokenNull extends TokenLiteral {
     }
 
     @Override
-    String identifierName() { return toString(); }
+    String identifierName() {
+        return toString();
+    }
 
     @Override
     public String toString() {

@@ -6,9 +6,7 @@ package com.kniazkov.json;
 import org.junit.Assert;
 import org.junit.Test;
 
-/**
- * Tests covering {@link JsonElement} class.
- */
+/** Tests covering {@link JsonElement} class. */
 public class JsonElementTest {
     @Test
     public void cloning() {

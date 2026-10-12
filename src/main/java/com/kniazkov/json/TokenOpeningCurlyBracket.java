@@ -3,12 +3,11 @@
  */
 package com.kniazkov.json;
 
-/**
- * A token representing an opening curly bracket.
- */
+/** A token representing an opening curly bracket. */
 final class TokenOpeningCurlyBracket extends Token {
     /**
      * Constructor.
+     *
      * @param loc Location of the first character of the token
      */
     TokenOpeningCurlyBracket(JsonLocation loc) {

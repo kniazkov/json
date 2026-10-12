@@ -26,8 +26,14 @@ public class JsonValueAccessTest {
         Assert.assertSame(integer, first.numberValueOrThrow());
         Assert.assertSame(decimal, second.decimalValueOrThrow());
         Assert.assertEquals(new BigDecimal(integer), first.decimalValueOrThrow());
-        for (JsonElement value : new JsonElement[]{new JsonString("1"), JsonBoolean.TRUE,
-                JsonNull.INSTANCE, new JsonArray(), new JsonObject()}) {
+        for (JsonElement value :
+                new JsonElement[] {
+                    new JsonString("1"),
+                    JsonBoolean.TRUE,
+                    JsonNull.INSTANCE,
+                    new JsonArray(),
+                    new JsonObject()
+                }) {
             Assert.assertNull(value.numberValue());
             Assert.assertNull(value.decimalValue());
             Assert.assertThrows(JsonDataException.class, value::numberValueOrThrow);
@@ -47,7 +53,8 @@ public class JsonValueAccessTest {
         Assert.assertEquals("true", JsonBoolean.TRUE.stringValue());
         Assert.assertEquals("42", JsonNumber.of(42).stringValue());
         Assert.assertEquals(-12, JsonNumber.of(new BigDecimal("-12.9")).intValue());
-        Assert.assertEquals(Long.MAX_VALUE, JsonNumber.of(new BigInteger("18446744073709551616")).longValue());
+        Assert.assertEquals(
+                Long.MAX_VALUE, JsonNumber.of(new BigInteger("18446744073709551616")).longValue());
     }
 
     @Test
@@ -67,27 +74,49 @@ public class JsonValueAccessTest {
 
     @Test
     public void strictAccessRejectsWrongTypes() {
-        JsonElement[] elements = {JsonNull.INSTANCE, JsonBoolean.TRUE, new JsonString("12"),
-                JsonNumber.of(12), JsonNumber.of(12.0), new JsonArray(), new JsonObject()};
-        List<Consumer<JsonElement>> getters = List.of(
-                value -> value.booleanValueOrThrow(), value -> value.stringValueOrThrow(),
-                value -> value.intValueOrThrow(), value -> value.longValueOrThrow(),
-                value -> value.doubleValueOrThrow(), value -> value.numberValueOrThrow(),
-                value -> value.decimalValueOrThrow(), value -> value.arrayValueOrThrow(),
-                value -> value.objectValueOrThrow());
+        JsonElement[] elements = {
+            JsonNull.INSTANCE,
+            JsonBoolean.TRUE,
+            new JsonString("12"),
+            JsonNumber.of(12),
+            JsonNumber.of(12.0),
+            new JsonArray(),
+            new JsonObject()
+        };
+        List<Consumer<JsonElement>> getters =
+                List.of(
+                        value -> value.booleanValueOrThrow(),
+                        value -> value.stringValueOrThrow(),
+                        value -> value.intValueOrThrow(),
+                        value -> value.longValueOrThrow(),
+                        value -> value.doubleValueOrThrow(),
+                        value -> value.numberValueOrThrow(),
+                        value -> value.decimalValueOrThrow(),
+                        value -> value.arrayValueOrThrow(),
+                        value -> value.objectValueOrThrow());
         for (JsonElement value : elements) {
-            boolean[] accepted = {value.isBoolean(), value.isString(), value.isNumber(),
-                    value.isNumber(), value.isNumber(), value.isNumber(), value.isNumber(),
-                    value instanceof JsonArray, value instanceof JsonObject};
+            boolean[] accepted = {
+                value.isBoolean(),
+                value.isString(),
+                value.isNumber(),
+                value.isNumber(),
+                value.isNumber(),
+                value.isNumber(),
+                value.isNumber(),
+                value instanceof JsonArray,
+                value instanceof JsonObject
+            };
             for (int i = 0; i < getters.size(); i++) {
                 Consumer<JsonElement> getter = getters.get(i);
                 if (accepted[i]) {
                     getter.accept(value);
                 } else {
-                    JsonDataException exception = Assert.assertThrows(JsonDataException.class,
-                            () -> getter.accept(value));
+                    JsonDataException exception =
+                            Assert.assertThrows(
+                                    JsonDataException.class, () -> getter.accept(value));
                     Assert.assertTrue(exception.getMessage().startsWith("Expected "));
-                    Assert.assertTrue(exception.getMessage().contains(value.getClass().getSimpleName()));
+                    Assert.assertTrue(
+                            exception.getMessage().contains(value.getClass().getSimpleName()));
                 }
             }
         }
@@ -103,21 +132,30 @@ public class JsonValueAccessTest {
         Assert.assertEquals(9007199254740993L, JsonNumber.of(9007199254740993L).longValueOrThrow());
         Assert.assertEquals(12, JsonNumber.of(new BigDecimal("12.000")).intValueOrThrow());
         Assert.assertEquals(1000L, JsonNumber.of(new BigDecimal("1e3")).longValueOrThrow());
-        for (String text : new String[]{"1.5", "-1.5", "1e-400", "2147483648", "-2147483649"}) {
-            Assert.assertThrows(JsonDataException.class, JsonNumber.of(new BigDecimal(text))::intValueOrThrow);
+        for (String text : new String[] {"1.5", "-1.5", "1e-400", "2147483648", "-2147483649"}) {
+            Assert.assertThrows(
+                    JsonDataException.class, JsonNumber.of(new BigDecimal(text))::intValueOrThrow);
         }
-        for (String text : new String[]{"1.5", "-1.5", "1e-400", "9223372036854775808", "-9223372036854775809"}) {
-            Assert.assertThrows(JsonDataException.class, JsonNumber.of(new BigDecimal(text))::longValueOrThrow);
+        for (String text :
+                new String[] {
+                    "1.5", "-1.5", "1e-400", "9223372036854775808", "-9223372036854775809"
+                }) {
+            Assert.assertThrows(
+                    JsonDataException.class, JsonNumber.of(new BigDecimal(text))::longValueOrThrow);
         }
     }
 
     @Test
     public void strictDoubleAllowsRoundingButRejectsRangeLoss() {
         Assert.assertEquals(0.1, JsonNumber.of(new BigDecimal("0.1")).doubleValueOrThrow(), 0);
-        Assert.assertEquals(Double.MAX_VALUE, JsonNumber.of(Double.MAX_VALUE).doubleValueOrThrow(), 0);
-        Assert.assertEquals(Double.MIN_VALUE, JsonNumber.of(Double.MIN_VALUE).doubleValueOrThrow(), 0);
-        for (String text : new String[]{"1e400", "-1e400", "1e-400", "-1e-400"}) {
-            Assert.assertThrows(JsonDataException.class, JsonNumber.of(new BigDecimal(text))::doubleValueOrThrow);
+        Assert.assertEquals(
+                Double.MAX_VALUE, JsonNumber.of(Double.MAX_VALUE).doubleValueOrThrow(), 0);
+        Assert.assertEquals(
+                Double.MIN_VALUE, JsonNumber.of(Double.MIN_VALUE).doubleValueOrThrow(), 0);
+        for (String text : new String[] {"1e400", "-1e400", "1e-400", "-1e-400"}) {
+            Assert.assertThrows(
+                    JsonDataException.class,
+                    JsonNumber.of(new BigDecimal(text))::doubleValueOrThrow);
         }
     }
 
@@ -125,13 +163,19 @@ public class JsonValueAccessTest {
     public void untypedConversionPreservesExactNumbersRecursively() throws Exception {
         BigInteger integer = new BigInteger("18446744073709551616");
         BigDecimal real = new BigDecimal("0.12345678901234567890");
-        String text = "{\"integer\":" + integer + ",\"values\":[" + real + ",null,{\"id\":9007199254740993}]}";
+        String text =
+                "{\"integer\":"
+                        + integer
+                        + ",\"values\":["
+                        + real
+                        + ",null,{\"id\":9007199254740993}]}";
         Map<?, ?> map = (Map<?, ?>) Json.parse(text, JsonParsingMode.STRICT).toJavaObject();
         Assert.assertEquals(integer, map.get("integer"));
         List<?> list = (List<?>) map.get("values");
         Assert.assertEquals(real, list.get(0));
         Assert.assertNull(list.get(1));
-        Assert.assertEquals(new BigInteger("9007199254740993"), ((Map<?, ?>) list.get(2)).get("id"));
+        Assert.assertEquals(
+                new BigInteger("9007199254740993"), ((Map<?, ?>) list.get(2)).get("id"));
         Assert.assertEquals(integer, Json.parse(integer.toString()).toJavaObject());
         Assert.assertEquals(real, Json.parse(real.toString()).toJavaObject());
         Assert.assertEquals(integer, Json.parse(integer.toString(), Number.class));
@@ -147,7 +191,10 @@ public class JsonValueAccessTest {
 
     @Test
     public void untypedPojoFieldsAndListsPreserveNumbers() throws Exception {
-        UntypedFields result = Json.parse("{value:9007199254740993,values:[0.12345678901234567890],raw:[42]}", UntypedFields.class);
+        UntypedFields result =
+                Json.parse(
+                        "{value:9007199254740993,values:[0.12345678901234567890],raw:[42]}",
+                        UntypedFields.class);
         Assert.assertEquals(new BigInteger("9007199254740993"), result.value);
         Assert.assertEquals(new BigDecimal("0.12345678901234567890"), result.values.get(0));
         Assert.assertEquals(BigInteger.valueOf(42), result.raw.get(0));
@@ -159,8 +206,9 @@ public class JsonValueAccessTest {
         array.addNumber(1);
         Assert.assertSame(array, array.element(0).parent());
         Assert.assertSame(JsonBoolean.TRUE, JsonBoolean.of(true));
-        JsonException exception = Assert.assertThrows(JsonException.class,
-                () -> Json.parse("+1", JsonParsingMode.STRICT));
+        JsonException exception =
+                Assert.assertThrows(
+                        JsonException.class, () -> Json.parse("+1", JsonParsingMode.STRICT));
         Assert.assertEquals(1, exception.error().location().row());
         Assert.assertEquals(1, exception.error().location().column());
         Assert.assertEquals("Invalid character: '+'", exception.error().message());

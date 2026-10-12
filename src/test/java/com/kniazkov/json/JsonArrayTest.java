@@ -6,9 +6,7 @@ package com.kniazkov.json;
 import org.junit.Assert;
 import org.junit.Test;
 
-/**
- * Tests covering {@link JsonArray} class.
- */
+/** Tests covering {@link JsonArray} class. */
 public class JsonArrayTest {
     @Test
     public void emptyArray() {

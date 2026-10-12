@@ -3,17 +3,14 @@
  */
 package com.kniazkov.json;
 
-/**
- * An exception that occurred while parsing a JSON document.
- */
+/** An exception that occurred while parsing a JSON document. */
 public final class JsonException extends Exception {
-    /**
-     * The error occurred while parsing a JSON document.
-     */
+    /** The error occurred while parsing a JSON document. */
     private final JsonError error;
 
     /**
      * Constructor.
+     *
      * @param error The error occurred while parsing a JSON document
      */
     public JsonException(JsonError error) {
@@ -22,6 +19,7 @@ public final class JsonException extends Exception {
 
     /**
      * Creates a parsing or input exception retaining the original cause.
+     *
      * @param error Error description and location
      * @param cause Original cause, or null
      */
@@ -32,6 +30,7 @@ public final class JsonException extends Exception {
 
     /**
      * Returns a description of the error that occurred while parsing a JSON document.
+     *
      * @return Error description
      */
     public JsonError error() {

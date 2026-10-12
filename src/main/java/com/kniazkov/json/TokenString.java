@@ -3,17 +3,14 @@
  */
 package com.kniazkov.json;
 
-/**
- * Token representing a string.
- */
+/** Token representing a string. */
 final class TokenString extends TokenLiteral {
-    /**
-     * Value of the string.
-     */
+    /** Value of the string. */
     private final String value;
 
     /**
      * Constructor.
+     *
      * @param loc Location of the first character of the token
      * @param value Value of the string
      */
@@ -34,6 +31,7 @@ final class TokenString extends TokenLiteral {
 
     /**
      * Returns value of the string.
+     *
      * @return Value of the string
      */
     String value() {

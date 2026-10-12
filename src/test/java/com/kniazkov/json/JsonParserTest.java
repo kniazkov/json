@@ -3,15 +3,12 @@
  */
 package com.kniazkov.json;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-
-/**
- * Tests covering {@link JsonParser} class.
- */
+/** Tests covering {@link JsonParser} class. */
 public class JsonParserTest {
     @Test
     public void zero() {
@@ -355,13 +352,9 @@ public class JsonParserTest {
 
     @Test
     public void arrayWithExtraComma() {
-        Assert.assertTrue(commonTestErrorIfStrict(
-                "[1, 2,]",
-                "[1, 2]",
-                JsonError.ExpectedElementAfterComma.class,
-                1,
-                7
-        ));
+        Assert.assertTrue(
+                commonTestErrorIfStrict(
+                        "[1, 2,]", "[1, 2]", JsonError.ExpectedElementAfterComma.class, 1, 7));
     }
 
     @Test
@@ -391,13 +384,9 @@ public class JsonParserTest {
 
     @Test
     public void stringInSingleQuotes() {
-        Assert.assertTrue(commonTestErrorIfStrict(
-                "'hello'",
-                "\"hello\"",
-                JsonError.InvalidCharacter.class,
-                1,
-                1
-        ));
+        Assert.assertTrue(
+                commonTestErrorIfStrict(
+                        "'hello'", "\"hello\"", JsonError.InvalidCharacter.class, 1, 1));
     }
 
     @Test
@@ -426,30 +415,25 @@ public class JsonParserTest {
 
     @Test
     public void notClosedString() {
-        Assert.assertTrue(commonTestError(
-                "\n  \"test",
-                JsonError.UnclosedString.class,
-                2,
-                3
-        ));
+        Assert.assertTrue(commonTestError("\n  \"test", JsonError.UnclosedString.class, 2, 3));
     }
 
     @Test
     public void lineBreak() {
-        Assert.assertTrue(commonTestErrorIfStrict(
-                "\"line \\\nbreak\"",
-                "\"line break\"",
-                JsonError.IncorrectStringSequence.class,
-                1,
-                8
-        ));
-        Assert.assertTrue(commonTestErrorIfStrict(
-                "\"line \\        \nbreak\"",
-                "\"line break\"",
-                JsonError.IncorrectStringSequence.class,
-                1,
-                8
-        ));
+        Assert.assertTrue(
+                commonTestErrorIfStrict(
+                        "\"line \\\nbreak\"",
+                        "\"line break\"",
+                        JsonError.IncorrectStringSequence.class,
+                        1,
+                        8));
+        Assert.assertTrue(
+                commonTestErrorIfStrict(
+                        "\"line \\        \nbreak\"",
+                        "\"line break\"",
+                        JsonError.IncorrectStringSequence.class,
+                        1,
+                        8));
     }
 
     @Test
@@ -470,50 +454,46 @@ public class JsonParserTest {
 
     @Test
     public void objectWithData() {
-        Assert.assertTrue(commonTest("{\"one\": 1, \"two\": 2, \"nestedObject\": {\"data\": \"test\"}}"));
+        Assert.assertTrue(
+                commonTest("{\"one\": 1, \"two\": 2, \"nestedObject\": {\"data\": \"test\"}}"));
     }
 
     @Test
     public void objectWithExtraComma() {
-        Assert.assertTrue(commonTestErrorIfStrict(
-                "{\"data\":\"test\",}",
-                "{\"data\": \"test\"}",
-                JsonError.ExpectedPairAfterComma.class,
-                1,
-                16
-        ));
+        Assert.assertTrue(
+                commonTestErrorIfStrict(
+                        "{\"data\":\"test\",}",
+                        "{\"data\": \"test\"}",
+                        JsonError.ExpectedPairAfterComma.class,
+                        1,
+                        16));
     }
 
     @Test
     public void objectWithIdentifiersAsKeys() {
-        Assert.assertTrue(commonTestErrorIfStrict(
-                "{data0:\"test\"}",
-                "{\"data0\": \"test\"}",
-                JsonError.ExpectedKey.class,
-                1,
-                2
-        ));
+        Assert.assertTrue(
+                commonTestErrorIfStrict(
+                        "{data0:\"test\"}",
+                        "{\"data0\": \"test\"}",
+                        JsonError.ExpectedKey.class,
+                        1,
+                        2));
     }
 
     @Test
     public void missingComma() {
-        Assert.assertTrue(commonTestErrorIfStrict(
-                "[{\"x\": 1, \"y\": 2} {\"x\": 3, \"y\": 4}]",
-                "[{\"x\": 1, \"y\": 2}, {\"x\": 3, \"y\": 4}]",
-                JsonError.MissingComma.class,
-                1,
-                19
-        ));
+        Assert.assertTrue(
+                commonTestErrorIfStrict(
+                        "[{\"x\": 1, \"y\": 2} {\"x\": 3, \"y\": 4}]",
+                        "[{\"x\": 1, \"y\": 2}, {\"x\": 3, \"y\": 4}]",
+                        JsonError.MissingComma.class,
+                        1,
+                        19));
     }
 
     @Test
     public void unexpectedIdentifier() {
-        Assert.assertTrue(commonTestError(
-                "hello.txt",
-                JsonError.UnexpectedToken.class,
-                1,
-                1
-        ));
+        Assert.assertTrue(commonTestError("hello.txt", JsonError.UnexpectedToken.class, 1, 1));
     }
 
     @Test
@@ -534,8 +514,9 @@ public class JsonParserTest {
     }
 
     /**
-     * A common test for JSON parser. First parses a JSON document,
-     * then converts the resulting element into a string, the results should match.
+     * A common test for JSON parser. First parses a JSON document, then converts the resulting
+     * element into a string, the results should match.
+     *
      * @param json JSON document
      * @return Testing result ({@code true} = success)
      */
@@ -551,14 +532,15 @@ public class JsonParserTest {
 
     /**
      * A common test for JSON parser where expected an error.
+     *
      * @param json JSON document
      * @param errorType Type of object representing an error
      * @param row Expected row where error should be
      * @param column Expected column where error should be
      * @return Testing result ({@code true} = success)
      */
-    private static boolean commonTestError(String json, Class<? extends JsonError> errorType,
-                                           int row, int column) {
+    private static boolean commonTestError(
+            String json, Class<? extends JsonError> errorType, int row, int column) {
         JsonError error = null;
         try {
             JsonParser.parseString(json);
@@ -567,15 +549,15 @@ public class JsonParserTest {
         }
         if (error != null) {
             JsonLocation loc = error.location();
-            return errorType.isInstance(error) &&
-                    loc.row() == row && loc.column() == column;
+            return errorType.isInstance(error) && loc.row() == row && loc.column() == column;
         }
         return false;
     }
 
     /**
-     * A common test for JSON parser where expected an error if parsed
-     *   in STRICT mode, and success otherwise
+     * A common test for JSON parser where expected an error if parsed in STRICT mode, and success
+     * otherwise
+     *
      * @param json JSON document
      * @param json2 expected JSON document after transformation
      * @param errorType Type of object representing an error
@@ -583,9 +565,8 @@ public class JsonParserTest {
      * @param column Expected column where error should be
      * @return Testing result ({@code true} = success)
      */
-    private static boolean commonTestErrorIfStrict(String json, String json2,
-               Class<? extends JsonError> errorType,
-               int row, int column) {
+    private static boolean commonTestErrorIfStrict(
+            String json, String json2, Class<? extends JsonError> errorType, int row, int column) {
         try {
             JsonElement elem = JsonParser.parseString(json);
             String str = elem.toString();
@@ -604,8 +585,7 @@ public class JsonParserTest {
         }
         if (error != null) {
             JsonLocation loc = error.location();
-            return errorType.isInstance(error) &&
-                    loc.row() == row && loc.column() == column;
+            return errorType.isInstance(error) && loc.row() == row && loc.column() == column;
         }
         return false;
     }

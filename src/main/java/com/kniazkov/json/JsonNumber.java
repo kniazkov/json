@@ -8,10 +8,10 @@ import java.math.BigInteger;
 import java.util.Objects;
 
 /**
- * Base class for exact finite numbers and JSON5 special numbers. Use {@code of(...)} to create a number.
- * Existing primitive getters truncate fractions and saturate integer overflow,
- * as Java floating-point casts did in earlier versions. Double conversion can
- * round, underflow to zero, or overflow to infinity.
+ * Base class for exact finite numbers and JSON5 special numbers. Use {@code of(...)} to create a
+ * number. Existing primitive getters truncate fractions and saturate integer overflow, as Java
+ * floating-point casts did in earlier versions. Double conversion can round, underflow to zero, or
+ * overflow to infinity.
  */
 public abstract class JsonNumber extends JsonElement {
     JsonNumber(JsonContainer parent) {
@@ -20,6 +20,7 @@ public abstract class JsonNumber extends JsonElement {
 
     /**
      * Creates an integer.
+     *
      * @param value Integer value
      * @return An integer element
      */
@@ -34,6 +35,7 @@ public abstract class JsonNumber extends JsonElement {
 
     /**
      * Creates an arbitrary-precision integer.
+     *
      * @param value Integer value, not null
      * @return An integer element
      */
@@ -48,6 +50,7 @@ public abstract class JsonNumber extends JsonElement {
 
     /**
      * Creates a real number from the canonical decimal representation of a double.
+     *
      * @param value Floating-point value, including NaN and infinities
      * @return A real element for finite input, otherwise JsonNaN or JsonInfinity
      */
@@ -57,13 +60,18 @@ public abstract class JsonNumber extends JsonElement {
 
     /** Creates a number directly with its parent, without a temporary JSON node. */
     static JsonNumber of(JsonContainer parent, double value) {
-        if (Double.isNaN(value)) { return new JsonNaN(parent); }
-        if (Double.isInfinite(value)) { return new JsonInfinity(parent, value < 0); }
+        if (Double.isNaN(value)) {
+            return new JsonNaN(parent);
+        }
+        if (Double.isInfinite(value)) {
+            return new JsonInfinity(parent, value < 0);
+        }
         return of(parent, BigDecimal.valueOf(value));
     }
 
     /**
      * Creates a real number without first widening a float to double.
+     *
      * @param value Floating-point value, including NaN and infinities
      * @return A real element for finite input, otherwise JsonNaN or JsonInfinity
      */
@@ -73,12 +81,15 @@ public abstract class JsonNumber extends JsonElement {
 
     /** Creates a number directly with its parent, without a temporary JSON node. */
     static JsonNumber of(JsonContainer parent, float value) {
-        if (!Float.isFinite(value)) { return of(parent, (double) value); }
+        if (!Float.isFinite(value)) {
+            return of(parent, (double) value);
+        }
         return of(parent, new BigDecimal(Float.toString(value)));
     }
 
     /**
      * Creates an exact decimal number.
+     *
      * @param value Decimal value, not null
      * @return An exact real element
      */
@@ -93,6 +104,7 @@ public abstract class JsonNumber extends JsonElement {
 
     /**
      * Creates a number according to its runtime Java type.
+     *
      * @param value Byte, Short, Integer, Long, Float, Double, BigInteger or BigDecimal
      * @return The corresponding integer, real, NaN or infinity element
      * @throws IllegalArgumentException If the Number implementation is unsupported
@@ -110,8 +122,10 @@ public abstract class JsonNumber extends JsonElement {
         if (value instanceof BigDecimal decimal) {
             return of(parent, decimal);
         }
-        if (value instanceof Byte || value instanceof Short
-                || value instanceof Integer || value instanceof Long) {
+        if (value instanceof Byte
+                || value instanceof Short
+                || value instanceof Integer
+                || value instanceof Long) {
             return of(parent, value.longValue());
         }
         if (value instanceof Float real) {
@@ -120,7 +134,8 @@ public abstract class JsonNumber extends JsonElement {
         if (value instanceof Double real) {
             return of(parent, real.doubleValue());
         }
-        throw new IllegalArgumentException("Unsupported number type: " + value.getClass().getName());
+        throw new IllegalArgumentException(
+                "Unsupported number type: " + value.getClass().getName());
     }
 
     @Override
@@ -131,7 +146,8 @@ public abstract class JsonNumber extends JsonElement {
     @Override
     public boolean isInteger() {
         BigDecimal value = decimalValue();
-        return value != null && value.compareTo(BigDecimal.valueOf(Integer.MIN_VALUE)) >= 0
+        return value != null
+                && value.compareTo(BigDecimal.valueOf(Integer.MIN_VALUE)) >= 0
                 && value.compareTo(BigDecimal.valueOf(Integer.MAX_VALUE)) <= 0
                 && value.stripTrailingZeros().scale() <= 0;
     }
@@ -139,7 +155,8 @@ public abstract class JsonNumber extends JsonElement {
     @Override
     public boolean isLongInteger() {
         BigDecimal value = decimalValue();
-        return value != null && value.compareTo(BigDecimal.valueOf(Long.MIN_VALUE)) >= 0
+        return value != null
+                && value.compareTo(BigDecimal.valueOf(Long.MIN_VALUE)) >= 0
                 && value.compareTo(BigDecimal.valueOf(Long.MAX_VALUE)) <= 0
                 && value.stripTrailingZeros().scale() <= 0;
     }
@@ -151,7 +168,9 @@ public abstract class JsonNumber extends JsonElement {
 
     @Override
     public int intValue() {
-        if (!isFinite()) { return (int) doubleValue(); }
+        if (!isFinite()) {
+            return (int) doubleValue();
+        }
         BigDecimal value = decimalValue();
         if (value.compareTo(BigDecimal.valueOf(Integer.MIN_VALUE)) < 0) {
             return Integer.MIN_VALUE;
@@ -164,7 +183,9 @@ public abstract class JsonNumber extends JsonElement {
 
     @Override
     public long longValue() {
-        if (!isFinite()) { return (long) doubleValue(); }
+        if (!isFinite()) {
+            return (long) doubleValue();
+        }
         BigDecimal value = decimalValue();
         if (value.compareTo(BigDecimal.valueOf(Long.MIN_VALUE)) < 0) {
             return Long.MIN_VALUE;

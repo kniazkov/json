@@ -1,7 +1,14 @@
 /* Copyright (c) 2026 Ivan Kniazkov */
 package com.kniazkov.json;
 
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import org.junit.Assert;
 import org.junit.Test;
@@ -30,9 +37,15 @@ public class JsonObjectViewsTest {
         JsonObject copy = (JsonObject) object.clone();
         Assert.assertEquals(object.toString(), copy.toString());
         Assert.assertEquals(Arrays.asList(keys), new ArrayList<>(copy.keySet()));
-        for (JsonElement value : copy.values()) { Assert.assertSame(copy, value.parent()); }
-        Assert.assertEquals(object.toString(), Json.parse(object.toString(), JsonParsingMode.STRICT).toString());
-        Assert.assertEquals(object.toString(), Json.parse(object.toText("  "), JsonParsingMode.STRICT).toString());
+        for (JsonElement value : copy.values()) {
+            Assert.assertSame(copy, value.parent());
+        }
+        Assert.assertEquals(
+                object.toString(),
+                Json.parse(object.toString(), JsonParsingMode.STRICT).toString());
+        Assert.assertEquals(
+                object.toString(),
+                Json.parse(object.toText("  "), JsonParsingMode.STRICT).toString());
         Assert.assertEquals(keys.length, ((Map<?, ?>) object.toJavaObject()).size());
     }
 
@@ -55,14 +68,29 @@ public class JsonObjectViewsTest {
 
     @Test
     public void directAndIteratorRemovalsPreserveTheTree() throws Exception {
-        List<Consumer<JsonObject>> removals = List.of(
-            o -> o.keySet().remove("a"),
-            o -> o.values().remove(o.get("a")),
-            o -> o.entrySet().remove(new AbstractMap.SimpleEntry<>("a", o.get("a"))),
-            o -> { Iterator<String> i = o.keySet().iterator(); i.next(); i.next(); i.remove(); },
-            o -> { Iterator<JsonElement> i = o.values().iterator(); i.next(); i.next(); i.remove(); },
-            o -> { Iterator<Map.Entry<String, JsonElement>> i = o.entrySet().iterator(); i.next(); i.next(); i.remove(); }
-        );
+        List<Consumer<JsonObject>> removals =
+                List.of(
+                        o -> o.keySet().remove("a"),
+                        o -> o.values().remove(o.get("a")),
+                        o -> o.entrySet().remove(new AbstractMap.SimpleEntry<>("a", o.get("a"))),
+                        o -> {
+                            Iterator<String> i = o.keySet().iterator();
+                            i.next();
+                            i.next();
+                            i.remove();
+                        },
+                        o -> {
+                            Iterator<JsonElement> i = o.values().iterator();
+                            i.next();
+                            i.next();
+                            i.remove();
+                        },
+                        o -> {
+                            Iterator<Map.Entry<String, JsonElement>> i = o.entrySet().iterator();
+                            i.next();
+                            i.next();
+                            i.remove();
+                        });
         for (Consumer<JsonObject> remove : removals) {
             JsonObject object = sample();
             remove.accept(object);
@@ -73,24 +101,28 @@ public class JsonObjectViewsTest {
 
     @Test
     public void bulkViewMutationsPreserveTheTree() throws Exception {
-        List<Consumer<JsonObject>> removals = List.of(
-            o -> o.keySet().removeAll(List.of("a", "b")),
-            o -> o.keySet().retainAll(List.of("c")),
-            o -> o.keySet().removeIf(k -> !k.equals("c")),
-            o -> o.values().removeAll(List.of(o.get("a"), o.get("b"))),
-            o -> o.values().retainAll(List.of(o.get("c"))),
-            o -> o.values().removeIf(v -> v.intValue() != 3),
-            o -> o.entrySet().removeAll(new ArrayList<>(o.entrySet()).subList(1, 3)),
-            o -> o.entrySet().retainAll(List.of(o.entrySet().iterator().next())),
-            o -> o.entrySet().removeIf(e -> !e.getKey().equals("c"))
-        );
+        List<Consumer<JsonObject>> removals =
+                List.of(
+                        o -> o.keySet().removeAll(List.of("a", "b")),
+                        o -> o.keySet().retainAll(List.of("c")),
+                        o -> o.keySet().removeIf(k -> !k.equals("c")),
+                        o -> o.values().removeAll(List.of(o.get("a"), o.get("b"))),
+                        o -> o.values().retainAll(List.of(o.get("c"))),
+                        o -> o.values().removeIf(v -> v.intValue() != 3),
+                        o -> o.entrySet().removeAll(new ArrayList<>(o.entrySet()).subList(1, 3)),
+                        o -> o.entrySet().retainAll(List.of(o.entrySet().iterator().next())),
+                        o -> o.entrySet().removeIf(e -> !e.getKey().equals("c")));
         for (Consumer<JsonObject> remove : removals) {
             JsonObject object = sample();
             remove.accept(object);
             consistent(object, "c");
         }
-        for (Consumer<JsonObject> clear : List.<Consumer<JsonObject>>of(
-                o -> o.keySet().clear(), o -> o.values().clear(), o -> o.entrySet().clear(), JsonObject::clear)) {
+        for (Consumer<JsonObject> clear :
+                List.<Consumer<JsonObject>>of(
+                        o -> o.keySet().clear(),
+                        o -> o.values().clear(),
+                        o -> o.entrySet().clear(),
+                        JsonObject::clear)) {
             JsonObject object = sample();
             clear.accept(object);
             consistent(object);
@@ -107,7 +139,8 @@ public class JsonObjectViewsTest {
         Assert.assertSame(old, entry.setValue(supplied));
         Assert.assertNotSame(supplied, entry.getValue());
         Assert.assertSame(object, entry.getValue().parent());
-        Assert.assertSame(entry.getValue(), entry.getValue().objectValueOrThrow().get("array").parent());
+        Assert.assertSame(
+                entry.getValue(), entry.getValue().objectValueOrThrow().get("array").parent());
         supplied.addNumber("new", 1);
         Assert.assertFalse(entry.getValue().objectValueOrThrow().containsKey("new"));
         consistent(object, "c", "a", "b");
@@ -126,10 +159,13 @@ public class JsonObjectViewsTest {
         for (int route = 0; route < 4; route++) {
             JsonObject object = sample();
             Map.Entry<String, JsonElement> entry;
-            if (route == 0) { entry = (Map.Entry<String, JsonElement>) object.entrySet().toArray()[0]; }
-            else if (route == 1) { entry = object.entrySet().toArray(Map.Entry[]::new)[0]; }
-            else if (route == 2) { entry = object.entrySet().stream().findFirst().orElseThrow(); }
-            else {
+            if (route == 0) {
+                entry = (Map.Entry<String, JsonElement>) object.entrySet().toArray()[0];
+            } else if (route == 1) {
+                entry = object.entrySet().toArray(Map.Entry[]::new)[0];
+            } else if (route == 2) {
+                entry = object.entrySet().stream().findFirst().orElseThrow();
+            } else {
                 List<Map.Entry<String, JsonElement>> entries = new ArrayList<>();
                 object.entrySet().spliterator().tryAdvance(entries::add);
                 entry = entries.get(0);
@@ -166,7 +202,9 @@ public class JsonObjectViewsTest {
         Assert.assertThrows(NullPointerException.class, () -> object.put("new", null));
         Assert.assertThrows(NullPointerException.class, () -> object.put(null, JsonNumber.of(1)));
         Assert.assertThrows(NullPointerException.class, () -> object.addNull(null));
-        Assert.assertThrows(NullPointerException.class, () -> object.entrySet().iterator().next().setValue(null));
+        Assert.assertThrows(
+                NullPointerException.class,
+                () -> object.entrySet().iterator().next().setValue(null));
         Assert.assertThrows(NullPointerException.class, () -> object.replaceAll((k, v) -> null));
         consistent(object, "c", "a", "b");
         object.put("null", JsonNull.INSTANCE);

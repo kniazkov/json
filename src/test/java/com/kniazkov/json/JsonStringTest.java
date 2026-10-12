@@ -6,9 +6,7 @@ package com.kniazkov.json;
 import org.junit.Assert;
 import org.junit.Test;
 
-/**
- * Tests covering {@link JsonString} class.
- */
+/** Tests covering {@link JsonString} class. */
 public class JsonStringTest {
     @Test
     public void simpleString() {

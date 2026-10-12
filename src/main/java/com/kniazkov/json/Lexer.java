@@ -7,23 +7,19 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 
-/**
- * Splits JSON documents into separate tokens.
- */
+/** Splits JSON documents into separate tokens. */
 final class Lexer {
-    /**
-     * Object containing JSON document for parsing.
-     */
+    /** Object containing JSON document for parsing. */
     private final Source source;
 
-    /**
-     * Parsing mode.
-     */
+    /** Parsing mode. */
     private final JsonParsingMode mode;
+
     private final List<JsonError> warnings;
 
     /**
      * Constructor.
+     *
      * @param source Object containing JSON document for parsing
      */
     public Lexer(Source source, JsonParsingMode mode) {
@@ -38,6 +34,7 @@ final class Lexer {
 
     /**
      * Returns the next token from a sequence.
+     *
      * @return A token, including TokenEnd at EOF; never null.
      * @throws JsonException If parsing fails
      */
@@ -113,7 +110,8 @@ final class Lexer {
                 ch = source.nextChar();
             }
             if (mode == JsonParsingMode.STRICT
-                    || (rootBoundary && mode == JsonParsingMode.EXTENDED) || ch != '/') {
+                    || (rootBoundary && mode == JsonParsingMode.EXTENDED)
+                    || ch != '/') {
                 return;
             }
             JsonLocation start = source.location();
@@ -141,17 +139,25 @@ final class Lexer {
 
     /** JSON5 whitespace and line terminators; NEL and Java control separators are excluded. */
     private static boolean isJson5Space(int ch) {
-        return ch == 0x0b || ch == 0x0c || ch == 0xfeff || ch == 0x2028 || ch == 0x2029
+        return ch == 0x0b
+                || ch == 0x0c
+                || ch == 0xfeff
+                || ch == 0x2028
+                || ch == 0x2029
                 || Character.getType(ch) == Character.SPACE_SEPARATOR;
     }
 
     /** Unicode spaces and Java whitespace, plus NEL and the BOM used as space by JSON5. */
     private static boolean isExtendedSpace(int ch) {
-        return Character.isWhitespace(ch) || Character.isSpaceChar(ch) || ch == 0x85 || ch == 0xfeff;
+        return Character.isWhitespace(ch)
+                || Character.isSpaceChar(ch)
+                || ch == 0x85
+                || ch == 0xfeff;
     }
 
     /**
      * Checks if the character is a space.
+     *
      * @param ch Character
      * @return Checking result
      */
@@ -161,6 +167,7 @@ final class Lexer {
 
     /**
      * Checks if the character is a digit.
+     *
      * @param ch Character
      * @return Checking result
      */
@@ -170,27 +177,36 @@ final class Lexer {
 
     /**
      * Checks if the character is a hexadecimal digit.
+     *
      * @param ch Character
      * @return Checking result
      */
     private static boolean isHexDigit(int ch) {
-        return isDigit(ch) || ch >= 'a' && ch <= 'f' || ch >= 'A' && ch <= 'F' ;
+        return isDigit(ch) || ch >= 'a' && ch <= 'f' || ch >= 'A' && ch <= 'F';
     }
 
     /** ECMAScript IdentifierStart categories, plus $ and _. */
     private static boolean isIdentifierStart(int ch) {
         int type = Character.getType(ch);
-        return ch == '$' || ch == '_' || type == Character.UPPERCASE_LETTER
-                || type == Character.LOWERCASE_LETTER || type == Character.TITLECASE_LETTER
-                || type == Character.MODIFIER_LETTER || type == Character.OTHER_LETTER
+        return ch == '$'
+                || ch == '_'
+                || type == Character.UPPERCASE_LETTER
+                || type == Character.LOWERCASE_LETTER
+                || type == Character.TITLECASE_LETTER
+                || type == Character.MODIFIER_LETTER
+                || type == Character.OTHER_LETTER
                 || type == Character.LETTER_NUMBER;
     }
 
     private static boolean isIdentifierPart(int ch) {
         int type = Character.getType(ch);
-        return isIdentifierStart(ch) || type == Character.NON_SPACING_MARK
-                || type == Character.COMBINING_SPACING_MARK || type == Character.DECIMAL_DIGIT_NUMBER
-                || type == Character.CONNECTOR_PUNCTUATION || ch == 0x200c || ch == 0x200d;
+        return isIdentifierStart(ch)
+                || type == Character.NON_SPACING_MARK
+                || type == Character.COMBINING_SPACING_MARK
+                || type == Character.DECIMAL_DIGIT_NUMBER
+                || type == Character.CONNECTOR_PUNCTUATION
+                || ch == 0x200c
+                || ch == 0x200d;
     }
 
     private Token parseIdentifier(JsonLocation loc) throws JsonException {
@@ -229,11 +245,19 @@ final class Lexer {
         String identifier = name.toString();
         // Escaped spellings are IdentifierNames for keys, never literal values.
         if (!escaped) {
-            if ("null".equals(identifier)) { return new TokenNull(loc); }
-            if ("true".equals(identifier)) { return new TokenBoolean(loc, true); }
-            if ("false".equals(identifier)) { return new TokenBoolean(loc, false); }
+            if ("null".equals(identifier)) {
+                return new TokenNull(loc);
+            }
+            if ("true".equals(identifier)) {
+                return new TokenBoolean(loc, true);
+            }
+            if ("false".equals(identifier)) {
+                return new TokenBoolean(loc, false);
+            }
             if (mode != JsonParsingMode.STRICT) {
-                if ("NaN".equals(identifier)) { return new TokenNumber(loc, new JsonNaN(), identifier); }
+                if ("NaN".equals(identifier)) {
+                    return new TokenNumber(loc, new JsonNaN(), identifier);
+                }
                 if ("Infinity".equals(identifier)) {
                     return new TokenNumber(loc, new JsonInfinity(false), identifier);
                 }
@@ -257,14 +281,16 @@ final class Lexer {
                 Token special = parseIdentifier(source.location());
                 if (special instanceof TokenNumber number) {
                     JsonNumber value = (JsonNumber) number.toElement(null);
-                    return new TokenNumber(loc, value.isNaN() ? new JsonNaN() : new JsonInfinity(negative));
+                    return new TokenNumber(
+                            loc, value.isNaN() ? new JsonNaN() : new JsonInfinity(negative));
                 }
                 throw new JsonException(new JsonError.IncorrectNumberFormat(loc));
             }
             if (!isDigit(ch) && ch != '.') {
-                throw new JsonException(negative
-                        ? new JsonError.ExpectedNumberAfterMinus(source.location())
-                        : new JsonError.ExpectedNumberAfterPlus(source.location()));
+                throw new JsonException(
+                        negative
+                                ? new JsonError.ExpectedNumberAfterMinus(source.location())
+                                : new JsonError.ExpectedNumberAfterPlus(source.location()));
             }
         }
         boolean integerDigits = false;
@@ -337,8 +363,10 @@ final class Lexer {
             }
         }
         try {
-            JsonNumber value = real ? JsonNumber.of(new BigDecimal(text.toString()))
-                    : JsonNumber.of(new BigInteger(text.toString()));
+            JsonNumber value =
+                    real
+                            ? JsonNumber.of(new BigDecimal(text.toString()))
+                            : JsonNumber.of(new BigInteger(text.toString()));
             return new TokenNumber(loc, value);
         } catch (NumberFormatException exception) {
             // BigDecimal's exponent/scale range is finite; never wrap it silently.
@@ -348,6 +376,7 @@ final class Lexer {
 
     /**
      * Parses the character sequence as a string.
+     *
      * @param loc Location of the first character of the token
      * @param quote The quote character that opened the string
      * @return A token representing a string
@@ -365,18 +394,30 @@ final class Lexer {
                 ch = source.nextChar();
                 position = source.location();
                 switch (ch) {
-                    case '"': case '\\': case '/':
+                    case '"':
+                    case '\\':
+                    case '/':
                         value.append((char) ch);
                         break;
                     case '\'':
                         requireExtendedEscape(position, ch);
                         value.append((char) ch);
                         break;
-                    case 'b': value.append('\b'); break;
-                    case 'f': value.append('\f'); break;
-                    case 'n': value.append('\n'); break;
-                    case 'r': value.append('\r'); break;
-                    case 't': value.append('\t'); break;
+                    case 'b':
+                        value.append('\b');
+                        break;
+                    case 'f':
+                        value.append('\f');
+                        break;
+                    case 'n':
+                        value.append('\n');
+                        break;
+                    case 'r':
+                        value.append('\r');
+                        break;
+                    case 't':
+                        value.append('\t');
+                        break;
                     case 'v':
                         requireExtendedEscape(position, ch);
                         value.append((char) 0x0b);
@@ -385,20 +426,28 @@ final class Lexer {
                         requireExtendedEscape(position, ch);
                         ch = source.nextChar();
                         if (isDigit(ch)) {
-                            throw new JsonException(new JsonError.IncorrectStringSequence(position, "0"));
+                            throw new JsonException(
+                                    new JsonError.IncorrectStringSequence(position, "0"));
                         }
                         value.append((char) 0);
                         continue;
-                    case 'u': value.append((char) readHexEscape(4, position)); break;
+                    case 'u':
+                        value.append((char) readHexEscape(4, position));
+                        break;
                     case 'x':
                         requireExtendedEscape(position, ch);
                         value.append((char) readHexEscape(2, position));
                         break;
-                    case '\r': case '\n': case 0x2028: case 0x2029:
+                    case '\r':
+                    case '\n':
+                    case 0x2028:
+                    case 0x2029:
                         requireExtendedEscape(position, ch);
                         int lineBreak = ch;
                         ch = source.nextChar();
-                        if (lineBreak == '\r' && ch == '\n') { ch = source.nextChar(); }
+                        if (lineBreak == '\r' && ch == '\n') {
+                            ch = source.nextChar();
+                        }
                         continue;
                     case ' ':
                         requireExtendedEscape(position, ch);
@@ -413,12 +462,15 @@ final class Lexer {
                                 value.append(spaces);
                                 continue;
                             }
-                        } else { value.append(' '); }
+                        } else {
+                            value.append(' ');
+                        }
                         break;
                     default:
                         requireExtendedEscape(position, ch);
                         if (ch == -1 || isDigit(ch)) {
-                            throw new JsonException(new JsonError.IncorrectStringSequence(position, "?"));
+                            throw new JsonException(
+                                    new JsonError.IncorrectStringSequence(position, "?"));
                         }
                         value.append((char) ch);
                 }
@@ -428,7 +480,9 @@ final class Lexer {
                         || mode == JsonParsingMode.EXTENDED && ch == 0) {
                     throw new JsonException(new JsonError.InvalidCharacter(position, (char) ch));
                 }
-                if (mode != JsonParsingMode.STRICT && (ch == 0x2028 || ch == 0x2029) && warnings != null) {
+                if (mode != JsonParsingMode.STRICT
+                        && (ch == 0x2028 || ch == 0x2029)
+                        && warnings != null) {
                     warnings.add(new JsonError.UnescapedLineSeparator(position));
                 }
                 value.append((char) ch);
@@ -442,11 +496,14 @@ final class Lexer {
     /** Rejects JSON5-only escapes in STRICT. */
     private void requireExtendedEscape(JsonLocation loc, int ch) throws JsonException {
         if (mode == JsonParsingMode.STRICT) {
-            throw new JsonException(new JsonError.IncorrectStringSequence(loc, ch > ' ' ? "" + (char) ch : "?"));
+            throw new JsonException(
+                    new JsonError.IncorrectStringSequence(loc, ch > ' ' ? "" + (char) ch : "?"));
         }
     }
 
-    /** Reads exactly the requested hex digits after the current u/x, leaving the last digit current. */
+    /**
+     * Reads exactly the requested hex digits after the current u/x, leaving the last digit current.
+     */
     private int readHexEscape(int digits, JsonLocation loc) throws JsonException {
         int value = 0;
         StringBuilder sequence = new StringBuilder().append((char) source.charValue());
@@ -454,7 +511,8 @@ final class Lexer {
             int ch = source.nextChar();
             sequence.append(ch > ' ' ? (char) ch : '?');
             if (!isHexDigit(ch)) {
-                throw new JsonException(new JsonError.IncorrectStringSequence(loc, sequence.toString()));
+                throw new JsonException(
+                        new JsonError.IncorrectStringSequence(loc, sequence.toString()));
             }
             value = value * 16 + hexToDecimal(ch);
         }
@@ -463,6 +521,7 @@ final class Lexer {
 
     /**
      * Converts hexadecimal number to decimal
+     *
      * @param ch Hexadecimal number
      * @return Decimal number
      */
