@@ -15,6 +15,9 @@ public final class JsonParser {
      */
     private final Lexer lexer;
 
+    /** Input shared with the lexer, used to validate or discard the document tail. */
+    private final Source source;
+
     /**
      * Parsing mode.
      */
@@ -53,7 +56,9 @@ public final class JsonParser {
     /**
      * Parses a string containing JSON document into a JSON element.
      *  in {@link JsonParsingMode#EXTENDED} mode. Errors that occur during this process, but are intentionally
-     *  ignored by the parser, are saved to a list.
+     *  ignored by the parser, are saved to a list. Root padding is ignored silently;
+     *  an arbitrary suffix after the root produces one {@link JsonError.TrailingContent}
+     *  warning at its first non-whitespace character. Existing list entries are retained.
      * @param source String containing JSON document
      * @param warnings List where to save errors that occurred during parsing in extended mode
      *  and were intentionally ignored.
@@ -84,6 +89,7 @@ public final class JsonParser {
      * @param src Object containing JSON document for parsing
      */
     private JsonParser(Source src, JsonParsingMode mode, List<JsonError> warnings) {
+        this.source = src;
         this.lexer = new Lexer(src, mode);
         this.mode = mode;
         this.warnings = warnings;
@@ -95,7 +101,27 @@ public final class JsonParser {
      * @throws JsonException If parsing fails
      */
     private JsonElement parseRoot() throws JsonException {
-        return parseJsonElement(null, lexer.token());
+        lexer.skipPadding(true);
+        Token first = lexer.token();
+        if (first == null) {
+            throw new JsonException(new JsonError.ExpectedRoot(source.location()));
+        }
+        JsonElement root = parseJsonElement(null, first);
+        lexer.skipPadding(true);
+        if (source.charValue() != -1) {
+            JsonError error = new JsonError.TrailingContent(source.location());
+            if (mode != JsonParsingMode.EXTENDED) {
+                throw new JsonException(error);
+            }
+            if (warnings != null) {
+                warnings.add(error);
+            }
+            // The suffix need not be valid JSON. Do not tokenize it or retain it in memory.
+            while (source.nextChar() != -1) {
+                // Still propagate input/decoding failures while discarding the suffix.
+            }
+        }
+        return root;
     }
 
     /**

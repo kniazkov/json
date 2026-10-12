@@ -22,7 +22,9 @@ public enum JsonParsingMode {
 
     /**
      * Extended mode. JSON5 syntax is allowed. Besides, if a JSON document contains some errors,
-     * the parser will still try to parse such a document.
+     * the parser will still try to parse such a document. At root boundaries, Unicode/Java
+     * whitespace (including NEL and BOM) is ignored without warnings. Any remaining suffix
+     * is discarded with one TrailingContent warning when a warnings list is supplied.
      */
     EXTENDED
 }

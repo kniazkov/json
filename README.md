@@ -135,6 +135,42 @@ class MyClass {
 }
 ```
 
+### Content before and after the root
+
+`STRICT` and `JSON5` require one root value and reject extra content after it.
+`STRICT` accepts only space, tab, CR and LF around the root. `JSON5` additionally
+accepts its Unicode spaces and `//` and `/* ... */` comments; block comments must
+be closed. JSON5 comments and whitespace are also accepted between tokens.
+
+`EXTENDED` silently skips any amount of whitespace before and after the root:
+Java `Character.isWhitespace` or `Character.isSpaceChar`, plus U+0085 (NEL) and
+U+FEFF (BOM). This includes non-breaking spaces and Unicode line/paragraph separators.
+NUL and U+200B (zero-width space) are not whitespace.
+
+After that padding, **any remaining suffix is discarded**. Exactly one
+`JsonError.TrailingContent` is appended to the supplied warnings list, at the first
+non-whitespace character of the suffix. It may be another value, arbitrary text,
+NUL, an incomplete string, or comment-looking text. The suffix is not tokenized
+or retained in memory. Errors encountered while reading or decoding it still throw
+`JsonException`; they cannot be recovered as syntax warnings.
+
+```java
+List<JsonError> warnings = new ArrayList<>();
+JsonElement root = JsonParser.parseString("  [1, 2]  garbage", warnings);
+// root is [1, 2]; one TrailingContent warning at 1:11.
+```
+
+Existing recovery warnings remain in the list; the tail warning is appended.
+Overloads without a warnings list apply the same EXTENDED recovery but do not collect
+warnings. Broad EXTENDED whitespace skipping applies at the root boundaries, not
+inside strings or as a new rule for separators inside containers. Leading garbage
+is not discarded. A document containing only padding has no root and throws
+`JsonError.ExpectedRoot` wrapped in `JsonException`.
+
+The parser must first recognize the root: for example `42e+` is an invalid number,
+not the number `42` followed by a discarded suffix. Full recovery of malformed
+containers and the remaining JSON5 features are separate work (issues #4, #5 and #7).
+
 ### Parsing to Java object
 
 Actually, in most cases, you're not interested in the intermediate result as a tree of JSON elements.
@@ -874,9 +910,8 @@ The input contract is:
     beyond the parsed value; these overloads are not a resumable multi-document API.
     The resulting JSON tree and individual token values still occupy memory.
 
-This refactoring prepares input handling for full-document validation. Rejecting trailing
-content after the root (issue #3), incomplete syntax (issues #4/#5), and completing JSON5
-support (issue #7) remain separate parser changes.
+Root-tail validation and recovery are described above. Incomplete container syntax
+(issues #4/#5) and the remaining JSON5 features (issue #7) are separate parser changes.
 
 ### Classes for error handling
 

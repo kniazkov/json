@@ -48,6 +48,42 @@ public abstract class JsonError {
         return loc + ", " + message();
     }
 
+    /** Unexpected content after the root value. */
+    public static final class TrailingContent extends JsonError {
+        TrailingContent(JsonLocation loc) {
+            super(loc);
+        }
+
+        @Override
+        public String localizedMessage(String lang) {
+            return "ru".equals(lang) ? "Лишние данные после корневого значения" : "Unexpected content after the root value";
+        }
+    }
+
+    /** Expected a root value. */
+    public static final class ExpectedRoot extends JsonError {
+        ExpectedRoot(JsonLocation loc) {
+            super(loc);
+        }
+
+        @Override
+        public String localizedMessage(String lang) {
+            return "ru".equals(lang) ? "Ожидается корневое значение" : "Expected a root value";
+        }
+    }
+
+    /** Unclosed block comment. */
+    public static final class UnclosedComment extends JsonError {
+        UnclosedComment(JsonLocation loc) {
+            super(loc);
+        }
+
+        @Override
+        public String localizedMessage(String lang) {
+            return "ru".equals(lang) ? "Незакрытый блочный комментарий" : "Unclosed block comment";
+        }
+    }
+
     /** An input could not be opened, read, decoded or closed. */
     public static final class InputFailure extends JsonError {
         InputFailure(JsonLocation loc) {

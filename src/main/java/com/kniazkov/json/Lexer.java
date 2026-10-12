@@ -35,11 +35,8 @@ final class Lexer {
      * @throws JsonException If parsing fails
      */
     public Token token() throws JsonException {
+        skipPadding(false);
         int ch = source.charValue();
-
-        while(isWhiteSpace(ch)) {
-            ch = source.nextChar();
-        }
 
         if (ch == -1) {
             return null;
@@ -112,6 +109,52 @@ final class Lexer {
         }
 
         throw new JsonException(new JsonError.InvalidCharacter(loc, (char) ch));
+    }
+
+    /** Skips mode-specific padding, with broader EXTENDED whitespace at root boundaries. */
+    void skipPadding(boolean rootBoundary) throws JsonException {
+        while (true) {
+            int ch = source.charValue();
+            while (isWhiteSpace(ch)
+                    || mode == JsonParsingMode.JSON5 && isJson5Space(ch)
+                    || rootBoundary && mode == JsonParsingMode.EXTENDED && isExtendedSpace(ch)) {
+                ch = source.nextChar();
+            }
+            if (mode != JsonParsingMode.JSON5 || ch != '/') {
+                return;
+            }
+            JsonLocation start = source.location();
+            ch = source.nextChar();
+            if (ch == '/') {
+                do {
+                    ch = source.nextChar();
+                } while (ch != -1 && ch != '\r' && ch != '\n' && ch != 0x2028 && ch != 0x2029);
+            } else if (ch == '*') {
+                int previous = -1;
+                ch = source.nextChar();
+                while (previous != '*' || ch != '/') {
+                    if (ch == -1) {
+                        throw new JsonException(new JsonError.UnclosedComment(start));
+                    }
+                    previous = ch;
+                    ch = source.nextChar();
+                }
+                source.nextChar();
+            } else {
+                throw new JsonException(new JsonError.InvalidCharacter(start, '/'));
+            }
+        }
+    }
+
+    /** JSON5 whitespace and line terminators; NEL and Java control separators are excluded. */
+    private static boolean isJson5Space(int ch) {
+        return ch == 0x0b || ch == 0x0c || ch == 0xfeff || ch == 0x2028 || ch == 0x2029
+                || Character.getType(ch) == Character.SPACE_SEPARATOR;
+    }
+
+    /** Unicode spaces and Java whitespace, plus NEL and the BOM used as space by JSON5. */
+    private static boolean isExtendedSpace(int ch) {
+        return Character.isWhitespace(ch) || Character.isSpaceChar(ch) || ch == 0x85 || ch == 0xfeff;
     }
 
     /**
