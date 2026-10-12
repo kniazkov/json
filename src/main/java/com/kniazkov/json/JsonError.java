@@ -84,6 +84,42 @@ public abstract class JsonError {
         }
     }
 
+    /** Unexpected end of input. */
+    public static final class UnexpectedEnd extends JsonError {
+        UnexpectedEnd(JsonLocation loc) { super(loc); }
+
+        @Override
+        public String localizedMessage(String lang) {
+            return "ru".equals(lang) ? "Неожиданный конец ввода" : "Unexpected end of input";
+        }
+    }
+
+    /** Missing array element. */
+    public static final class MissingArrayElement extends JsonError {
+        MissingArrayElement(JsonLocation loc) { super(loc); }
+
+        @Override
+        public String localizedMessage(String lang) {
+            return "ru".equals(lang) ? "Пропущен элемент массива" : "Missing array element";
+        }
+    }
+
+    /** A closing bracket inserted at EOF or before an ancestor's closing bracket. */
+    public static final class MissingClosingBracket extends JsonError {
+        private final char bracket;
+
+        MissingClosingBracket(JsonLocation loc, char bracket) {
+            super(loc);
+            this.bracket = bracket;
+        }
+
+        @Override
+        public String localizedMessage(String lang) {
+            return ("ru".equals(lang) ? "Пропущена закрывающая скобка: " : "Missing closing bracket: ")
+                    + bracket;
+        }
+    }
+
     /** An input could not be opened, read, decoded or closed. */
     public static final class InputFailure extends JsonError {
         InputFailure(JsonLocation loc) {

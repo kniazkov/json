@@ -168,8 +168,57 @@ is not discarded. A document containing only padding has no root and throws
 `JsonError.ExpectedRoot` wrapped in `JsonException`.
 
 The parser must first recognize the root: for example `42e+` is an invalid number,
-not the number `42` followed by a discarded suffix. Full recovery of malformed
-containers and the remaining JSON5 features are separate work (issues #4, #5 and #7).
+not the number `42` followed by a discarded suffix. Container recovery follows the
+rules below; the remaining JSON5 features are separate work (issue #7).
+
+### Container recovery in EXTENDED
+
+Recovery is determined by the parser state, not by guessing intended values. STRICT
+and JSON5 reject the malformed containers below. A single trailing comma before a
+real closing bracket is allowed in JSON5 and EXTENDED, without a warning.
+
+| Input in EXTENDED | Result | Warnings |
+| --- | --- | --- |
+| `[1 2]` | `[1,2]` | MissingComma |
+| `{"a":1 "b":2}` | `{"a":1,"b":2}` | MissingComma |
+| `[` or `{` | `[]` or `{}` | MissingClosingBracket |
+| `[1` or `[1,` | `[1]` | MissingClosingBracket |
+| `{"a":1` or `{"a":1,` | `{"a":1}` | MissingClosingBracket |
+| `{"a":[1]` | `{"a":[1]}` | MissingClosingBracket |
+| `{"a":[1` | Error: a nested container is still open at EOF | — |
+| `[1,,2]` | `[1,2]` | One MissingArrayElement |
+| `[1,,,2]` | `[1,2]` | Two MissingArrayElement warnings |
+| `[,1]` | `[1]` | One MissingArrayElement |
+| `[1,]` | `[1]` | None |
+| `[1,,]` | `[1]` | One MissingArrayElement |
+| `[,]` or `[,,]` | `[]` | One or two MissingArrayElement warnings |
+| `[{"a":1]` | `[{"a":1}]` | MissingClosingBracket for the object |
+| `{"a":[1}` | `{"a":[1]}` | MissingClosingBracket for the array |
+| `{"a":1]` or `[1}` | Error: no enclosing container owns that bracket | — |
+| `{"a":1}]` | `{"a":1}` | TrailingContent, per the root-tail policy |
+
+The exact rules are:
+
+1. A missing comma is inserted only after a complete value, before a token that can
+   start the next array element or object key. The following object pair must still
+   contain a colon and a complete value. No fields are silently discarded.
+2. At EOF, only **one closing bracket for the root container** may be inserted. All
+   nested containers must already have closed. A root may close before its first
+   element, after a complete element, or after a trailing comma.
+3. An absent array element is skipped, never replaced with null. Each comma encountered
+   while expecting an element produces MissingArrayElement. A separator after an actual
+   element is not an empty slot, including an ordinary trailing comma.
+4. A foreign closing bracket may cause a container to close only if that container is
+   in a closable state and an ancestor owns the bracket. The bracket is retained for
+   the ancestor, not swallowed or replaced. This can unwind several containers, with
+   a MissingClosingBracket warning for each. The EOF restriction in rule 2 still applies.
+5. A started key:value pair must be completed. Missing colons or values, unfinished
+   strings/numbers, repeated commas in objects, and other internal garbage are errors.
+   For example `[{"a":]` cannot be recovered: the object still needs a value.
+6. Warning locations identify the next element/key for a missing comma, the comma
+   representing an empty slot, or EOF/the ancestor's bracket for an inserted closer.
+   Warnings are appended in recovery order. Without a supplied list, the same recovery
+   occurs without collecting warnings. Input/decoding failures remain exceptions.
 
 ### Parsing to Java object
 
@@ -910,8 +959,8 @@ The input contract is:
     beyond the parsed value; these overloads are not a resumable multi-document API.
     The resulting JSON tree and individual token values still occupy memory.
 
-Root-tail validation and recovery are described above. Incomplete container syntax
-(issues #4/#5) and the remaining JSON5 features (issue #7) are separate parser changes.
+Root-tail validation and container recovery are described above. The remaining JSON5
+features are tracked separately in issue #7.
 
 ### Classes for error handling
 
