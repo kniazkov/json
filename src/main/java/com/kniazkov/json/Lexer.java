@@ -303,8 +303,13 @@ final class Lexer {
             if (ch == '\\') {
                 ch = source.nextChar();
                 switch (ch) {
-                    case '"':
                     case '\'':
+                        if (mode == JsonParsingMode.STRICT) {
+                            throw new JsonException(new JsonError.IncorrectStringSequence(source.location(), "'"));
+                        }
+                        value.append((char) ch);
+                        break;
+                    case '"':
                     case '\\':
                     case '/':
                         value.append((char) ch);
@@ -367,7 +372,7 @@ final class Lexer {
                 }
             } else if (ch == -1) {
                 throw new JsonException(new JsonError.UnclosedString(loc));
-            } else if (ch == 0) {
+            } else if (ch == 0 || mode == JsonParsingMode.STRICT && ch < 0x20) {
                 throw new JsonException(new JsonError.InvalidCharacter(source.location(), (char) ch));
             } else {
                 value.append((char) ch);
