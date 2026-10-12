@@ -18,11 +18,6 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
     private final Map<String, JsonElement> elements;
 
     /**
-     * Keys (in ordered list).
-     */
-    private final List<String> keys;
-
-    /**
      * Constructor.
      */
     public JsonObject() {
@@ -35,18 +30,17 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
      */
     JsonObject(JsonContainer parent) {
         super(parent);
-        elements = new TreeMap<>();
-        keys = new ArrayList<>();
+        elements = new LinkedHashMap<>();
     }
 
     @Override
     public int size() {
-        return keys.size();
+        return elements.size();
     }
 
     @Override
     public boolean isEmpty() {
-        return keys.isEmpty();
+        return elements.isEmpty();
     }
 
     @Override
@@ -66,19 +60,14 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
 
     @Override
     public JsonElement put(String key, JsonElement value) {
-        if (!elements.containsKey(key)) {
-            keys.add(key);
-        }
-        return elements.put(key, value.clone(this));
+        Objects.requireNonNull(key, "key");
+        JsonElement child = Objects.requireNonNull(value, "value").clone(this);
+        return elements.put(key, child);
     }
 
     @Override
     public JsonElement remove(Object key) {
-        JsonElement elem = elements.remove(key);
-        if (elem != null) {
-            keys.remove(key);
-        }
-        return elem;
+        return elements.remove(key);
     }
 
     @Override
@@ -91,7 +80,6 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
     @Override
     public void clear() {
         elements.clear();
-        keys.clear();
     }
 
     @Override
@@ -106,13 +94,65 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
 
     @Override
     public Set<Entry<String, JsonElement>> entrySet() {
-        return elements.entrySet();
+        return new AbstractSet<>() {
+            @Override
+            public int size() { return elements.size(); }
+
+            @Override
+            public void clear() { elements.clear(); }
+
+            @Override
+            public Iterator<Entry<String, JsonElement>> iterator() {
+                Iterator<Entry<String, JsonElement>> iterator = elements.entrySet().iterator();
+                return new Iterator<>() {
+                    @Override
+                    public boolean hasNext() { return iterator.hasNext(); }
+
+                    @Override
+                    public Entry<String, JsonElement> next() {
+                        Entry<String, JsonElement> entry = iterator.next();
+                        // Never expose the backing entry: setValue must follow put's ownership rules.
+                        return new Entry<>() {
+                            @Override
+                            public String getKey() { return entry.getKey(); }
+
+                            @Override
+                            public JsonElement getValue() { return entry.getValue(); }
+
+                            @Override
+                            public JsonElement setValue(JsonElement value) {
+                                JsonElement child = Objects.requireNonNull(value, "value").clone(JsonObject.this);
+                                return entry.setValue(child);
+                            }
+
+                            @Override
+                            public boolean equals(Object other) {
+                                return other instanceof Entry<?, ?> pair
+                                        && Objects.equals(getKey(), pair.getKey())
+                                        && Objects.equals(getValue(), pair.getValue());
+                            }
+
+                            @Override
+                            public int hashCode() {
+                                return Objects.hashCode(getKey()) ^ Objects.hashCode(getValue());
+                            }
+
+                            @Override
+                            public String toString() { return getKey() + "=" + getValue(); }
+                        };
+                    }
+
+                    @Override
+                    public void remove() { iterator.remove(); }
+                };
+            }
+        };
     }
 
     @Override
     JsonElement clone(JsonContainer anotherParent) {
         JsonObject copy = new JsonObject(anotherParent);
-        for (String key : keys) {
+        for (String key : elements.keySet()) {
             copy.addElement(key, elements.get(key));
         }
         return copy;
@@ -123,7 +163,7 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
         StringBuilder result = new StringBuilder();
         result.append('{');
         boolean flag = false;
-        for (String key : keys) {
+        for (String key : elements.keySet()) {
             if (flag) {
                 result.append(", ");
             }
@@ -138,13 +178,13 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
     @Override
     protected void toText(StringBuilder builder, String indentation, int level) {
         final String separator = System.lineSeparator();
-        final int size = keys.size();
+        final int size = elements.size();
         boolean converted = false;
         if (size == 0) {
             builder.append("{}");
             converted = true;
         } else if (size == 1) {
-            final String key = keys.get(0);
+            final String key = elements.keySet().iterator().next();
             final JsonElement child = elements.get(key);
             if (child.toJsonArray() == null && child.toJsonObject() == null) {
                 builder.append("{\"").append(Utils.escapeEntities(key)).append("\": ")
@@ -155,7 +195,7 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
         if (!converted) {
             builder.append('{').append(separator);
             boolean flag = false;
-            for (String key : keys) {
+            for (String key : elements.keySet()) {
                 if (flag) {
                     builder.append(',').append(separator);
                 }
@@ -173,7 +213,7 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
     @Override
     public Object toJavaObject() {
         Map<String, Object> result = new TreeMap<>();
-        for (String key : keys) {
+        for (String key : elements.keySet()) {
             result.put(key, elements.get(key).toJavaObject());
         }
         return Collections.unmodifiableMap(result);
@@ -395,10 +435,7 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
      * @param elem Element
      */
     void addChild(String key, JsonElement elem) {
-        if (!elements.containsKey(key)) {
-            keys.add(key);
-        }
-        elements.put(key, elem);
+        elements.put(Objects.requireNonNull(key, "key"), Objects.requireNonNull(elem, "elem"));
     }
 
     @Override
