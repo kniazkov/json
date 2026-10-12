@@ -27,16 +27,17 @@ public class InheritedFieldsTest {
     @Test
     public void threeLevelRoundTripIncludesPrivateAnnotatedAndFinalFields() throws Exception {
         Derived original =
-                Json.parse("{alpha:10,renamed:'changed',beta:20,gamma:30}", Derived.class);
+                Json.parse("{alpha:10,renamed:'changed',beta:20,gamma:30}", Derived.class)
+                        .orElseThrow();
         String text = Json.serialize(original);
         JsonObject json = Json.parse(text, JsonParsingMode.STRICT).objectValueOrThrow();
         Assert.assertEquals(5, json.size());
-        Assert.assertEquals(10, json.element("alpha").intValue());
-        Assert.assertEquals("changed", json.element("renamed").stringValue());
-        Assert.assertEquals(20, json.element("beta").longValue());
-        Assert.assertEquals(30, json.element("gamma").intValue());
-        Assert.assertEquals(17, json.element("fixed").intValue());
-        Derived copy = Json.parse(text, Derived.class);
+        Assert.assertEquals(10, json.element("alpha").orElseThrow().intValue());
+        Assert.assertEquals("changed", json.element("renamed").orElseThrow().stringValue());
+        Assert.assertEquals(20, json.element("beta").orElseThrow().longValue());
+        Assert.assertEquals(30, json.element("gamma").orElseThrow().intValue());
+        Assert.assertEquals(17, json.element("fixed").orElseThrow().intValue());
+        Derived copy = Json.parse(text, Derived.class).orElseThrow();
         Assert.assertEquals(10, ((Base) copy).alpha);
         Assert.assertEquals("changed", ((Base) copy).label);
         Assert.assertEquals(20, copy.beta);
@@ -56,7 +57,8 @@ public class InheritedFieldsTest {
 
     @Test
     public void javaNameHidingPrecedesRenamingAndCanChangeType() throws Exception {
-        HiddenChild value = Json.parse("{oldName:99,newName:'updated'}", HiddenChild.class);
+        HiddenChild value =
+                Json.parse("{oldName:99,newName:'updated'}", HiddenChild.class).orElseThrow();
         Assert.assertEquals(1, ((HiddenBase) value).value);
         Assert.assertEquals("updated", value.value);
         Assert.assertEquals("{\"newName\": \"updated\"}", Json.serialize(value));
@@ -72,7 +74,8 @@ public class InheritedFieldsTest {
 
     @Test
     public void excludedHidingFieldDoesNotExposeOrReserveParentName() throws Exception {
-        ExcludedChild value = Json.parse("{oldName:42,ignored:99}", ExcludedChild.class);
+        ExcludedChild value =
+                Json.parse("{oldName:42,ignored:99}", ExcludedChild.class).orElseThrow();
         Assert.assertEquals(42, value.replacement);
         Assert.assertEquals(1, ((HiddenBase) value).value);
         Assert.assertEquals(2, value.value);
@@ -136,7 +139,8 @@ public class InheritedFieldsTest {
     @Test
     public void collisionIsDetectedBeforeTargetConstructorRuns() {
         Assert.assertThrows(
-                IllegalArgumentException.class, () -> Json.parse("{}", ConstructorCollision.class));
+                IllegalArgumentException.class,
+                () -> Json.parse("{}", ConstructorCollision.class).orElseThrow());
     }
 
     static class IgnoredCollisions extends Base {
@@ -149,10 +153,11 @@ public class InheritedFieldsTest {
 
     @Test
     public void excludedFieldsDoNotCauseJsonNameCollisions() throws Exception {
-        IgnoredCollisions copy = Json.parse("{alpha:10,renamed:'new'}", IgnoredCollisions.class);
+        IgnoredCollisions copy =
+                Json.parse("{alpha:10,renamed:'new'}", IgnoredCollisions.class).orElseThrow();
         JsonObject json = Json.parse(Json.serialize(copy)).objectValueOrThrow();
         Assert.assertEquals(3, json.size());
-        Assert.assertEquals("new", json.element("renamed").stringValue());
-        Assert.assertEquals(10, json.element("alpha").intValue());
+        Assert.assertEquals("new", json.element("renamed").orElseThrow().stringValue());
+        Assert.assertEquals(10, json.element("alpha").orElseThrow().intValue());
     }
 }

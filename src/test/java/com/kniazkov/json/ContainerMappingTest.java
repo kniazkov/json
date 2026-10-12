@@ -55,18 +55,19 @@ public class ContainerMappingTest {
 
     @Test
     public void referenceRaggedEmptyAndNullArrays() throws Exception {
-        int[][] value = Json.parse("[[1,2],null,[],[3]]", int[][].class);
+        int[][] value = Json.parse("[[1,2],null,[],[3]]", int[][].class).orElseThrow();
         Assert.assertArrayEquals(new int[] {1, 2}, value[0]);
         Assert.assertNull(value[1]);
         Assert.assertEquals(0, value[2].length);
         Assert.assertArrayEquals(new int[] {3}, value[3]);
-        Assert.assertNull(Json.parse("null", int[].class));
+        Assert.assertTrue(Json.parse("null", int[].class).isEmpty());
         Assert.assertArrayEquals(
-                new Integer[] {1, null, 2}, Json.parse("[1,null,2]", Integer[].class));
-        Item[] items = Json.parse("[{value:7},null]", Item[].class);
+                new Integer[] {1, null, 2},
+                Json.parse("[1,null,2]", Integer[].class).orElseThrow());
+        Item[] items = Json.parse("[{value:7},null]", Item[].class).orElseThrow();
         Assert.assertEquals(7, items[0].value);
         Assert.assertNull(items[1]);
-        Object[] objects = Json.parse("[1,1.5,null,[2],{a:3}]", Object[].class);
+        Object[] objects = Json.parse("[1,1.5,null,[2],{a:3}]", Object[].class).orElseThrow();
         Assert.assertEquals(BigInteger.ONE, objects[0]);
         Assert.assertEquals(new BigDecimal("1.5"), objects[1]);
         Assert.assertNull(objects[2]);
@@ -79,7 +80,7 @@ public class ContainerMappingTest {
         String input =
                 "{numbers:[1,2],items:[{value:3},null],maps:[{x:4}],arrays:[[5]],"
                         + "mixed:{a:[[{value:6},null],null]},generic:[[7,null],null,[]],values:{x:8}}";
-        Containers value = Json.parse(input, Containers.class);
+        Containers value = Json.parse(input, Containers.class).orElseThrow();
         Assert.assertEquals(Integer.valueOf(4), value.maps.get(0).get("x"));
         Assert.assertArrayEquals(new int[] {5}, value.arrays.get(0));
         Assert.assertEquals(6, value.mixed.get("a").get(0)[0].value);
@@ -88,10 +89,10 @@ public class ContainerMappingTest {
         Assert.assertNull(value.generic[1]);
         Assert.assertTrue(value.generic[2].isEmpty());
         Assert.assertEquals(Json.parse(input), JsonParser.parseJavaObject(value));
-        Containers absent = Json.parse("{}", Containers.class);
+        Containers absent = Json.parse("{}", Containers.class).orElseThrow();
         Assert.assertArrayEquals(new int[] {9}, absent.numbers);
         Assert.assertEquals(Map.of("default", 9), absent.values);
-        Containers nil = Json.parse("{numbers:null,values:null}", Containers.class);
+        Containers nil = Json.parse("{numbers:null,values:null}", Containers.class).orElseThrow();
         Assert.assertNull(nil.numbers);
         Assert.assertNull(nil.values);
     }
@@ -129,7 +130,7 @@ public class ContainerMappingTest {
                         TreeMap.class,
                         SortedMap.class,
                         NavigableMap.class)) {
-            Map value = (Map) Json.parse("{b:1,a:[null,2]}", target);
+            Map value = (Map) Json.parse("{b:1,a:[null,2]}", target).orElseThrow();
             Class<?> expected =
                     target == Map.class
                             ? LinkedHashMap.class
@@ -141,8 +142,8 @@ public class ContainerMappingTest {
             Assert.assertEquals(Arrays.asList(null, BigInteger.TWO), value.get("a"));
             value.put("c", null);
             Assert.assertTrue(value.containsKey("c"));
-            Assert.assertNull(Json.parse("null", target));
-            Assert.assertTrue(((Map) Json.parse("{}", target)).isEmpty());
+            Assert.assertTrue(Json.parse("null", target).isEmpty());
+            Assert.assertTrue(((Map) Json.parse("{}", target).orElseThrow()).isEmpty());
             if (value instanceof SortedMap) {
                 Assert.assertEquals(List.of("a", "b", "c"), new ArrayList<>(value.keySet()));
             }
@@ -179,18 +180,20 @@ public class ContainerMappingTest {
         BigInteger huge = BigInteger.ONE.shiftLeft(200);
         Assert.assertArrayEquals(
                 new BigInteger[] {huge, null},
-                Json.parse("[" + huge + ",null]", BigInteger[].class));
+                Json.parse("[" + huge + ",null]", BigInteger[].class).orElseThrow());
         var decimals =
                 Json.parse("{x:1.234567890123456789}")
                         .toJavaObject(new JsonType<Map<String, BigDecimal>>() {});
         Assert.assertEquals(new BigDecimal("1.234567890123456789"), decimals.get("x"));
         Assert.assertArrayEquals(
                 new double[] {Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY},
-                Json.parse("[NaN,Infinity,-Infinity]", double[].class),
+                Json.parse("[NaN,Infinity,-Infinity]", double[].class).orElseThrow(),
                 0);
-        Assert.assertThrows(JsonDataException.class, () -> Json.parse("[NaN]", int[].class));
         Assert.assertThrows(
-                JsonDataException.class, () -> Json.parse("[Infinity]", BigDecimal[].class));
+                JsonDataException.class, () -> Json.parse("[NaN]", int[].class).orElseThrow());
+        Assert.assertThrows(
+                JsonDataException.class,
+                () -> Json.parse("[Infinity]", BigDecimal[].class).orElseThrow());
     }
 
     @Test
@@ -217,9 +220,12 @@ public class ContainerMappingTest {
                             () -> Json.parse((String) entry[0], (Class<?>) entry[1]));
             Assert.assertTrue(error.getMessage(), error.getMessage().contains("$[0]"));
         }
-        Assert.assertThrows(JsonDataException.class, () -> Json.parse("'AQ=='", byte[].class));
-        Assert.assertThrows(JsonDataException.class, () -> Json.parse("{}", int[].class));
-        Assert.assertThrows(JsonDataException.class, () -> Json.parse("[]", Map.class));
+        Assert.assertThrows(
+                JsonDataException.class, () -> Json.parse("'AQ=='", byte[].class).orElseThrow());
+        Assert.assertThrows(
+                JsonDataException.class, () -> Json.parse("{}", int[].class).orElseThrow());
+        Assert.assertThrows(
+                JsonDataException.class, () -> Json.parse("[]", Map.class).orElseThrow());
     }
 
     @Test
@@ -266,7 +272,8 @@ public class ContainerMappingTest {
                     () -> Json.parse(input).toJavaObject(new JsonType<List<?>[]>() {}));
         }
         for (String input : List.of("{values:{}}", "{values:null}", "{array:[]}", "{array:null}")) {
-            Assert.assertThrows(JsonDataException.class, () -> Json.parse(input, Bound.class));
+            Assert.assertThrows(
+                    JsonDataException.class, () -> Json.parse(input, Bound.class).orElseThrow());
         }
         Assert.assertThrows(IllegalArgumentException.class, () -> new JsonType() {});
     }
@@ -291,15 +298,18 @@ public class ContainerMappingTest {
     public void softPoliciesApplyToWholeContainer() throws Exception {
         Soft value =
                 Json.parse(
-                        "{numbers:[1,null],kept:{ok:[1],bad:[null]},discarded:{bad:[null]}}",
-                        Soft.class);
+                                "{numbers:[1,null],kept:{ok:[1],bad:[null]},discarded:{bad:[null]}}",
+                                Soft.class)
+                        .orElseThrow();
         Assert.assertArrayEquals(new int[] {9}, value.numbers);
         Assert.assertEquals(Set.of("default"), value.kept.keySet());
         Assert.assertArrayEquals(new int[] {9}, value.kept.get("default"));
         Assert.assertNull(value.discarded);
-        Assert.assertArrayEquals(new int[] {9}, Json.parse("{numbers:null}", Soft.class).numbers);
+        Assert.assertArrayEquals(
+                new int[] {9}, Json.parse("{numbers:null}", Soft.class).orElseThrow().numbers);
         Assert.assertThrows(
-                JsonDataException.class, () -> Json.parse("{required:null}", Soft.class));
+                JsonDataException.class,
+                () -> Json.parse("{required:null}", Soft.class).orElseThrow());
     }
 
     static class Node {
@@ -311,7 +321,7 @@ public class ContainerMappingTest {
     public void deepArrayMapPojoMappingUsesHeapStack() throws Exception {
         int depth = 20000;
         String input = "{children:[{links:{next:".repeat(depth) + "{}" + "}}]}".repeat(depth);
-        Node node = Json.parse(input, Node.class);
+        Node node = Json.parse(input, Node.class).orElseThrow();
         for (int i = 0; i < depth; i++) {
             Assert.assertEquals(1, node.children.length);
             node = node.children[0].links.get("next");

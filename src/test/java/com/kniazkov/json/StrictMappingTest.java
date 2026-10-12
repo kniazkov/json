@@ -36,33 +36,44 @@ public class StrictMappingTest {
                         "{child:[]}",
                         "{values:{}}",
                         "{values:[1,'2']}")) {
-            Assert.assertThrows(JsonDataException.class, () -> Json.parse(input, State.class));
+            Assert.assertThrows(
+                    JsonDataException.class, () -> Json.parse(input, State.class).orElseThrow());
         }
-        State absent = Json.parse("{unknown:1}", State.class);
+        State absent = Json.parse("{unknown:1}", State.class).orElseThrow();
         Assert.assertEquals(42, absent.count);
         Assert.assertEquals(List.of(7, 8), absent.values);
-        State nullable = Json.parse("{boxed:null,text:null,child:null,values:null}", State.class);
+        State nullable =
+                Json.parse("{boxed:null,text:null,child:null,values:null}", State.class)
+                        .orElseThrow();
         Assert.assertNull(nullable.boxed);
         Assert.assertNull(nullable.text);
         Assert.assertNull(nullable.child);
         Assert.assertNull(nullable.values);
-        Assert.assertThrows(JsonDataException.class, () -> Json.parse("{count:null}", State.class));
+        Assert.assertThrows(
+                JsonDataException.class,
+                () -> Json.parse("{count:null}", State.class).orElseThrow());
     }
 
     @Test
     public void rootConversionsFollowTheSameRulesInEverySyntaxMode() throws Exception {
-        Assert.assertEquals(1, (int) Json.parse("1.0", int.class));
-        Assert.assertEquals('x', (char) Json.parse("\"x\"", char.class));
-        Assert.assertNull(Json.parse("null", Integer.class));
+        Assert.assertEquals(1, (int) Json.parse("1.0", int.class).orElseThrow());
+        Assert.assertEquals('x', (char) Json.parse("\"x\"", char.class).orElseThrow());
+        Assert.assertTrue(Json.parse("null", Integer.class).isEmpty());
         for (JsonParsingMode mode : JsonParsingMode.values()) {
             Assert.assertThrows(
-                    JsonDataException.class, () -> Json.parse("\"123\"", Integer.class, mode));
-            Assert.assertThrows(JsonDataException.class, () -> Json.parse("null", int.class, mode));
+                    JsonDataException.class,
+                    () -> Json.parse("\"123\"", Integer.class, mode).orElseThrow());
+            Assert.assertThrows(
+                    JsonDataException.class,
+                    () -> Json.parse("null", int.class, mode).orElseThrow());
         }
-        Assert.assertThrows(JsonDataException.class, () -> Json.parse("123", String.class));
-        Assert.assertThrows(JsonDataException.class, () -> Json.parse("\"ab\"", Character.class));
-        Assert.assertThrows(JsonDataException.class, () -> Json.parse("true", Integer.class));
-        Assert.assertEquals(BigInteger.ONE, Json.parse("1", Object.class));
+        Assert.assertThrows(
+                JsonDataException.class, () -> Json.parse("123", String.class).orElseThrow());
+        Assert.assertThrows(
+                JsonDataException.class, () -> Json.parse("\"ab\"", Character.class).orElseThrow());
+        Assert.assertThrows(
+                JsonDataException.class, () -> Json.parse("true", Integer.class).orElseThrow());
+        Assert.assertEquals(BigInteger.ONE, Json.parse("1", Object.class).orElseThrow());
     }
 
     @Test
@@ -72,37 +83,45 @@ public class StrictMappingTest {
         String[] maxima = {"127", "32767", "2147483647", "9223372036854775807"};
         for (int i = 0; i < types.length; i++) {
             Class<?> type = types[i];
-            Assert.assertEquals(minima[i], Json.parse(minima[i], type).toString());
-            Assert.assertEquals(maxima[i], Json.parse(maxima[i], type).toString());
+            Assert.assertEquals(minima[i], Json.parse(minima[i], type).orElseThrow().toString());
+            Assert.assertEquals(maxima[i], Json.parse(maxima[i], type).orElseThrow().toString());
             String below = new BigInteger(minima[i]).subtract(BigInteger.ONE).toString();
             String above = new BigInteger(maxima[i]).add(BigInteger.ONE).toString();
             for (String input : List.of(below, above, "1.5", "NaN", "Infinity")) {
-                Assert.assertThrows(JsonDataException.class, () -> Json.parse(input, type));
+                Assert.assertThrows(
+                        JsonDataException.class, () -> Json.parse(input, type).orElseThrow());
             }
-            Assert.assertEquals("1", Json.parse("1.00", type).toString());
+            Assert.assertEquals("1", Json.parse("1.00", type).orElseThrow().toString());
         }
         Assert.assertEquals(
                 new BigInteger("123456789012345678901234567890"),
-                Json.parse("123456789012345678901234567890", BigInteger.class));
-        Assert.assertThrows(JsonDataException.class, () -> Json.parse("1.5", BigInteger.class));
+                Json.parse("123456789012345678901234567890", BigInteger.class).orElseThrow());
+        Assert.assertThrows(
+                JsonDataException.class, () -> Json.parse("1.5", BigInteger.class).orElseThrow());
     }
 
     @Test
     public void floatingPointAllowsRoundingAndExplicitNonFiniteValues() throws Exception {
-        Assert.assertEquals(0.1, Json.parse("0.1", Double.class), 0);
-        Assert.assertEquals(0.1f, Json.parse("0.1", Float.class), 0);
+        Assert.assertEquals(0.1, Json.parse("0.1", Double.class).orElseThrow(), 0);
+        Assert.assertEquals(0.1f, Json.parse("0.1", Float.class).orElseThrow(), 0);
         for (String text : List.of("1e400", "1e-400")) {
-            Assert.assertThrows(JsonDataException.class, () -> Json.parse(text, Double.class));
+            Assert.assertThrows(
+                    JsonDataException.class, () -> Json.parse(text, Double.class).orElseThrow());
         }
         for (String text : List.of("1e40", "1e-50")) {
-            Assert.assertThrows(JsonDataException.class, () -> Json.parse(text, Float.class));
+            Assert.assertThrows(
+                    JsonDataException.class, () -> Json.parse(text, Float.class).orElseThrow());
         }
-        Assert.assertTrue(Json.parse("NaN", Double.class).isNaN());
-        Assert.assertEquals(Float.POSITIVE_INFINITY, Json.parse("Infinity", Float.class), 0);
-        Assert.assertEquals(Double.NEGATIVE_INFINITY, Json.parse("-Infinity", Double.class), 0);
+        Assert.assertTrue(Json.parse("NaN", Double.class).orElseThrow().isNaN());
+        Assert.assertEquals(
+                Float.POSITIVE_INFINITY, Json.parse("Infinity", Float.class).orElseThrow(), 0);
+        Assert.assertEquals(
+                Double.NEGATIVE_INFINITY, Json.parse("-Infinity", Double.class).orElseThrow(), 0);
         Assert.assertThrows(
-                JsonDataException.class, () -> Json.parse("Infinity", BigDecimal.class));
-        Assert.assertEquals(new BigDecimal("1e400"), Json.parse("1e400", BigDecimal.class));
+                JsonDataException.class,
+                () -> Json.parse("Infinity", BigDecimal.class).orElseThrow());
+        Assert.assertEquals(
+                new BigDecimal("1e400"), Json.parse("1e400", BigDecimal.class).orElseThrow());
     }
 
     static class Soft {
@@ -131,20 +150,24 @@ public class StrictMappingTest {
     public void fieldPoliciesApplyToWholeValuesAndUseOptionalName() throws Exception {
         Soft value =
                 Json.parse(
-                        "{count:null,values:[1,'bad',3],nullable:'bad',renamed:{count:'bad'},clear:null}",
-                        Soft.class);
+                                "{count:null,values:[1,'bad',3],nullable:'bad',renamed:{count:'bad'},clear:null}",
+                                Soft.class)
+                        .orElseThrow();
         Assert.assertEquals(42, value.count);
         Assert.assertEquals(List.of(7, 8), value.values);
         Assert.assertNull(value.nullable);
         Assert.assertNull(value.clear);
         Assert.assertEquals(42, value.child.count);
-        Assert.assertEquals(42, Json.parse("{count:1.5}", Soft.class).count);
-        Soft valid = Json.parse("{count:2,values:[1,null,3],renamed:{count:9}}", Soft.class);
+        Assert.assertEquals(42, Json.parse("{count:1.5}", Soft.class).orElseThrow().count);
+        Soft valid =
+                Json.parse("{count:2,values:[1,null,3],renamed:{count:9}}", Soft.class)
+                        .orElseThrow();
         Assert.assertEquals(2, valid.count);
         Assert.assertEquals(Arrays.asList(1, null, 3), valid.values);
         Assert.assertEquals(9, valid.child.count);
         Assert.assertThrows(
-                JsonDataException.class, () -> Json.parse("{required:null}", Soft.class));
+                JsonDataException.class,
+                () -> Json.parse("{required:null}", Soft.class).orElseThrow());
         JsonObject serialized = Json.parse(Json.serialize(valid)).objectValueOrThrow();
         Assert.assertNotNull(serialized.get("count"));
         Assert.assertNotNull(serialized.get("renamed"));
@@ -160,7 +183,9 @@ public class StrictMappingTest {
         JsonDataException failure =
                 Assert.assertThrows(
                         JsonDataException.class,
-                        () -> Json.parse("{orders:[{count:1},{count:1.5}]}", Nested.class));
+                        () ->
+                                Json.parse("{orders:[{count:1},{count:1.5}]}", Nested.class)
+                                        .orElseThrow());
         Assert.assertTrue(
                 failure.getMessage(), failure.getMessage().contains("$[\"orders\"][1][\"count\"]"));
         Assert.assertTrue(failure.getCause() instanceof ArithmeticException);
@@ -193,10 +218,12 @@ public class StrictMappingTest {
     @Test
     public void invalidConfigurationCannotBeSuppressed() {
         for (Class<?> type : List.of(BadNull.class, BadInvalid.class, BadDefault.class)) {
-            Assert.assertThrows(IllegalArgumentException.class, () -> Json.parse("{}", type));
+            Assert.assertThrows(
+                    IllegalArgumentException.class, () -> Json.parse("{}", type).orElseThrow());
         }
         Assert.assertThrows(
-                IllegalArgumentException.class, () -> Json.parse("{child:{}}", BadContainer.class));
+                IllegalArgumentException.class,
+                () -> Json.parse("{child:{}}", BadContainer.class).orElseThrow());
     }
 
     static class Broken {
@@ -212,12 +239,15 @@ public class StrictMappingTest {
     @Test
     public void constructionFailuresRetainCause() {
         JsonDataException failure =
-                Assert.assertThrows(JsonDataException.class, () -> Json.parse("{}", Broken.class));
+                Assert.assertThrows(
+                        JsonDataException.class,
+                        () -> Json.parse("{}", Broken.class).orElseThrow());
         Assert.assertTrue(failure.getCause() instanceof IllegalStateException);
         Assert.assertEquals("broken", failure.getCause().getMessage());
         JsonDataException missing =
                 Assert.assertThrows(
-                        JsonDataException.class, () -> Json.parse("{}", NoDefault.class));
+                        JsonDataException.class,
+                        () -> Json.parse("{}", NoDefault.class).orElseThrow());
         Assert.assertTrue(missing.getCause() instanceof NoSuchMethodException);
     }
 }

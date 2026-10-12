@@ -38,10 +38,11 @@ public class ListMappingTest {
     public void nullElementsRetainTheirPositionsAndTypes() throws Exception {
         Lists value =
                 Json.parse(
-                        "{bytes:[null,1],shorts:[null,2],ints:[null,3],longs:[null,4],"
-                                + "floats:[null,1.5],doubles:[null,2.5],"
-                                + "booleans:[null,true],strings:[null,'x'],items:[null,{value:7}]}",
-                        Lists.class);
+                                "{bytes:[null,1],shorts:[null,2],ints:[null,3],longs:[null,4],"
+                                        + "floats:[null,1.5],doubles:[null,2.5],"
+                                        + "booleans:[null,true],strings:[null,'x'],items:[null,{value:7}]}",
+                                Lists.class)
+                        .orElseThrow();
         List<?>[] lists = {
             value.bytes,
             value.shorts,
@@ -68,15 +69,16 @@ public class ListMappingTest {
     public void nullEmptyAndAbsentFieldsRemainDistinct() throws Exception {
         Lists value =
                 Json.parse(
-                        "{ints:null,nested:null,mixed:null,raw:null,objects:null,initialized:null}",
-                        Lists.class);
+                                "{ints:null,nested:null,mixed:null,raw:null,objects:null,initialized:null}",
+                                Lists.class)
+                        .orElseThrow();
         Assert.assertNull(value.ints);
         Assert.assertNull(value.nested);
         Assert.assertNull(value.mixed);
         Assert.assertNull(value.raw);
         Assert.assertNull(value.objects);
         Assert.assertNull(value.initialized);
-        Lists empty = Json.parse("{ints:[]}", Lists.class);
+        Lists empty = Json.parse("{ints:[]}", Lists.class).orElseThrow();
         Assert.assertTrue(empty.ints.isEmpty());
         Assert.assertEquals(List.of(9), empty.initialized);
     }
@@ -85,8 +87,9 @@ public class ListMappingTest {
     public void nestedListsPreserveNullsShapeAndImplementations() throws Exception {
         Lists value =
                 Json.parse(
-                        "{nested:[[1,null,2],null,[]],mixed:[[['x',null],null,[]],null]}",
-                        Lists.class);
+                                "{nested:[[1,null,2],null,[]],mixed:[[['x',null],null,[]],null]}",
+                                Lists.class)
+                        .orElseThrow();
         Assert.assertEquals(
                 Arrays.asList(Arrays.asList(1, null, 2), null, List.of()), value.nested);
         Assert.assertEquals(ArrayList.class, value.nested.getClass());
@@ -96,7 +99,7 @@ public class ListMappingTest {
         Assert.assertNull(value.mixed.get(0).get(1));
         Assert.assertTrue(value.mixed.get(0).get(2).isEmpty());
         Assert.assertNull(value.mixed.get(1));
-        Lists copy = Json.parse(Json.serialize(value), Lists.class);
+        Lists copy = Json.parse(Json.serialize(value), Lists.class).orElseThrow();
         Assert.assertEquals(value.nested, copy.nested);
         Assert.assertEquals(value.mixed, copy.mixed);
     }
@@ -105,15 +108,16 @@ public class ListMappingTest {
     public void rawAndObjectListsRetainNaturalValues() throws Exception {
         Lists value =
                 Json.parse(
-                        "{raw:[null,1,[2,null],{x:3}],objects:[null,1,[2,null],{x:3}]}",
-                        Lists.class);
+                                "{raw:[null,1,[2,null],{x:3}],objects:[null,1,[2,null],{x:3}]}",
+                                Lists.class)
+                        .orElseThrow();
         Assert.assertEquals(value.raw, value.objects);
         Assert.assertNull(value.raw.get(0));
         Assert.assertEquals(BigInteger.ONE, value.raw.get(1));
         Assert.assertEquals(Arrays.asList(BigInteger.TWO, null), value.raw.get(2));
         Assert.assertEquals(Map.of("x", BigInteger.valueOf(3)), value.raw.get(3));
         for (Class<?> type : List.of(List.class, ArrayList.class, LinkedList.class)) {
-            Object root = Json.parse("[null,1]", type);
+            Object root = Json.parse("[null,1]", type).orElseThrow();
             Assert.assertEquals(Arrays.asList(null, BigInteger.ONE), root);
             Assert.assertEquals(
                     type == LinkedList.class ? LinkedList.class : ArrayList.class, root.getClass());
@@ -164,7 +168,9 @@ public class ListMappingTest {
                         Custom.class)) {
             for (String input : List.of("{values:[]}", "{values:null}", "{values:[null]}")) {
                 JsonDataException error =
-                        Assert.assertThrows(JsonDataException.class, () -> Json.parse(input, type));
+                        Assert.assertThrows(
+                                JsonDataException.class,
+                                () -> Json.parse(input, type).orElseThrow());
                 Assert.assertTrue(error.getMessage(), error.getMessage().contains("values"));
                 Assert.assertTrue(error.getMessage(), error.getMessage().contains("unsupported"));
             }
@@ -175,16 +181,18 @@ public class ListMappingTest {
     public void wrongListShapeReportsFieldAndIndex() {
         JsonDataException field =
                 Assert.assertThrows(
-                        JsonDataException.class, () -> Json.parse("{ints:{}}", Lists.class));
+                        JsonDataException.class,
+                        () -> Json.parse("{ints:{}}", Lists.class).orElseThrow());
         Assert.assertTrue(field.getMessage().contains("$[\"ints\"]"));
         JsonDataException nested =
                 Assert.assertThrows(
                         JsonDataException.class,
-                        () -> Json.parse("{nested:[[1],42]}", Lists.class));
+                        () -> Json.parse("{nested:[[1],42]}", Lists.class).orElseThrow());
         Assert.assertTrue(nested.getMessage().contains("$[\"nested\"][1]"));
         JsonDataException item =
                 Assert.assertThrows(
-                        JsonDataException.class, () -> Json.parse("{items:[5]}", Lists.class));
+                        JsonDataException.class,
+                        () -> Json.parse("{items:[5]}", Lists.class).orElseThrow());
         Assert.assertTrue(item.getMessage().contains("$[\"items\"][0]"));
     }
 }

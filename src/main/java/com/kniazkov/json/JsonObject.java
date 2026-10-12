@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 /** JSON object. */
@@ -190,10 +191,10 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
      * Returns a child element by its key.
      *
      * @param key Key
-     * @return Child element
+     * @return Child element, or empty if the key is absent
      */
-    public JsonElement element(String key) {
-        return get(key);
+    public Optional<JsonElement> element(String key) {
+        return Optional.ofNullable(get(Objects.requireNonNull(key, "key")));
     }
 
     /**
@@ -310,7 +311,7 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
     }
 
     @Override
-    public JsonObject toJsonObject() {
-        return this;
+    public Optional<JsonObject> toJsonObject() {
+        return Optional.of(this);
     }
 }

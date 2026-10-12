@@ -51,12 +51,12 @@ public class Json5ComplianceTest {
                                         + "ключ:8,\\u0061:9,\\u0074rue:10,a\\u200C:11,Ⅳ:12,𐐀:13}",
                                 JSON5)
                         .objectValueOrThrow();
-        Assert.assertEquals(10, object.element("true").intValue());
-        Assert.assertEquals(5, object.element("Infinity").intValue());
-        Assert.assertEquals(8, object.element("ключ").intValue());
-        Assert.assertEquals(9, object.element("a").intValue());
-        Assert.assertEquals(11, object.element("a\u200c").intValue());
-        Assert.assertEquals(13, object.element("𐐀").intValue());
+        Assert.assertEquals(10, object.element("true").orElseThrow().intValue());
+        Assert.assertEquals(5, object.element("Infinity").orElseThrow().intValue());
+        Assert.assertEquals(8, object.element("ключ").orElseThrow().intValue());
+        Assert.assertEquals(9, object.element("a").orElseThrow().intValue());
+        Assert.assertEquals(11, object.element("a\u200c").orElseThrow().intValue());
+        Assert.assertEquals(13, object.element("𐐀").orElseThrow().intValue());
         for (String input :
                 new String[] {
                     "{1:0}",
@@ -113,6 +113,7 @@ public class Json5ComplianceTest {
                 Json.parse("\uFEFF{\u00a0a\u2003:\u20281\u2029}", JSON5)
                         .objectValueOrThrow()
                         .element("a")
+                        .orElseThrow()
                         .intValue());
         // EXTENDED inherits JSON5 inside the root, retaining the established suffix-warning
         // contract.

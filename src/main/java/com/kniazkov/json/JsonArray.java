@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
@@ -309,12 +310,12 @@ public final class JsonArray extends JsonContainer implements List<JsonElement> 
      * @param elem Element
      */
     void addChild(JsonElement elem) {
-        assert elem.parent() == this;
+        assert elem.parent().orElseThrow() == this;
         list.add(elem);
     }
 
     @Override
-    public JsonArray toJsonArray() {
-        return this;
+    public Optional<JsonArray> toJsonArray() {
+        return Optional.of(this);
     }
 }

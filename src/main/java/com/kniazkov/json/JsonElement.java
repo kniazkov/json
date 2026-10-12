@@ -4,6 +4,7 @@
 package com.kniazkov.json;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 /** Some JSON element, which can be an object, array, string, number, or literal. */
 public abstract class JsonElement implements Cloneable {
@@ -13,7 +14,7 @@ public abstract class JsonElement implements Cloneable {
     /**
      * Constructor.
      *
-     * @param parent The parent of this element
+     * @param parent Parent, or null for a root element
      */
     public JsonElement(final JsonContainer parent) {
         this.parent = parent;
@@ -22,10 +23,10 @@ public abstract class JsonElement implements Cloneable {
     /**
      * Returns the parent of this element, that is, the element that contains this element.
      *
-     * @return The parent of this element
+     * @return Parent, or empty for a root element
      */
-    public JsonContainer parent() {
-        return parent;
+    public Optional<JsonContainer> parent() {
+        return Optional.ofNullable(parent);
     }
 
     /**
@@ -117,7 +118,7 @@ public abstract class JsonElement implements Cloneable {
      */
     @SuppressWarnings("unchecked")
     public final <T> T toJavaObject(Class<T> type) {
-        return (T) JsonMapper.convert(this, type);
+        return (T) JsonMapper.convert(this, java.util.Objects.requireNonNull(type, "type"));
     }
 
     /**
@@ -288,38 +289,38 @@ public abstract class JsonElement implements Cloneable {
     /**
      * Safely casts an element to the "array" type.
      *
-     * @return JSON array or {@code null} if the element is not an array.
+     * @return JSON array, or empty if the element is not an array.
      */
-    public JsonArray toJsonArray() {
-        return null;
+    public Optional<JsonArray> toJsonArray() {
+        return Optional.empty();
     }
 
     /**
      * Safely casts an element to the "object" type.
      *
-     * @return JSON object or {@code null} if the element is not an object.
+     * @return JSON object, or empty if the element is not an object.
      */
-    public JsonObject toJsonObject() {
-        return null;
+    public Optional<JsonObject> toJsonObject() {
+        return Optional.empty();
     }
 
     /**
-     * Returns the exact stored number, or null for a non-numeric element.
+     * Returns the exact stored number, if the element is numeric.
      *
      * @return BigInteger for an integer, BigDecimal for a real, Double for a special number, or
-     *     null
+     *     empty for a non-numeric element
      */
-    public Number numberValue() {
-        return null;
+    public Optional<Number> numberValue() {
+        return Optional.empty();
     }
 
     /**
-     * Returns the exact decimal representation, or null for non-numeric or non-finite values.
+     * Returns the exact decimal representation, or empty for non-numeric or non-finite values.
      *
-     * @return The decimal value, or null
+     * @return The decimal value, or empty
      */
-    public BigDecimal decimalValue() {
-        return null;
+    public Optional<BigDecimal> decimalValue() {
+        return Optional.empty();
     }
 
     /**
@@ -373,7 +374,7 @@ public abstract class JsonElement implements Cloneable {
             throw invalidData("a number representable as a finite double");
         }
         double value = doubleValue();
-        if (!Double.isFinite(value) || (value == 0.0 && decimalValue().signum() != 0)) {
+        if (!Double.isFinite(value) || (value == 0.0 && decimalValueOrThrow().signum() != 0)) {
             throw invalidData(
                     "a number representable as a finite double without underflow to zero");
         }
@@ -400,11 +401,7 @@ public abstract class JsonElement implements Cloneable {
      * @throws JsonDataException If the element is not numeric
      */
     public final Number numberValueOrThrow() {
-        Number value = numberValue();
-        if (value == null) {
-            throw invalidData("a number");
-        }
-        return value;
+        return numberValue().orElseThrow(() -> invalidData("a number"));
     }
 
     /**
@@ -414,11 +411,7 @@ public abstract class JsonElement implements Cloneable {
      * @throws JsonDataException If the element is not a finite number
      */
     public final BigDecimal decimalValueOrThrow() {
-        BigDecimal value = decimalValue();
-        if (value == null) {
-            throw invalidData("a finite number");
-        }
-        return value;
+        return decimalValue().orElseThrow(() -> invalidData("a finite number"));
     }
 
     /**
@@ -428,11 +421,7 @@ public abstract class JsonElement implements Cloneable {
      * @throws JsonDataException If the element is not an array
      */
     public final JsonArray arrayValueOrThrow() {
-        JsonArray value = toJsonArray();
-        if (value == null) {
-            throw invalidData("an array");
-        }
-        return value;
+        return toJsonArray().orElseThrow(() -> invalidData("an array"));
     }
 
     /**
@@ -442,11 +431,7 @@ public abstract class JsonElement implements Cloneable {
      * @throws JsonDataException If the element is not an object
      */
     public final JsonObject objectValueOrThrow() {
-        JsonObject value = toJsonObject();
-        if (value == null) {
-            throw invalidData("an object");
-        }
-        return value;
+        return toJsonObject().orElseThrow(() -> invalidData("an object"));
     }
 
     private JsonDataException invalidData(String expected) {

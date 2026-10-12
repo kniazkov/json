@@ -9,6 +9,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 /** Class that combines all methods for parsing and serialising JSON documents. */
 public class Json {
@@ -67,11 +68,12 @@ public class Json {
      * @param source JSON document
      * @param type The type descriptor
      * @param <T> The type
-     * @return Converted value; JSON null maps to null for reference types
+     * @return Converted value, or empty for JSON null and a reference target
      * @throws JsonException If parsing or input fails
      */
-    public static <T> T parse(String source, Class<T> type) throws JsonException {
-        return parse(source).toJavaObject(type);
+    public static <T> Optional<T> parse(String source, Class<T> type) throws JsonException {
+        java.util.Objects.requireNonNull(type, "type");
+        return Optional.ofNullable(parse(source).toJavaObject(type));
     }
 
     /**
@@ -80,11 +82,12 @@ public class Json {
      * @param file File containing JSON document
      * @param type The type descriptor
      * @param <T> The type
-     * @return Converted value; JSON null maps to null for reference types
+     * @return Converted value, or empty for JSON null and a reference target
      * @throws JsonException If parsing or input fails
      */
-    public static <T> T parse(File file, Class<T> type) throws JsonException {
-        return parse(file).toJavaObject(type);
+    public static <T> Optional<T> parse(File file, Class<T> type) throws JsonException {
+        java.util.Objects.requireNonNull(type, "type");
+        return Optional.ofNullable(parse(file).toJavaObject(type));
     }
 
     /**
@@ -94,12 +97,13 @@ public class Json {
      * @param type The type descriptor
      * @param mode Parsing mode defining the allowed JSON syntax
      * @param <T> The type
-     * @return Converted value; JSON null maps to null for reference types
+     * @return Converted value, or empty for JSON null and a reference target
      * @throws JsonException If parsing or input fails
      */
-    public static <T> T parse(String source, Class<T> type, JsonParsingMode mode)
+    public static <T> Optional<T> parse(String source, Class<T> type, JsonParsingMode mode)
             throws JsonException {
-        return parse(source, mode).toJavaObject(type);
+        java.util.Objects.requireNonNull(type, "type");
+        return Optional.ofNullable(parse(source, mode).toJavaObject(type));
     }
 
     /**
@@ -109,11 +113,13 @@ public class Json {
      * @param type The type descriptor
      * @param mode Parsing mode defining the allowed JSON syntax
      * @param <T> The type
-     * @return Converted value; JSON null maps to null for reference types
+     * @return Converted value, or empty for JSON null and a reference target
      * @throws JsonException If parsing or input fails
      */
-    public static <T> T parse(File file, Class<T> type, JsonParsingMode mode) throws JsonException {
-        return parse(file, mode).toJavaObject(type);
+    public static <T> Optional<T> parse(File file, Class<T> type, JsonParsingMode mode)
+            throws JsonException {
+        java.util.Objects.requireNonNull(type, "type");
+        return Optional.ofNullable(parse(file, mode).toJavaObject(type));
     }
 
     /**

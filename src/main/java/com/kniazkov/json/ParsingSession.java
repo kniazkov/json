@@ -134,7 +134,7 @@ final class ParsingSession {
         }
         char bracket = container instanceof JsonArray ? ']' : '}';
         if (token instanceof TokenEnd) {
-            if (container.parent() != null) {
+            if (container.parent().isPresent()) {
                 throw new JsonException(new JsonError.UnexpectedEnd(token.location()));
             }
             recover(new JsonError.MissingClosingBracket(token.location(), bracket));

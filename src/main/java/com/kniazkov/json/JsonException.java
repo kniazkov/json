@@ -25,7 +25,7 @@ public final class JsonException extends Exception {
      */
     public JsonException(JsonError error, Throwable cause) {
         super(cause);
-        this.error = error;
+        this.error = java.util.Objects.requireNonNull(error, "error");
     }
 
     /**
@@ -46,7 +46,7 @@ public final class JsonException extends Exception {
     @Override
     public String getLocalizedMessage() {
         JsonLocation loc = error.location();
-        String lang = System.getProperty("user.language");
+        String lang = System.getProperty("user.language", "en");
         return loc + ", " + error.localizedMessage(lang);
     }
 }

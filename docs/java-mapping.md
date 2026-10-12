@@ -17,7 +17,7 @@ inside several containers, with a path to the failing element.
 | Java value → tree | `JsonParser.parseJavaObject(value)` |
 | Tree → natural Java values | `tree.toJavaObject()` |
 | Tree → explicit class | `tree.toJavaObject(Target.class)` |
-| Text → explicit class | `Json.parse(text, Target.class)`, optionally with a mode |
+| Text → explicit class | `Json.parse(text, Target.class).orElseThrow()`, optionally with a mode |
 | Tree → generic root type | `tree.toJavaObject(new JsonType<...>() {})` |
 
 When serializing an existing tree, pass it directly to `Json.serialize` or
@@ -35,7 +35,7 @@ class Telescope {
 }
 Telescope telescope = Json.parse("""
         {"exposure-ms":250,"target":"M31","filters":["red","green"]}
-        """, Telescope.class, JsonParsingMode.STRICT);
+        """, Telescope.class, JsonParsingMode.STRICT).orElseThrow();
 assert telescope.exposure == 250;
 assert telescope.filters.equals(List.of("red", "green"));
 JsonObject tree = JsonParser.parseJavaObject(telescope).objectValueOrThrow();
@@ -74,15 +74,15 @@ do not use POJO field order as a wire-format contract.
 ## Arrays, including primitive arrays
 
 ```java
-int[][] rows = Json.parse("[[1,2],null,[],[3]]", int[][].class);
+int[][] rows = Json.parse("[[1,2],null,[],[3]]", int[][].class).orElseThrow();
 assert Arrays.equals(rows[0], new int[] {1, 2});
 assert rows[1] == null;
 assert rows[2].length == 0;
 assert Json.serialize(rows).equals("[[1, 2], null, [], [3]]");
 
-Character[] letters = Json.parse("['A',null,'Б']", Character[].class);
+Character[] letters = Json.parse("['A',null,'Б']", Character[].class).orElseThrow();
 assert letters[1] == null;
-byte[] bytes = Json.parse("[-128,0,127]", byte[].class);
+byte[] bytes = Json.parse("[-128,0,127]", byte[].class).orElseThrow();
 assert bytes[0] == -128;
 ```
 
@@ -97,13 +97,13 @@ not implicit Base64.
 
 ```java
 try {
-    Json.parse("[1,null,2]", int[].class);
+    Json.parse("[1,null,2]", int[].class).orElseThrow();
     throw new AssertionError("A primitive slot cannot hold null");
 } catch (JsonDataException expected) {
     assert expected.getMessage().contains("$[1]");
 }
 try {
-    Json.parse("['😀']", char[].class);
+    Json.parse("['😀']", char[].class).orElseThrow();
     throw new AssertionError("A surrogate pair is not one char");
 } catch (JsonDataException expected) {
     assert expected.getMessage().contains("$[0]");
@@ -144,7 +144,7 @@ class Catalog {
     List<Integer>[] batches;
 }
 Catalog catalog = Json.parse("{measurements:{a:[[1,2]]},batches:[[3,null],[]]}",
-        Catalog.class);
+        Catalog.class).orElseThrow();
 assert catalog.measurements.get("a").get(0)[1] == 2;
 assert catalog.batches[0].get(1) == null;
 ```
@@ -200,7 +200,7 @@ class Preferences {
     List<Integer> samples = new ArrayList<>();
 }
 Preferences preferences = Json.parse("{retries:'many',samples:[1,'bad',3]}",
-        Preferences.class);
+        Preferences.class).orElseThrow();
 assert preferences.retries == 3;
 assert preferences.samples == null; // The whole field, not just the invalid element.
 ```
@@ -236,8 +236,8 @@ payload.put("id", new BigInteger("18446744073709551616"));
 payload.put("samples", new int[] {3, 5, 8});
 payload.put("note", null);
 JsonObject tree = JsonParser.parseJavaObject(payload).objectValueOrThrow();
-assert tree.element("id").numberValueOrThrow().equals(payload.get("id"));
-assert tree.element("note").isNull();
+assert tree.element("id").orElseThrow().numberValueOrThrow().equals(payload.get("id"));
+assert tree.element("note").orElseThrow().isNull();
 ```
 
 Cycles are errors, but reusing an object in separate branches is allowed:
@@ -259,3 +259,21 @@ Cycle detection uses object identity on the active ancestor path. Mapping and
 serialization use explicit work stacks, so ordinary document depth does not
 consume a Java call stack per level. Memory, constructors and user-defined
 collection implementations retain their own limits.
+
+## Absent root values
+
+Typed `Json.parse(textOrFile, Target.class)` returns `Optional<T>`. JSON `null`
+produces an empty optional for a supported reference target; a primitive target
+still rejects it. A successful non-null conversion produces a present optional.
+The same rules apply to the overloads accepting a syntax mode.
+
+```java
+assert Json.parse("null", String.class).isEmpty();
+String title = Json.parse("null", String.class).orElse("Untitled");
+assert title.equals("Untitled");
+assert Json.parse("null").toJavaObject(String.class) == null;
+```
+
+`toJavaObject` deliberately returns ordinary Java values, including Java null.
+Nulls inside Java arrays, lists, maps and POJO fields remain ordinary nulls;
+only the typed parse result is wrapped in an optional.

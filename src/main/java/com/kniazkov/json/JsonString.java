@@ -25,7 +25,7 @@ public final class JsonString extends JsonElement {
      */
     JsonString(JsonContainer parent, String value) {
         super(parent);
-        this.value = value;
+        this.value = java.util.Objects.requireNonNull(value, "value");
     }
 
     @Override

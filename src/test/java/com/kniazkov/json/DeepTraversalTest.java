@@ -23,12 +23,12 @@ public class DeepTraversalTest {
     }
 
     private JsonElement arrayLeaf(JsonElement root, int depth) {
-        Assert.assertNull(root.parent());
+        Assert.assertTrue(root.parent().isEmpty());
         for (int i = 0; i < depth; i++) {
             JsonArray array = root.arrayValueOrThrow();
             Assert.assertEquals(1, array.size());
             JsonElement child = array.get(0);
-            Assert.assertSame(array, child.parent());
+            Assert.assertSame(array, child.parent().orElseThrow());
             root = child;
         }
         return root;
@@ -69,9 +69,9 @@ public class DeepTraversalTest {
         JsonElement current = copy;
         for (int i = 0; i < depth; i++) {
             JsonElement array = current.objectValueOrThrow().get("child");
-            Assert.assertSame(current, array.parent());
+            Assert.assertSame(current, array.parent().orElseThrow());
             current = array.arrayValueOrThrow().get(0);
-            Assert.assertSame(array, current.parent());
+            Assert.assertSame(array, current.parent().orElseThrow());
             natural = ((List<?>) ((Map<?, ?>) natural).get("child")).get(0);
         }
         Assert.assertTrue(current.booleanValue());
@@ -100,13 +100,13 @@ public class DeepTraversalTest {
         JsonElement original = Json.parse(arrays(DEPTH));
         JsonArray array = new JsonArray();
         array.add(original);
-        Assert.assertSame(array, array.get(0).parent());
+        Assert.assertSame(array, array.get(0).parent().orElseThrow());
         Assert.assertEquals(original.toString(), array.get(0).toString());
         JsonObject object = new JsonObject();
         object.put("deep", original);
         object.entrySet().iterator().next().setValue(original);
-        Assert.assertSame(object, object.get("deep").parent());
-        Assert.assertNull(original.parent());
+        Assert.assertSame(object, object.get("deep").parent().orElseThrow());
+        Assert.assertTrue(original.parent().isEmpty());
         Assert.assertNotSame(original, object.get("deep"));
     }
 
@@ -142,7 +142,7 @@ public class DeepTraversalTest {
     @Test
     public void deepPojoMappingAndSerializationUseHeapContinuations() throws Exception {
         String input = "{\"next\":".repeat(DEPTH) + "null" + "}".repeat(DEPTH);
-        Node root = Json.parse(input, Node.class);
+        Node root = Json.parse(input, Node.class).orElseThrow();
         int count = 0;
         for (Node node = root; node != null; node = node.next) {
             count++;
@@ -162,7 +162,7 @@ public class DeepTraversalTest {
     public void deepTypedListFieldsMapRecursivelyWithoutRecursion() throws Exception {
         int depth = DEPTH / 2;
         String input = "{\"children\":[".repeat(depth) + "{\"children\":null}" + "]}".repeat(depth);
-        ListNode node = Json.parse(input, ListNode.class);
+        ListNode node = Json.parse(input, ListNode.class).orElseThrow();
         for (int i = 0; i < depth; i++) {
             Assert.assertEquals(1, node.children.size());
             node = node.children.get(0);
@@ -182,10 +182,14 @@ public class DeepTraversalTest {
     public void deepErrorsHaveFullPathsAndUnwindToTheCorrectFallback() throws Exception {
         String invalid = "{\"next\":".repeat(DEPTH) + "{\"count\":1.5}" + "}".repeat(DEPTH);
         JsonDataException error =
-                Assert.assertThrows(JsonDataException.class, () -> Json.parse(invalid, Node.class));
+                Assert.assertThrows(
+                        JsonDataException.class,
+                        () -> Json.parse(invalid, Node.class).orElseThrow());
         Assert.assertTrue(
                 error.getMessage().startsWith("$" + "[\"next\"]".repeat(DEPTH) + "[\"count\"]:"));
-        Fallback value = Json.parse("{keep:" + invalid + ",clear:" + invalid + "}", Fallback.class);
+        Fallback value =
+                Json.parse("{keep:" + invalid + ",clear:" + invalid + "}", Fallback.class)
+                        .orElseThrow();
         Assert.assertNotNull(value.keep);
         Assert.assertNull(value.keep.next);
         Assert.assertNull(value.clear);
@@ -288,8 +292,9 @@ public class DeepTraversalTest {
     public void failedChildrenDoNotLeakIntoSiblingsOrPartialLists() throws Exception {
         Boundary value =
                 Json.parse(
-                        "{keep:[{count:1},{count:'bad'}],clear:[{count:2},{count:'bad'}],after:9}",
-                        Boundary.class);
+                                "{keep:[{count:1},{count:'bad'}],clear:[{count:2},{count:'bad'}],after:9}",
+                                Boundary.class)
+                        .orElseThrow();
         Assert.assertEquals(1, value.keep.size());
         Assert.assertEquals(0, value.keep.get(0).count);
         Assert.assertNull(value.clear);
@@ -313,10 +318,12 @@ public class DeepTraversalTest {
 
     @Test
     public void nearestApplicablePolicyHandlesTheError() throws Exception {
-        OuterPolicy handled = Json.parse("{child:{count:'bad'},after:3}", OuterPolicy.class);
+        OuterPolicy handled =
+                Json.parse("{child:{count:'bad'},after:3}", OuterPolicy.class).orElseThrow();
         Assert.assertEquals(7, handled.child.count);
         Assert.assertEquals(3, handled.after);
-        OuterPolicy escalated = Json.parse("{child:{required:null},after:4}", OuterPolicy.class);
+        OuterPolicy escalated =
+                Json.parse("{child:{required:null},after:4}", OuterPolicy.class).orElseThrow();
         Assert.assertNull(escalated.child);
         Assert.assertEquals(4, escalated.after);
     }

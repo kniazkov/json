@@ -17,7 +17,7 @@ public final class JsonDataException extends RuntimeException {
      * @param message Description of the expected format and actual data type
      */
     public JsonDataException(String message) {
-        super(message);
+        super(java.util.Objects.requireNonNull(message, "message"));
     }
 
     /**
@@ -27,6 +27,6 @@ public final class JsonDataException extends RuntimeException {
      * @param cause Underlying conversion or reflection failure
      */
     public JsonDataException(String message, Throwable cause) {
-        super(message, cause);
+        super(java.util.Objects.requireNonNull(message, "message"), cause);
     }
 }

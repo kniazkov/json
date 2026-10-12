@@ -44,6 +44,7 @@ public class StrictStringSyntaxTest {
                     Json.parse("{" + text + ":1}", STRICT)
                             .objectValueOrThrow()
                             .element(expected)
+                            .orElseThrow()
                             .intValue());
         }
         Assert.assertEquals(
@@ -93,20 +94,24 @@ public class StrictStringSyntaxTest {
     @Test
     public void numericIssueSixRegressionsStayFixed() throws Exception {
         for (String number : new String[] {"0e0", "0E+1", "-0e-1"}) {
-            Assert.assertEquals(0, Json.parse(number, STRICT).decimalValue().signum());
+            Assert.assertEquals(
+                    0, Json.parse(number, STRICT).decimalValue().orElseThrow().signum());
             Assert.assertEquals(
                     0,
                     Json.parse("[" + number + "]", STRICT)
                             .arrayValueOrThrow()
                             .get(0)
                             .decimalValue()
+                            .orElseThrow()
                             .signum());
             Assert.assertEquals(
                     0,
                     Json.parse("{\"x\":" + number + "}", STRICT)
                             .objectValueOrThrow()
                             .element("x")
+                            .orElseThrow()
                             .decimalValue()
+                            .orElseThrow()
                             .signum());
         }
         for (String number : new String[] {"01", "-01", "00", "01.2", "01e2"}) {

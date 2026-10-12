@@ -3,6 +3,8 @@
  */
 package com.kniazkov.json;
 
+import java.util.Optional;
+
 /** JSON5 not-a-number value. Its textual representation is not strict JSON. */
 public final class JsonNaN extends JsonNumber {
     /** Creates a root NaN value. */
@@ -20,8 +22,8 @@ public final class JsonNaN extends JsonNumber {
     }
 
     @Override
-    public Double numberValue() {
-        return Double.NaN;
+    public Optional<Number> numberValue() {
+        return Optional.of(Double.NaN);
     }
 
     @Override

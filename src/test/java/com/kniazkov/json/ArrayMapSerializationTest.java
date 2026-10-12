@@ -26,7 +26,7 @@ public class ArrayMapSerializationTest {
     }
 
     private void assertParents(JsonElement value, JsonContainer parent) {
-        Assert.assertSame(parent, value.parent());
+        Assert.assertSame(parent, value.parent().orElse(null));
         if (value instanceof JsonArray array) {
             for (JsonElement item : array) {
                 assertParents(item, array);
@@ -93,10 +93,11 @@ public class ArrayMapSerializationTest {
                         .arrayValueOrThrow();
         Assert.assertEquals(4, array.size());
         JsonObject holder = array.get(0).objectValueOrThrow();
-        Assert.assertEquals("[1, 2]", holder.element("numbers").toString());
+        Assert.assertEquals("[1, 2]", holder.element("numbers").orElseThrow().toString());
         Assert.assertEquals(
-                "{\"items\": [{\"value\": 7}, null]}", holder.element("properties").toString());
-        Assert.assertEquals("z", holder.element("character").stringValue());
+                "{\"items\": [{\"value\": 7}, null]}",
+                holder.element("properties").orElseThrow().toString());
+        Assert.assertEquals("z", holder.element("character").orElseThrow().stringValue());
         Assert.assertTrue(array.get(1).isNull());
         Assert.assertEquals("[]", serialize(new String[0]).toString());
         Assert.assertEquals("null", serialize(null).toString());
@@ -120,10 +121,11 @@ public class ArrayMapSerializationTest {
         map.put("nested", Arrays.asList(Map.of("value", new Item()), new boolean[] {true}));
         JsonObject json = serialize(map).objectValueOrThrow();
         Assert.assertEquals(List.of("z", "a\"\n", "nested"), List.copyOf(json.keySet()));
-        Assert.assertEquals("[1, 2]", json.element("z").toString());
-        Assert.assertTrue(json.element("a\"\n").isNull());
+        Assert.assertEquals("[1, 2]", json.element("z").orElseThrow().toString());
+        Assert.assertTrue(json.element("a\"\n").orElseThrow().isNull());
         Assert.assertEquals(
-                "[{\"value\": {\"value\": 7}}, [true]]", json.element("nested").toString());
+                "[{\"value\": {\"value\": 7}}, [true]]",
+                json.element("nested").orElseThrow().toString());
         for (Map<String, Integer> value :
                 List.of(
                         new HashMap<String, Integer>(),

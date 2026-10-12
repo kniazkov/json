@@ -416,13 +416,13 @@ final class JsonMapper {
             throw mismatch(value, type, path);
         }
         if (type == Number.class) {
-            return value.numberValue();
+            return value.numberValueOrThrow();
         }
         if (type == float.class || type == Float.class) {
-            float result = value.numberValue().floatValue();
+            float result = value.numberValueOrThrow().floatValue();
             if (value.isFinite()
                     && (!Float.isFinite(result)
-                            || result == 0 && value.decimalValue().signum() != 0)) {
+                            || result == 0 && value.decimalValueOrThrow().signum() != 0)) {
                 throw mismatch(value, type, path);
             }
             return result;
@@ -431,7 +431,7 @@ final class JsonMapper {
             double result = value.doubleValue();
             if (value.isFinite()
                     && (!Double.isFinite(result)
-                            || result == 0 && value.decimalValue().signum() != 0)) {
+                            || result == 0 && value.decimalValueOrThrow().signum() != 0)) {
                 throw mismatch(value, type, path);
             }
             return result;
@@ -439,7 +439,7 @@ final class JsonMapper {
         if (!value.isFinite()) {
             throw mismatch(value, type, path);
         }
-        BigDecimal decimal = value.decimalValue();
+        BigDecimal decimal = value.decimalValueOrThrow();
         try {
             if (type == BigDecimal.class) {
                 return decimal;

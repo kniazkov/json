@@ -65,9 +65,10 @@ public class JsonObjectTransformationTest {
         try {
             obj =
                     Json.parse(
-                            "{byteValue: 3, shortValue: 5, int: 13,"
-                                    + " longValue: 17, floatValue: 19.01, doubleValue: 23.001}",
-                            Numbers.class);
+                                    "{byteValue: 3, shortValue: 5, int: 13,"
+                                            + " longValue: 17, floatValue: 19.01, doubleValue: 23.001}",
+                                    Numbers.class)
+                            .orElseThrow();
         } catch (JsonException ignored) {
             oops = true;
         }
@@ -122,9 +123,10 @@ public class JsonObjectTransformationTest {
         try {
             obj =
                     Json.parse(
-                            "{byteValue: 3, shortValue: 5, intValue: 13,"
-                                    + " longValue: 17, floatValue: 19.01, doubleValue: 23.001}",
-                            NumbersAsObjects.class);
+                                    "{byteValue: 3, shortValue: 5, intValue: 13,"
+                                            + " longValue: 17, floatValue: 19.01, doubleValue: 23.001}",
+                                    NumbersAsObjects.class)
+                            .orElseThrow();
         } catch (JsonException ignored) {
             oops = true;
         }
@@ -173,7 +175,7 @@ public class JsonObjectTransformationTest {
         Booleans obj = null;
         boolean oops = false;
         try {
-            obj = Json.parse("{primitive: true, object: false}", Booleans.class);
+            obj = Json.parse("{primitive: true, object: false}", Booleans.class).orElseThrow();
         } catch (JsonException ignored) {
             oops = true;
         }
@@ -269,12 +271,14 @@ public class JsonObjectTransformationTest {
         try {
             obj =
                     Json.parse(
-                            "{bytes: [1,2,3], shorts: [1,2,3], integers: [1,2,3], longs: [1,2,3],"
-                                    + "floats: [1.01, 2.02, 3.03], doubles: [1.01,"
-                                    + " 2.02, 3.03], booleans: [true, false],"
-                                    + "strings: ['one','two','three'], generic: ['test', 1], objects: [false, 2], "
-                                    + "vectors: [{x: 1, y: 2}, {x: 3, y: 4}] }",
-                            Lists.class);
+                                    "{bytes: [1,2,3], shorts: [1,2,3], integers: [1,2,3], longs: [1,2,3],"
+                                            + "floats: [1.01, 2.02, 3.03], doubles: [1.01,"
+                                            + " 2.02, 3.03], booleans: [true, false],"
+                                            + "strings: ['one','two','three'], generic: ['test', 1], "
+                                            + "objects: [false, 2], "
+                                            + "vectors: [{x: 1, y: 2}, {x: 3, y: 4}] }",
+                                    Lists.class)
+                            .orElseThrow();
         } catch (JsonException ignored) {
             oops = true;
         }
@@ -378,7 +382,7 @@ public class JsonObjectTransformationTest {
     private static boolean serializeAndThenParse(Object before, Object expectedAfter) {
         try {
             String json = Json.serialize(before);
-            Object actual = Json.parse(json, expectedAfter.getClass());
+            Object actual = Json.parse(json, expectedAfter.getClass()).orElseThrow();
             return expectedAfter.equals(actual);
         } catch (JsonException ignored) {
             return false;
@@ -398,7 +402,7 @@ public class JsonObjectTransformationTest {
         Derived obj = null;
         boolean oops = false;
         try {
-            obj = Json.parse("{alpha: 10, beta: 20}", Derived.class);
+            obj = Json.parse("{alpha: 10, beta: 20}", Derived.class).orElseThrow();
         } catch (JsonException ignored) {
             oops = true;
         }

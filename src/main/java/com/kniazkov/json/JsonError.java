@@ -14,7 +14,7 @@ public abstract class JsonError {
      * @param loc Position in the document where the error was found
      */
     JsonError(JsonLocation loc) {
-        this.loc = loc;
+        this.loc = java.util.Objects.requireNonNull(loc, "loc");
     }
 
     /**
@@ -56,6 +56,7 @@ public abstract class JsonError {
 
         @Override
         public String localizedMessage(String lang) {
+            java.util.Objects.requireNonNull(lang, "lang");
             return "ru".equals(lang)
                     ? "Лишние данные после корневого значения"
                     : "Unexpected content after the root value";
@@ -70,6 +71,7 @@ public abstract class JsonError {
 
         @Override
         public String localizedMessage(String lang) {
+            java.util.Objects.requireNonNull(lang, "lang");
             return "ru".equals(lang) ? "Ожидается корневое значение" : "Expected a root value";
         }
     }
@@ -82,6 +84,7 @@ public abstract class JsonError {
 
         @Override
         public String localizedMessage(String lang) {
+            java.util.Objects.requireNonNull(lang, "lang");
             return "ru".equals(lang) ? "Незакрытый блочный комментарий" : "Unclosed block comment";
         }
     }
@@ -94,6 +97,7 @@ public abstract class JsonError {
 
         @Override
         public String localizedMessage(String lang) {
+            java.util.Objects.requireNonNull(lang, "lang");
             return "ru".equals(lang) ? "Неожиданный конец ввода" : "Unexpected end of input";
         }
     }
@@ -106,6 +110,7 @@ public abstract class JsonError {
 
         @Override
         public String localizedMessage(String lang) {
+            java.util.Objects.requireNonNull(lang, "lang");
             return "ru".equals(lang) ? "Пропущен элемент массива" : "Missing array element";
         }
     }
@@ -121,6 +126,7 @@ public abstract class JsonError {
 
         @Override
         public String localizedMessage(String lang) {
+            java.util.Objects.requireNonNull(lang, "lang");
             return ("ru".equals(lang)
                             ? "Пропущена закрывающая скобка: "
                             : "Missing closing bracket: ")
@@ -136,6 +142,7 @@ public abstract class JsonError {
 
         @Override
         public String localizedMessage(String lang) {
+            java.util.Objects.requireNonNull(lang, "lang");
             return "ru".equals(lang)
                     ? "Неэкранированный разделитель строк или абзацев"
                     : "Unescaped line or paragraph separator";
@@ -150,6 +157,7 @@ public abstract class JsonError {
 
         @Override
         public String localizedMessage(String lang) {
+            java.util.Objects.requireNonNull(lang, "lang");
             return "ru".equals(lang) ? "Ошибка чтения источника" : "Failed to read input";
         }
     }
@@ -167,6 +175,7 @@ public abstract class JsonError {
 
         @Override
         public String localizedMessage(String lang) {
+            java.util.Objects.requireNonNull(lang, "lang");
             if ("ru".equals(lang)) {
                 return "После знака минуса должно быть число";
             }
@@ -187,6 +196,7 @@ public abstract class JsonError {
 
         @Override
         public String localizedMessage(String lang) {
+            java.util.Objects.requireNonNull(lang, "lang");
             if ("ru".equals(lang)) {
                 return "После знака плюса должно быть число";
             }
@@ -207,6 +217,7 @@ public abstract class JsonError {
 
         @Override
         public String localizedMessage(String lang) {
+            java.util.Objects.requireNonNull(lang, "lang");
             if ("ru".equals(lang)) {
                 return "После десятичной точки должно быть число";
             }
@@ -227,6 +238,7 @@ public abstract class JsonError {
 
         @Override
         public String localizedMessage(String lang) {
+            java.util.Objects.requireNonNull(lang, "lang");
             if ("ru".equals(lang)) {
                 return "Неправильный формат экспоненты числа";
             }
@@ -247,6 +259,7 @@ public abstract class JsonError {
 
         @Override
         public String localizedMessage(String lang) {
+            java.util.Objects.requireNonNull(lang, "lang");
             if ("ru".equals(lang)) {
                 return "После 'x' должна быть шестнадцатеричная цифра";
             }
@@ -267,6 +280,7 @@ public abstract class JsonError {
 
         @Override
         public String localizedMessage(String lang) {
+            java.util.Objects.requireNonNull(lang, "lang");
             if ("ru".equals(lang)) {
                 return "Неправильный формат числа";
             }
@@ -292,6 +306,7 @@ public abstract class JsonError {
 
         @Override
         public String localizedMessage(String lang) {
+            java.util.Objects.requireNonNull(lang, "lang");
             if ("ru".equals(lang)) {
                 return "Недопустимый символ: '" + ch + '\'';
             }
@@ -312,6 +327,7 @@ public abstract class JsonError {
 
         @Override
         public String localizedMessage(String lang) {
+            java.util.Objects.requireNonNull(lang, "lang");
             if ("ru".equals(lang)) {
                 return "После запятой должен быть элемент";
             }
@@ -332,6 +348,7 @@ public abstract class JsonError {
 
         @Override
         public String localizedMessage(String lang) {
+            java.util.Objects.requireNonNull(lang, "lang");
             if ("ru".equals(lang)) {
                 return "Пропущена закрывающая кавычка";
             }
@@ -357,6 +374,7 @@ public abstract class JsonError {
 
         @Override
         public String localizedMessage(String lang) {
+            java.util.Objects.requireNonNull(lang, "lang");
             if ("ru".equals(lang)) {
                 return "Неправильная строковая последовательность: '\\" + sequence + '\'';
             }
@@ -377,6 +395,7 @@ public abstract class JsonError {
 
         @Override
         public String localizedMessage(String lang) {
+            java.util.Objects.requireNonNull(lang, "lang");
             if ("ru".equals(lang)) {
                 return "После запятой должна быть пара ключ:значение";
             }
@@ -397,6 +416,7 @@ public abstract class JsonError {
 
         @Override
         public String localizedMessage(String lang) {
+            java.util.Objects.requireNonNull(lang, "lang");
             if ("ru".equals(lang)) {
                 return "Ожидается ключ (строка)";
             }
@@ -417,6 +437,7 @@ public abstract class JsonError {
 
         @Override
         public String localizedMessage(String lang) {
+            java.util.Objects.requireNonNull(lang, "lang");
             if ("ru".equals(lang)) {
                 return "После ключа должно быть двоеточие в качестве разделителя";
             }
@@ -437,6 +458,7 @@ public abstract class JsonError {
 
         @Override
         public String localizedMessage(String lang) {
+            java.util.Objects.requireNonNull(lang, "lang");
             if ("ru".equals(lang)) {
                 return "После разделителя должен быть элемент";
             }
@@ -457,6 +479,7 @@ public abstract class JsonError {
 
         @Override
         public String localizedMessage(String lang) {
+            java.util.Objects.requireNonNull(lang, "lang");
             if ("ru".equals(lang)) {
                 return "Пропущена запятая";
             }
@@ -482,6 +505,7 @@ public abstract class JsonError {
 
         @Override
         public String localizedMessage(String lang) {
+            java.util.Objects.requireNonNull(lang, "lang");
             if ("ru".equals(lang)) {
                 return String.format(
                         "Неправильная последовательность, начинающаяся с токена '%s'",

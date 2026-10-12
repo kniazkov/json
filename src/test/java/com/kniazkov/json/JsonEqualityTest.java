@@ -188,7 +188,7 @@ public class JsonEqualityTest {
         JsonNumber source = JsonNumber.of(7);
         array.replaceAll(value -> source);
         for (JsonElement value : array) {
-            Assert.assertSame(array, value.parent());
+            Assert.assertSame(array, value.parent().orElseThrow());
             Assert.assertNotSame(source, value);
         }
         Assert.assertNotSame(array.get(0), array.get(1));
@@ -201,7 +201,7 @@ public class JsonEqualityTest {
         Assert.assertEquals("[1]", array.toString());
         array.replaceAll(value -> array); // finite snapshot; no ownership cycle
         Assert.assertEquals("[[1]]", array.toString());
-        Assert.assertSame(array, array.get(0).parent());
+        Assert.assertSame(array, array.get(0).parent().orElseThrow());
     }
 
     @Test

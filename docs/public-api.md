@@ -17,7 +17,7 @@ classDiagram
     direction TB
     class JsonElement {
         <<abstract>>
-        +parent() JsonContainer
+        +parent() Optional~JsonContainer~
         +clone() JsonElement
         +toJavaObject() Object
         +toString() String
@@ -30,7 +30,7 @@ classDiagram
         <<abstract>>
     }
     class JsonObject {
-        +element(String) JsonElement
+        +element(String) Optional~JsonElement~
         +createArray(String) JsonArray
         +createObject(String) JsonObject
     }
@@ -100,6 +100,7 @@ classDiagram
     direction TB
     class Json {
         +parse(...) JsonElement
+        +parse(input, Class) Optional
         +serialize(...) String
     }
     class JsonParser {

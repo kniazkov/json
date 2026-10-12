@@ -175,7 +175,7 @@ public class RootTailTest {
     public void everyInputPathChecksTheTailAndPreservesNames() throws Exception {
         Assert.assertThrows(
                 JsonException.class,
-                () -> Json.parse("42 false", Integer.class, JsonParsingMode.STRICT));
+                () -> Json.parse("42 false", Integer.class, JsonParsingMode.STRICT).orElseThrow());
         JsonException reader =
                 Assert.assertThrows(
                         JsonException.class,
@@ -198,7 +198,9 @@ public class RootTailTest {
             JsonException error =
                     Assert.assertThrows(
                             JsonException.class,
-                            () -> Json.parse(file.toFile(), Integer.class, JsonParsingMode.STRICT));
+                            () ->
+                                    Json.parse(file.toFile(), Integer.class, JsonParsingMode.STRICT)
+                                            .orElseThrow());
             Assert.assertEquals(file + ", 1:4", error.error().location().toString());
             Assert.assertEquals(42, Json.parse(file.toFile()).intValue());
         } finally {

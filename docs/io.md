@@ -26,8 +26,8 @@ JsonParser parser = new JsonParser()
         .setCollectWarnings(true);
 JsonObject first = parser.parse("{target:'M31'}").objectValueOrThrow();
 JsonObject second = parser.parse("{target:'M42'}").objectValueOrThrow();
-assert first.element("target").stringValueOrThrow().equals("M31");
-assert second.element("target").stringValueOrThrow().equals("M42");
+assert first.element("target").orElseThrow().stringValueOrThrow().equals("M31");
+assert second.element("target").orElseThrow().stringValueOrThrow().equals("M42");
 ```
 
 Setters return the same instance. Parser and serializer instances are reusable but
@@ -66,7 +66,7 @@ try {
     new JsonSerializer().setIndentation("  ").serialize(Map.of("target", "M31"), file);
     JsonObject value = new JsonParser().setMode(JsonParsingMode.STRICT)
             .parse(file).objectValueOrThrow();
-    assert value.element("target").stringValueOrThrow().equals("M31");
+    assert value.element("target").orElseThrow().stringValueOrThrow().equals("M31");
 } finally {
     Files.deleteIfExists(path);
 }
@@ -92,7 +92,7 @@ new JsonSerializer().setCharset(cp1251).serialize(Map.of("город", "Моск
 JsonObject value = new JsonParser().setCharset(cp1251)
         .setMode(JsonParsingMode.STRICT)
         .parse(new ByteArrayInputStream(bytes.toByteArray())).objectValueOrThrow();
-assert value.element("город").stringValueOrThrow().equals("Москва");
+assert value.element("город").orElseThrow().stringValueOrThrow().equals("Москва");
 ```
 
 Charset settings apply only to bytes. They do not reinterpret a String or change
@@ -146,7 +146,7 @@ ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 writer.serialize(Map.of("target", "Луна 😀"), bytes);
 String ascii = bytes.toString(StandardCharsets.US_ASCII);
 assert ascii.chars().allMatch(ch -> ch < 128);
-assert Json.parse(ascii).objectValueOrThrow().element("target")
+assert Json.parse(ascii).objectValueOrThrow().element("target").orElseThrow()
         .stringValueOrThrow().equals("Луна 😀");
 ```
 

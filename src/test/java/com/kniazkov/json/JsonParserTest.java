@@ -323,7 +323,7 @@ public class JsonParserTest {
         }
         Assert.assertFalse(oops);
         Assert.assertNotNull(elem);
-        JsonArray array = elem.toJsonArray();
+        JsonArray array = elem.toJsonArray().orElseThrow();
         Assert.assertNotNull(array);
         Assert.assertEquals(0, array.size());
     }
@@ -339,7 +339,7 @@ public class JsonParserTest {
         }
         Assert.assertFalse(oops);
         Assert.assertNotNull(elem);
-        JsonArray array = elem.toJsonArray();
+        JsonArray array = elem.toJsonArray().orElseThrow();
         Assert.assertNotNull(array);
         Assert.assertEquals(3, array.size());
         Assert.assertEquals("[1, 2, 3]", array.toString());
@@ -447,7 +447,7 @@ public class JsonParserTest {
         }
         Assert.assertFalse(oops);
         Assert.assertNotNull(elem);
-        JsonObject obj = elem.toJsonObject();
+        JsonObject obj = elem.toJsonObject().orElseThrow();
         Assert.assertNotNull(obj);
         Assert.assertEquals(0, obj.size());
     }

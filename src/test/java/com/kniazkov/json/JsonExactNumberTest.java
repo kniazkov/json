@@ -87,7 +87,7 @@ public class JsonExactNumberTest {
         }
         Assert.assertEquals("42.0", JsonNumber.of(new BigDecimal("42")).toString());
         Assert.assertTrue(
-                Json.parse("[0e1]", JsonParsingMode.STRICT).toJsonArray().get(0)
+                Json.parse("[0e1]", JsonParsingMode.STRICT).toJsonArray().orElseThrow().get(0)
                         instanceof JsonReal);
     }
 
@@ -189,14 +189,14 @@ public class JsonExactNumberTest {
         object.addNumber("double", 1.0);
         array.addElement(object);
         JsonArray copy = (JsonArray) array.clone();
-        Assert.assertNull(copy.parent());
+        Assert.assertTrue(copy.parent().isEmpty());
         Assert.assertEquals(array.toString(), copy.toString());
         for (int i = 0; i < copy.size(); i++) {
-            Assert.assertSame(copy, copy.get(i).parent());
+            Assert.assertSame(copy, copy.get(i).parent().orElseThrow());
             Assert.assertNotSame(array.get(i), copy.get(i));
         }
-        JsonObject nested = copy.get(5).toJsonObject();
-        Assert.assertSame(nested, nested.get("integer").parent());
+        JsonObject nested = copy.get(5).toJsonObject().orElseThrow();
+        Assert.assertSame(nested, nested.get("integer").parent().orElseThrow());
         Assert.assertEquals(integer, nested.get("integer").toJavaObject(BigInteger.class));
         Assert.assertEquals(real, nested.get("real").toJavaObject(BigDecimal.class));
         Assert.assertEquals(9007199254740993L, copy.get(0).longValue());
@@ -204,8 +204,8 @@ public class JsonExactNumberTest {
                 array.toString(), Json.parse(array.toString(), JsonParsingMode.STRICT).toString());
         Assert.assertTrue(copy.get(0) instanceof JsonInteger);
         Assert.assertTrue(copy.get(2) instanceof JsonReal);
-        Assert.assertNull(copy.get(0).clone().parent());
-        Assert.assertNull(copy.get(2).clone().parent());
+        Assert.assertTrue(copy.get(0).clone().parent().isEmpty());
+        Assert.assertTrue(copy.get(2).clone().parent().isEmpty());
     }
 
     static class Values {
@@ -226,7 +226,9 @@ public class JsonExactNumberTest {
         before.real = new BigDecimal("0.12345678901234567890");
         before.integers = Arrays.asList(before.integer, null);
         before.reals = Arrays.asList(before.real, null);
-        Values after = Json.parse(Json.serialize(before), Values.class, JsonParsingMode.STRICT);
+        Values after =
+                Json.parse(Json.serialize(before), Values.class, JsonParsingMode.STRICT)
+                        .orElseThrow();
         Assert.assertEquals(before.id, after.id);
         Assert.assertEquals(before.boxed, after.boxed);
         Assert.assertEquals(before.integer, after.integer);
@@ -234,8 +236,11 @@ public class JsonExactNumberTest {
         Assert.assertEquals(before.integers, after.integers);
         Assert.assertEquals(before.reals, after.reals);
         Assert.assertEquals(
-                before.integer, Json.parse(Json.serialize(before.integer), BigInteger.class));
-        Assert.assertEquals(before.real, Json.parse(Json.serialize(before.real), BigDecimal.class));
+                before.integer,
+                Json.parse(Json.serialize(before.integer), BigInteger.class).orElseThrow());
+        Assert.assertEquals(
+                before.real,
+                Json.parse(Json.serialize(before.real), BigDecimal.class).orElseThrow());
     }
 
     @Test
@@ -249,14 +254,16 @@ public class JsonExactNumberTest {
             BigDecimal real = new BigDecimal(integer, random.nextInt(101) - 50);
             Assert.assertEquals(
                     integer,
-                    Json.parse(Json.serialize(integer), BigInteger.class, JsonParsingMode.STRICT));
+                    Json.parse(Json.serialize(integer), BigInteger.class, JsonParsingMode.STRICT)
+                            .orElseThrow());
             Assert.assertEquals(
                     0,
                     real.compareTo(
                             Json.parse(
-                                    Json.serialize(real),
-                                    BigDecimal.class,
-                                    JsonParsingMode.STRICT)));
+                                            Json.serialize(real),
+                                            BigDecimal.class,
+                                            JsonParsingMode.STRICT)
+                                    .orElseThrow()));
         }
     }
 }
