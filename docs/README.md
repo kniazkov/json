@@ -21,6 +21,8 @@ strictness. This library lets you choose the right one without changing your dat
 10. [Development](development.md): builds, examples, style checks and tests.
 11. [Publishing](publishing.md): signed releases and Maven Central.
 
+For fluent construction, see [Builders](builders.md): nested documents in one expression.
+
 ## Three decisions, not dozens
 
 | Decision | A practical starting point |
