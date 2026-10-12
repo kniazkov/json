@@ -4,15 +4,11 @@
 package com.kniazkov.json;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.nio.charset.Charset;
-import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 
 /**
  * Class that combines all methods for parsing and serialising JSON documents.
@@ -64,8 +60,7 @@ public class Json {
      * Parses a JSON document, represented as a string, into Java object of specified type.
      * @param source JSON document
      * @param type The type descriptor
-     * @return Object containing parsed data or {@code null} if document can't be represented
-     *   as an object of specified type
+     * @return Converted value; JSON null maps to null for reference types
      * @param <T> The type
      * @throws JsonException If parsing or input fails
      */
@@ -77,8 +72,7 @@ public class Json {
      * Parses a JSON document from a file into Java object of specified type.
      * @param file File containing JSON document
      * @param type The type descriptor
-     * @return Object containing parsed data or {@code null} if the document cannot be represented
-     *   as an object of specified type
+     * @return Converted value; JSON null maps to null for reference types
      * @param <T> The type
      * @throws JsonException If parsing or input fails
      */
@@ -91,8 +85,7 @@ public class Json {
      * @param source JSON document
      * @param type The type descriptor
      * @param mode Parsing mode defining the allowed JSON syntax
-     * @return Object containing parsed data or {@code null} if document can't be represented
-     *   as an object of specified type
+     * @return Converted value; JSON null maps to null for reference types
      * @param <T> The type
      * @throws JsonException If parsing or input fails
      */
@@ -105,8 +98,7 @@ public class Json {
      * @param file File containing JSON document
      * @param type The type descriptor
      * @param mode Parsing mode defining the allowed JSON syntax
-     * @return Object containing parsed data or {@code null} if the document cannot be represented
-     *   as an object of specified type
+     * @return Converted value; JSON null maps to null for reference types
      * @param <T> The type
      * @throws JsonException If parsing or input fails
      */
@@ -158,7 +150,7 @@ public class Json {
      */
     public static JsonElement parse(Reader reader, String sourceName, JsonParsingMode mode)
             throws JsonException {
-        return JsonParser.parseSource(new Source(reader, sourceName), mode);
+        return new JsonParser().setMode(mode).setSourceName(sourceName).parse(reader);
     }
 
     /**
@@ -207,7 +199,7 @@ public class Json {
      */
     public static JsonElement parse(InputStream stream, String sourceName, Charset charset,
             JsonParsingMode mode) throws JsonException {
-        return parse(decodingReader(stream, charset), sourceName, mode);
+        return new JsonParser().setMode(mode).setCharset(charset).setSourceName(sourceName).parse(stream);
     }
 
     /**
@@ -221,25 +213,7 @@ public class Json {
      */
     public static JsonElement parse(File file, Charset charset, JsonParsingMode mode)
             throws JsonException {
-        // Validate the decoder before opening the file, so invalid arguments cannot leak a handle.
-        var decoder = charset.newDecoder().onMalformedInput(CodingErrorAction.REPORT)
-                .onUnmappableCharacter(CodingErrorAction.REPORT);
-        String sourceName = file.getPath();
-        Source source = null;
-        try (Reader reader = new InputStreamReader(Files.newInputStream(file.toPath()), decoder)) {
-            source = new Source(reader, sourceName);
-            return JsonParser.parseSource(source, mode);
-        } catch (IOException cause) {
-            JsonLocation loc = source == null ? new JsonLocation(1, 1, sourceName) : source.location();
-            throw new JsonException(new JsonError.InputFailure(loc), cause);
-        }
-    }
-
-    /** Creates a decoder that never silently replaces malformed or unmappable bytes. */
-    private static Reader decodingReader(InputStream stream, Charset charset) {
-        return new InputStreamReader(stream, charset.newDecoder()
-                .onMalformedInput(CodingErrorAction.REPORT)
-                .onUnmappableCharacter(CodingErrorAction.REPORT));
+        return new JsonParser().setMode(mode).setCharset(charset).parse(file);
     }
 
     /**
@@ -248,7 +222,7 @@ public class Json {
      * @return String containing JSON document
      */
     public static String serialize(Object obj) {
-        return JsonParser.parseJavaObject(obj).toString();
+        return new JsonSerializer().serialize(obj);
     }
 
     /**
@@ -259,6 +233,6 @@ public class Json {
      * @return String containing JSON document
      */
     public static String serialize(Object obj, String indentation) {
-        return JsonParser.parseJavaObject(obj).toText(indentation);
+        return new JsonSerializer().setIndentation(indentation).serialize(obj);
     }
 }

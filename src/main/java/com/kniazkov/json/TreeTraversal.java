@@ -93,6 +93,10 @@ final class TreeTraversal {
         }
     }
     static void write(JsonContainer value, StringBuilder out, String indentation, int level) {
+        write(value, out, indentation, level, false);
+    }
+
+    static void write(JsonContainer value, StringBuilder out, String indentation, int level, boolean escapeNonAscii) {
         ArrayDeque<WriteFrame> stack = new ArrayDeque<>();
         stack.push(new WriteFrame(value, indentation, level));
         out.append(value instanceof JsonArray ? '[' : '{');
@@ -115,11 +119,15 @@ final class TreeTraversal {
             }
             frame.first = false;
             var entry = frame.children.next();
-            if (entry.getKey() != null) { out.append('"').append(Utils.escapeEntities(entry.getKey())).append("\": "); }
+            if (entry.getKey() != null) { out.append('"').append(Utils.escapeEntities(entry.getKey(), escapeNonAscii)).append("\": "); }
             if (entry.getValue() instanceof JsonContainer nested) {
                 out.append(nested instanceof JsonArray ? '[' : '{');
                 stack.push(new WriteFrame(nested, indentation, frame.level + 1));
-            } else { out.append(entry.getValue().toString()); }
+            } else {
+                JsonElement leaf = entry.getValue();
+                if (leaf instanceof JsonString) { out.append('"').append(Utils.escapeEntities(leaf.stringValue(), escapeNonAscii)).append('"'); }
+                else { out.append(leaf.toString()); }
+            }
         }
     }
 }

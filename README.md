@@ -1238,6 +1238,93 @@ must reject special nodes before serialization.
 
 Represents a JSON element containing string.
 
+### Configurable parser and serializer
+
+The simple calls remain: `Json.parse(text)` and `Json.serialize(value)`. Existing
+static overloads delegate to the same configurable implementations; advanced options
+no longer require another combination of overloads.
+
+```java
+JsonParser parser = new JsonParser()
+    .setCharset(Charset.forName("windows-1251"))
+    .setMode(JsonParsingMode.STRICT)
+    .setBomPolicy(JsonBomPolicy.ALLOW)
+    .setSourceName("settings")
+    .setCollectWarnings(true);
+JsonElement tree = parser.parse(file);
+MyClass value = tree.toJavaObject(MyClass.class);
+List<JsonError> diagnostics = parser.warnings();
+
+JsonSerializer serializer = new JsonSerializer()
+    .setCharset(StandardCharsets.UTF_8)
+    .setIndentation("  ")
+    .setWriteBom(false)
+    .setEscapeNonAscii(false);
+serializer.serialize(value, file);
+String text = serializer.serialize(value);
+```
+
+Both objects are reusable and are not thread-safe. Setters return `this` and validate
+settings immediately. Each parse creates a fresh internal session. `warnings()` is an
+immutable snapshot of the last call, including warnings collected before a failure;
+old snapshots remain valid. Collection is disabled by default. The legacy static
+`parseString(..., warnings)` still appends to the supplied list without clearing it.
+`setSourceName(null)` restores the file path for files and unnamed input otherwise.
+
+Parser input overloads accept String, Reader, InputStream or File. Serializer accepts
+a Java value or existing JsonElement tree and returns a String, or writes to Writer,
+OutputStream or File. Owned files are closed on success and failure. Borrowed readers,
+writers and streams are never closed; successful output calls flush their destination.
+Input/decoding errors remain JsonException with their original causes; output and
+encoding errors are IOException (including CharacterCodingException). A caller-supplied
+Reader/Writer is responsible for its own decoding/encoding policy.
+
+Defaults are UTF-8, EXTENDED parsing, optional initial BOM, compact output without a
+BOM, and literal non-ASCII text. `setIndentation(null)` selects compact output; an empty
+string selects line breaks without indentation. Non-null indentation may contain only
+JSON whitespace (space, tab, CR, LF). Syntax and non-finite-number behavior are unchanged:
+NaN/Infinity output is JSON5. No automatic numeric or Unicode normalization is performed.
+
+#### Encodings and BOM
+
+Charset applies **only** to byte input/output. It does not reinterpret String/Reader
+input or String/Writer output. All Java-supported decodable/encodable charsets may be
+selected with Charset, including Windows-1251. UTF-8 is always the default, independently
+of `file.encoding`. Library decoders/encoders report malformed and unmappable data;
+they never silently insert replacement characters.
+
+`JsonBomPolicy.ALLOW` accepts one initial BOM, `FORBID` rejects it, and `REQUIRE`
+requires it. Byte input checks UTF-8/UTF-16/UTF-32 signatures **before decoding**, so
+UTF-16 cannot silently consume a forbidden marker. The marker must match the selected
+encoding; there is no general charset auto-detection. Generic UTF-16/UTF-32 select
+endianness from a matching BOM, or use big endian without one. Explicit LE/BE charsets
+reject a conflicting marker. Duplicate initial markers are rejected in every mode.
+
+For String/Reader the policy applies to the first U+FEFF character. If an upstream
+decoder has already consumed a byte BOM, REQUIRE cannot reconstruct it. An accepted
+initial marker is removed before location tracking, so the first document character
+is at 1:1. A BOM later in the document follows the selected syntax's whitespace rules;
+STRICT does not treat U+FEFF as whitespace. U+FEFF inside a quoted string remains data.
+The simple static API now accepts one initial BOM even in STRICT mode.
+
+`setWriteBom(true)` writes exactly one byte marker; false writes none. It has no effect
+on returned strings or Writer output. Generic UTF-16/UTF-32 output uses big endian;
+LE/BE selects the explicit byte order. The library controls BOM emission even for JDK
+BOM-emitting charset aliases. BOM emission with an unsupported encoding (such as
+Windows-1251 or ASCII) is an invalid configuration, rejected by either setter ordering.
+
+`setEscapeNonAscii(true)` escapes non-ASCII UTF-16 code units **in keys and string
+values**, using surrogate-pair escapes for supplementary characters. This permits
+lossless ASCII output, for example an emoji becomes `\ud83d\ude00`. It does not change
+the tree or escape indentation. Raw unpaired surrogates fail byte encoding unless
+escaped; escaping preserves code units and is not Unicode validation.
+
+Serialization currently materializes the JSON text; byte output is fully encoded
+before opening/truncating an owned file or writing a borrowed stream. Encoding failure
+therefore leaves an existing file intact. Later write/flush failures can still leave
+partial output; file output is not an atomic replacement API. Parsing remains buffered
+and sequential, with bounded byte probing and no whole-file string allocation.
+
 ### Input sources and locations (version 2)
 
 Strings, files, readers and byte streams share the same sequential input implementation.

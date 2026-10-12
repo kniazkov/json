@@ -58,6 +58,23 @@ final class Utils {
         }
     }
 
+    /** Escapes each non-ASCII UTF-16 code unit when requested, including surrogate pairs. */
+    static String escapeEntities(String value, boolean nonAscii) {
+        String escaped = escapeEntities(value);
+        if (!nonAscii) { return escaped; }
+        StringBuilder result = new StringBuilder();
+        final String digits = "0123456789abcdef";
+        for (int i = 0; i < escaped.length(); i++) {
+            char ch = escaped.charAt(i);
+            if (ch <= 0x7f) { result.append(ch); }
+            else {
+                result.append('\\').append('u');
+                for (int shift = 12; shift >= 0; shift -= 4) { result.append(digits.charAt((ch >> shift) & 15)); }
+            }
+        }
+        return result.toString();
+    }
+
     /**
      * Escapes entities that are not allowed in a string into special sequences.
      * @param value A string

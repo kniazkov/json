@@ -1,294 +1,157 @@
-/*
- * Copyright (c) 2025 Ivan Kniazkov
- */
+/* Copyright (c) 2026 Ivan Kniazkov */
 package com.kniazkov.json;
 
-import java.util.ArrayDeque;
-import java.util.List;
+import java.io.*;
+import java.nio.charset.*;
+import java.nio.file.Files;
+import java.util.*;
 
-/**
- * JSON parser.
- */
+/** Reusable configurable parser. Instances are not thread-safe. */
 public final class JsonParser {
+    private Charset charset=StandardCharsets.UTF_8;
+    private JsonParsingMode mode=JsonParsingMode.EXTENDED;
+    private JsonBomPolicy bomPolicy=JsonBomPolicy.ALLOW;
+    private String sourceName;
+    private boolean collectWarnings;
+    private List<JsonError> warnings=List.of();
+
+    /** Creates a UTF-8, EXTENDED parser accepting an optional initial BOM. */
+    public JsonParser() { }
     /**
-     * Lexer that splits JSON documents into separate tokens.
+     * Updates this instance configuration.
+     * @param charset Byte-input encoding
+     * @return this parser
      */
-    private final Lexer lexer;
-
-    /** Input shared with the lexer, used to validate or discard the document tail. */
-    private final Source source;
-
-    /** Closing token retained for an enclosing container during recovery. */
-    private Token pendingToken;
-
-    private int openArrays;
-    private int openObjects;
-
+    public JsonParser setCharset(Charset charset) { Objects.requireNonNull(charset,"charset").newDecoder(); this.charset=charset; return this; }
     /**
-     * Parsing mode.
+     * Updates this instance configuration.
+     * @param mode Syntax mode
+     * @return this parser
      */
-    private final JsonParsingMode mode;
-
+    public JsonParser setMode(JsonParsingMode mode) { this.mode=Objects.requireNonNull(mode,"mode"); return this; }
     /**
-     * List of errors that occurred during parsing in extended mode
-     * and were intentionally ignored.
+     * Updates this instance configuration.
+     * @param policy Initial BOM policy
+     * @return this parser
      */
-    private final List<JsonError> warnings;
+    public JsonParser setBomPolicy(JsonBomPolicy policy) { bomPolicy=Objects.requireNonNull(policy,"policy"); return this; }
+    /**
+     * Updates this instance configuration.
+     * @param name Diagnostic name, or null to use file paths/unnamed input
+     * @return this parser
+     */
+    public JsonParser setSourceName(String name) { sourceName=name; return this; }
+    /**
+     * Updates this instance configuration.
+     * @param enabled Whether to collect warnings for each invocation
+     * @return this parser
+     */
+    public JsonParser setCollectWarnings(boolean enabled) { collectWarnings=enabled; return this; }
+    /**
+     * Returns the diagnostics from the last invocation.
+     * @return Immutable snapshot of the last parse's warnings, also after a failed parse
+     */
+    public List<JsonError> warnings() { return warnings; }
 
     /**
-     * Parses a string containing JSON document into a JSON element
-     *  in {@link JsonParsingMode#EXTENDED} mode.
-     * @param source String containing JSON document
-     * @return JSON element
+     * Parses one document using the selected configuration.
+     * @param text JSON text
+     * @return Parsed root
      * @throws JsonException If parsing fails
      */
-    public static JsonElement parseString(String source) throws JsonException {
-        return parseString(source, JsonParsingMode.EXTENDED);
+    public JsonElement parse(String text) throws JsonException { return parse(new StringReader(text)); }
+    /**
+     * Parses one document using the selected configuration.
+     * @param reader Character input, not closed
+     * @return Parsed root
+     * @throws JsonException If reading/parsing fails
+     */
+    public JsonElement parse(Reader reader) throws JsonException {
+        List<JsonError> diagnostics=begin();
+        try { return read(JsonEncoding.characters(reader,bomPolicy),sourceName,diagnostics); }
+        finally { finish(diagnostics); }
+    }
+    /**
+     * Parses one document using the selected configuration.
+     * @param stream Byte input, not closed
+     * @return Parsed root
+     * @throws JsonException If input/parsing fails
+     */
+    public JsonElement parse(InputStream stream) throws JsonException {
+        List<JsonError> diagnostics=begin();
+        try { return bytes(stream,sourceName,diagnostics); }
+        finally { finish(diagnostics); }
+    }
+    /**
+     * Parses one document using the selected configuration.
+     * @param file Input file, opened and closed by this call
+     * @return Parsed root
+     * @throws JsonException If input/parsing fails
+     */
+    public JsonElement parse(File file) throws JsonException {
+        List<JsonError> diagnostics=begin();
+        String name=sourceName==null ? file.getPath() : sourceName;
+        try (InputStream stream=Files.newInputStream(file.toPath())) { return bytes(stream,name,diagnostics); }
+        catch (IOException cause) { throw inputFailure(name,cause); }
+        finally { finish(diagnostics); }
+    }
+    private List<JsonError> begin() { warnings=List.of(); return collectWarnings ? new ArrayList<>() : null; }
+    private void finish(List<JsonError> diagnostics) { warnings=diagnostics==null ? List.of() : List.copyOf(diagnostics); }
+    private JsonElement read(Reader reader,String name,List<JsonError> diagnostics) throws JsonException {
+        return new ParsingSession(new Source(reader,name),mode,diagnostics).parseRoot();
+    }
+    private JsonElement bytes(InputStream stream,String name,List<JsonError> diagnostics) throws JsonException {
+        try { return read(JsonEncoding.decode(stream,charset,bomPolicy),name,diagnostics); }
+        catch (IOException cause) { throw inputFailure(name,cause); }
+    }
+    private static JsonException inputFailure(String name,IOException cause) {
+        return new JsonException(new JsonError.InputFailure(new JsonLocation(1,1,name)),cause);
     }
 
     /**
-     * Parses a string containing JSON document into a JSON element.
-     *  The parsing mode is specified.
-     * @param source String containing JSON document
-     * @param mode Parsing mode
-     * @return JSON element
+     * Parses one document using the selected configuration.
+     * @param source JSON text
+     * @return Parsed root
      * @throws JsonException If parsing fails
      */
-    public static JsonElement parseString(String source, JsonParsingMode mode) throws JsonException {
-        JsonParser parser = new JsonParser(new Source(source), mode, null);
-        return parser.parseRoot();
-    }
-
+    public static JsonElement parseString(String source) throws JsonException { return new JsonParser().parse(source); }
     /**
-     * Parses a string containing JSON document into a JSON element.
-     *  in {@link JsonParsingMode#EXTENDED} mode. Errors that occur during this process, but are intentionally
-     *  ignored by the parser, are saved to a list. Root padding is ignored silently;
-     *  an arbitrary suffix after the root produces one {@link JsonError.TrailingContent}
-     *  warning at its first non-whitespace character. Existing list entries are retained.
-     * @param source String containing JSON document
-     * @param warnings List where to save errors that occurred during parsing in extended mode
-     *  and were intentionally ignored.
-     * @return JSON element
-     * @throws JsonException If parsing failed, that is, an error occurred that could not be ignored
-     */
-    public static JsonElement parseString(String source, List<JsonError> warnings) throws JsonException {
-        JsonParser parser = new JsonParser(new Source(source), JsonParsingMode.EXTENDED, warnings);
-        return parser.parseRoot();
-    }
-
-    /**
-     * Parses a string while collecting diagnostics for the selected mode.
-     * @param source JSON document
-     * @param mode Parsing mode
-     * @param warnings Destination for warnings, or null
-     * @return Root element
+     * Parses one document using the selected configuration.
+     * @param source JSON text
+     * @param mode Syntax mode
+     * @return Parsed root
      * @throws JsonException If parsing fails
      */
-    public static JsonElement parseString(String source, JsonParsingMode mode, List<JsonError> warnings)
-            throws JsonException {
-        return new JsonParser(new Source(source), mode, warnings).parseRoot();
+    public static JsonElement parseString(String source,JsonParsingMode mode) throws JsonException {
+        return new JsonParser().setMode(mode).parse(source);
     }
-
-    /** Parses an already opened source without closing it. */
-    static JsonElement parseSource(Source source, JsonParsingMode mode) throws JsonException {
-        return new JsonParser(source, mode, null).parseRoot();
-    }
-
     /**
-     * Parses a Java object and tries to represent it as a JSON element.
-     * @param obj Java object
-     * @return JSON element
-     */
-    public static JsonElement parseJavaObject(Object obj) {
-        return JavaSerializer.convert(obj);
-    }
-
-    /**
-     * Constructor.
-     * @param src Object containing JSON document for parsing
-     */
-    private JsonParser(Source src, JsonParsingMode mode, List<JsonError> warnings) {
-        this.source = src;
-        this.lexer = new Lexer(src, mode, warnings);
-        this.mode = mode;
-        this.warnings = warnings;
-    }
-
-    /**
-     * Parses the root element from the first position.
-     * @return JSON element
+     * Parses one document using the selected configuration.
+     * @param source JSON text
+     * @param warnings Destination retaining existing entries
+     * @return Parsed root
      * @throws JsonException If parsing fails
      */
-    private JsonElement parseRoot() throws JsonException {
-        lexer.skipPadding(true);
-        Token first = lexer.token();
-        if (first instanceof TokenEnd) {
-            throw new JsonException(new JsonError.ExpectedRoot(first.location()));
-        }
-        JsonElement root = parseJsonElement(null, first);
-        if (root instanceof JsonContainer container) { parseContainers(container); }
-        lexer.skipPadding(true);
-        if (source.charValue() != -1) {
-            JsonError error = new JsonError.TrailingContent(source.location());
-            if (mode != JsonParsingMode.EXTENDED) {
-                throw new JsonException(error);
-            }
-            if (warnings != null) {
-                warnings.add(error);
-            }
-            // The suffix need not be valid JSON. Do not tokenize it or retain it in memory.
-            while (source.nextChar() != -1) {
-                // Still propagate input/decoding failures while discarding the suffix.
-            }
-        }
-        return root;
+    public static JsonElement parseString(String source,List<JsonError> warnings) throws JsonException {
+        return parseString(source,JsonParsingMode.EXTENDED,warnings);
     }
-
     /**
-     * Parses the next JSON element from the current position.
-     * @param parent The container that will contain the parsed element
-     * @param firstToken The first token in the token sequence
-     * @return JSON element
+     * Parses one document using the selected configuration.
+     * @param source JSON text
+     * @param mode Syntax mode
+     * @param warnings Optional destination retaining existing entries
+     * @return Parsed root
      * @throws JsonException If parsing fails
      */
-    private JsonElement parseJsonElement(JsonContainer parent, Token firstToken) throws JsonException {
-        if (firstToken instanceof TokenEnd) {
-            throw new JsonException(new JsonError.UnexpectedEnd(firstToken.location()));
-        }
-        if (firstToken instanceof TokenLiteral) {
-            return ((TokenLiteral) firstToken).toElement(parent);
-        }
-        if (firstToken instanceof TokenOpeningSquareBracket) {
-            return new JsonArray(parent);
-        }
-        if (firstToken instanceof TokenOpeningCurlyBracket) {
-            return new JsonObject(parent);
-        }
-        throw new JsonException(new JsonError.UnexpectedToken(firstToken.location(), firstToken));
+    public static JsonElement parseString(String source,JsonParsingMode mode,List<JsonError> warnings) throws JsonException {
+        JsonParser parser=new JsonParser().setMode(mode).setCollectWarnings(warnings!=null);
+        try { return parser.parse(source); }
+        finally { if (warnings!=null) { warnings.addAll(parser.warnings()); } }
     }
-
-    /** Returns a token, including a closing bracket left for an enclosing container. */
-    private Token nextToken() throws JsonException {
-        if (pendingToken != null) {
-            Token token = pendingToken;
-            pendingToken = null;
-            return token;
-        }
-        return lexer.token();
-    }
-
-    /** Reports a recoverable syntax error, or rejects it in the strict modes. */
-    private void recover(JsonError error) throws JsonException {
-        if (mode != JsonParsingMode.EXTENDED) {
-            throw new JsonException(error);
-        }
-        if (warnings != null) {
-            warnings.add(error);
-        }
-    }
-
-    /** Whether a closing token belongs to this container. */
-    private static boolean matches(JsonContainer container, Token token) {
-        return container instanceof JsonArray && token instanceof TokenClosingSquareBracket
-                || container instanceof JsonObject && token instanceof TokenClosingCurlyBracket;
-    }
-
     /**
-     * Called only at positions where a container may end. At EOF only the root may be
-     * completed. A foreign bracket may close an ancestor, but is never swallowed here.
+     * Converts a Java value to a JSON tree.
+     * @param obj Java value
+     * @return JSON tree
      */
-    private boolean closeContainer(JsonContainer container, Token token) throws JsonException {
-        if (matches(container, token)) {
-            return true;
-        }
-        char bracket = container instanceof JsonArray ? ']' : '}';
-        if (token instanceof TokenEnd) {
-            if (container.parent() != null) {
-                throw new JsonException(new JsonError.UnexpectedEnd(token.location()));
-            }
-            recover(new JsonError.MissingClosingBracket(token.location(), bracket));
-            return true;
-        }
-        if (token instanceof TokenClosingSquareBracket || token instanceof TokenClosingCurlyBracket) {
-            boolean hasAncestor = token instanceof TokenClosingSquareBracket ? openArrays > 0 : openObjects > 0;
-            if (hasAncestor) {
-                recover(new JsonError.MissingClosingBracket(token.location(), bracket));
-                pendingToken = token;
-                return true;
-            }
-            throw new JsonException(new JsonError.UnexpectedToken(token.location(), token));
-        }
-        return false;
-    }
-
-    /** Whether a token can start an array value, without guessing a malformed token's meaning. */
-    private static boolean startsValue(Token token) {
-        return token instanceof TokenLiteral || token instanceof TokenOpeningSquareBracket
-                || token instanceof TokenOpeningCurlyBracket;
-    }
-
-    /** Heap-backed parser continuation; only complete pairs/values reach this state. */
-    private static final class Frame {
-        final JsonContainer container;
-        boolean expect = true;
-        boolean afterComma;
-        Frame(JsonContainer container) { this.container = container; }
-    }
-
-    private void parseContainers(JsonContainer root) throws JsonException {
-        ArrayDeque<Frame> stack = new ArrayDeque<>();
-        stack.push(new Frame(root));
-        if (root instanceof JsonArray) { openArrays++; } else { openObjects++; }
-        while (!stack.isEmpty()) {
-            Frame frame = stack.peek();
-            JsonContainer container = frame.container;
-            Token token = nextToken();
-            if (matches(container, token) && frame.afterComma && mode == JsonParsingMode.STRICT) {
-                throw new JsonException(container instanceof JsonArray
-                        ? new JsonError.ExpectedElementAfterComma(token.location())
-                        : new JsonError.ExpectedPairAfterComma(token.location()));
-            }
-            if (closeContainer(container, token)) {
-                stack.pop();
-                if (container instanceof JsonArray) { openArrays--; } else { openObjects--; }
-                continue;
-            }
-            JsonElement child;
-            if (container instanceof JsonArray array) {
-                if (token instanceof TokenComma) {
-                    if (frame.expect) { recover(new JsonError.MissingArrayElement(token.location())); }
-                    frame.expect = true;
-                    frame.afterComma = true;
-                    continue;
-                }
-                if (!frame.expect && startsValue(token)) { recover(new JsonError.MissingComma(token.location())); }
-                child = parseJsonElement(array, token);
-                array.addChild(child);
-            } else {
-                JsonObject object = (JsonObject) container;
-                if (!frame.expect && token instanceof TokenComma) {
-                    frame.expect = true;
-                    frame.afterComma = true;
-                    continue;
-                }
-                String key;
-                if (token instanceof TokenString string) { key = string.value(); }
-                else if (mode != JsonParsingMode.STRICT && token.identifierName() != null) { key = token.identifierName(); }
-                else { throw new JsonException(new JsonError.ExpectedKey(token.location())); }
-                if (!frame.expect) { recover(new JsonError.MissingComma(token.location())); }
-                token = nextToken();
-                if (!(token instanceof TokenColon)) { throw new JsonException(new JsonError.ExpectedSeparator(token.location())); }
-                token = nextToken();
-                if (token instanceof TokenEnd) { throw new JsonException(new JsonError.ExpectedElementAfterSeparator(token.location())); }
-                child = parseJsonElement(object, token);
-                object.addChild(key, child);
-            }
-            frame.expect = false;
-            frame.afterComma = false;
-            if (child instanceof JsonContainer nested) {
-                stack.push(new Frame(nested));
-                if (nested instanceof JsonArray) { openArrays++; } else { openObjects++; }
-            }
-        }
-    }
+    public static JsonElement parseJavaObject(Object obj) { return JavaSerializer.convert(obj); }
 }
