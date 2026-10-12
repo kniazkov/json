@@ -343,8 +343,7 @@ Keys and character values use normal JSON string escaping. Arrays and maps are
 accessed through their public APIs, without reflective access to JDK internals.
 Numeric values retain the existing exact-number and JSON5 non-finite-number policy.
 
-This support is for serialization. It does not add typed deserialization into Java
-arrays or concrete map classes, or support for arbitrary `Iterable`/`Set` types.
+Arbitrary `Iterable`/`Set` types are not supported.
 
 ### Mapping JSON to Java lists
 
@@ -360,18 +359,60 @@ numbers. Elements follow the strict scalar conversion rules below. A non-array v
 a non-null element that cannot be mapped, raises `JsonDataException` with the field
 and list index rather than becoming an empty list or a substituted null.
 
-Wildcard types (including `?`), unresolved type variables (including inherited `T`),
-custom List subclasses, array element types and parameterized element types other
-than supported lists are rejected with `JsonDataException`. The declared list type
-is validated even for an empty array or JSON null; absent fields are not validated.
-Generic type-variable substitution is not implemented. Typed maps and arrays remain
-tracked in #32. Root `List.class`, `ArrayList.class` and `LinkedList.class` conversions
-remain raw because Class alone carries no element-type information.
+### Mapping JSON to Java arrays and maps
+
+Arrays work at the root and in fields: all eight primitive array types, reference
+arrays, multidimensional and ragged arrays. Elements use strict conversions; null
+is allowed for reference elements and subarrays, but fails for primitive elements.
+An empty JSON array produces a zero-length array; JSON null produces a null array.
+`char[]` expects an array of single UTF-16-unit strings, and `byte[]` expects signed
+numbers (not Base64).
+
+Typed maps require String keys. Supported targets are:
+
+| Target | Mutable result |
+| --- | --- |
+| `Map<String,V>` | `LinkedHashMap`, preserving JSON member order |
+| `HashMap<String,V>` | `HashMap` |
+| `LinkedHashMap<String,V>` | `LinkedHashMap` |
+| `TreeMap<String,V>`, `SortedMap<String,V>`, `NavigableMap<String,V>` | `TreeMap`, sorted by key |
+
+Map values can be scalars, POJOs, arrays, lists or maps in any combination.
+Null values and null containers are preserved. Raw maps use String keys and natural
+Object values. Explicit `Map.class` conversion now returns a mutable LinkedHashMap;
+no-argument `toJavaObject()` and `Object.class` retain their natural immutable
+Map/List conversion with exact BigInteger/BigDecimal numbers.
+
+For generic root types, capture the full target type with a direct anonymous
+subclass of `JsonType<T>`:
+
+```java
+int[][] matrix = Json.parse("[[1,2],null,[]]").toJavaObject(int[][].class);
+Map<String, List<Integer>> groups = Json.parse("{a:[1,null,2]}")
+    .toJavaObject(new JsonType<Map<String, List<Integer>>>() {});
+List<Map<String, int[]>> rows = Json.parse("[{a:[1,2]}]")
+    .toJavaObject(new JsonType<List<Map<String, int[]>>>() {});
+```
+
+The same container types work in POJO fields without a type token. Generic arrays
+such as `List<Integer>[]` preserve the full element type during conversion.
+Class-only list/map conversions remain raw because Class carries no type arguments.
+
+Wildcard types (including `?`), unresolved type variables (including inherited
+`T`), non-String map key types, custom List/Map subclasses and parameterized POJOs
+are rejected with `JsonDataException`. Container type declarations are checked
+even for empty or null input; absent fields are not validated. Generic
+type-variable substitution is not implemented. Wrong shapes, out-of-range numbers
+and invalid elements report a complete path, for example `$["groups"]["a"][1]`.
+Field `onNull` and `onInvalid` policies apply to arrays and maps too: a failed
+element triggers the policy for the whole field, never a partially filled result.
+Conversion uses an explicit work stack, without a fixed nesting-depth limit.
 
 ### Strict typed conversion and field policies
 
-`toJavaObject(Class)` and typed `Json.parse` use the same strict mapper at the root,
-in object fields and in list elements, independently of the syntax parsing mode.
+`toJavaObject(Class)`, `toJavaObject(JsonType)` and typed `Json.parse` use the same
+strict mapper at the root, in object fields and in container elements, independently
+of the syntax parsing mode.
 Incompatible data raises `JsonDataException`, including the path such as
 `$["orders"][2]["quantity"]`. Reflection/construction failures preserve the underlying
 cause. Constructors still run normally; their side effects cannot be rolled back.
@@ -417,7 +458,7 @@ Assignment/access failures are not suppressed by a data fallback.
 configuration. These policies are checked for the mapped class before its constructor
 runs, including absent fields. Configuration errors and duplicate JSON names raise
 `IllegalArgumentException` and cannot be hidden by `onInvalid`. No `coerce` option is
-introduced. Unsupported typed maps/arrays remain tracked separately in #32.
+introduced.
 
 ### Automatic Java field mapping
 

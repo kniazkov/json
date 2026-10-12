@@ -45,6 +45,9 @@ final class JsonMapper {
         Object result;
         JsonArray array;
         Type element;
+        boolean javaArray;
+        Iterator<Map.Entry<String, JsonElement>> entries;
+        String pendingKey;
         int index;
         Iterator<Map.Entry<String, Field>> fields;
         Field pending;
@@ -58,6 +61,12 @@ final class JsonMapper {
                 if (index == array.size()) { return null; }
                 int i = index++;
                 return new Frame(array.get(i), element, path.index(i));
+            }
+            if (entries != null) {
+                if (!entries.hasNext()) { return null; }
+                var entry = entries.next();
+                pendingKey = entry.getKey();
+                return new Frame(entry.getValue(), element, path.key(pendingKey));
             }
             if (fields == null) { return null; }
             JsonObject object = (JsonObject) value;
@@ -84,7 +93,12 @@ final class JsonMapper {
 
         @SuppressWarnings("unchecked")
         void accept(Object converted) {
-            if (array != null) { ((List<Object>) result).add(converted); return; }
+            if (array != null) {
+                if (javaArray) { Array.set(result, index - 1, converted); }
+                else { ((List<Object>) result).add(converted); }
+                return;
+            }
+            if (entries != null) { ((Map<String, Object>) result).put(pendingKey, converted); return; }
             Field field = pending;
             pending = null; // Assignment failures do not use this field's data fallback.
             try {
@@ -103,12 +117,19 @@ final class JsonMapper {
         }
 
         void initialize() {
+            if (type instanceof GenericArrayType || type instanceof Class<?> c && c.isArray()) {
+                initializeArray(); return;
+            }
             if (type instanceof ParameterizedType parameterized) {
-                initializeList((Class<?>) parameterized.getRawType()); return;
+                if (!(parameterized.getRawType() instanceof Class<?> raw)) { throw unsupported(type, path); }
+                if (Map.class.isAssignableFrom(raw)) { initializeMap(raw); }
+                else { initializeList(raw); }
+                return;
             }
             if (!(type instanceof Class<?> cls)) { throw unsupported(type, path); }
             if (List.class.isAssignableFrom(cls)) { initializeList(cls); return; }
-            if (cls.isArray() || cls == void.class) { throw unsupported(type, path); }
+            if (Map.class.isAssignableFrom(cls)) { initializeMap(cls); return; }
+            if (cls == void.class) { throw unsupported(type, path); }
             if (value.isNull()) {
                 if (cls.isPrimitive()) { throw mismatch(value, type, path); }
                 return;
@@ -127,10 +148,6 @@ final class JsonMapper {
                 result = value.booleanValue(); return;
             }
             if (cls.isPrimitive() || Number.class.isAssignableFrom(cls)) { result = number(value, cls, path); return; }
-            if (cls == Map.class) {
-                if (!(value instanceof JsonObject)) { throw mismatch(value, type, path); }
-                result = value.toJavaObject(); return;
-            }
             if (cls.isInterface() || Modifier.isAbstract(cls.getModifiers()) || cls.isEnum()
                     || Map.class.isAssignableFrom(cls) || Collection.class.isAssignableFrom(cls)) { throw unsupported(type, path); }
             if (!(value instanceof JsonObject)) { throw mismatch(value, type, path); }
@@ -149,34 +166,94 @@ final class JsonMapper {
         }
 
         void initializeList(Class<?> raw) {
-            validateList(type, path);
+            if (!supportedList(raw)) { throw unsupported(type, path); }
+            validateContainer(type, path);
             if (value.isNull()) { return; }
             if (!(value instanceof JsonArray input)) { throw mismatch(value, type, path); }
             array = input;
-            element = elementType(type);
+            element = parameter(type, 0);
             result = raw == LinkedList.class ? new LinkedList<>() : new ArrayList<>();
         }
+
+        void initializeArray() {
+            validateContainer(type, path);
+            if (value.isNull()) { return; }
+            if (!(value instanceof JsonArray input)) { throw mismatch(value, type, path); }
+            array = input;
+            element = component(type);
+            javaArray = true;
+            try { result = Array.newInstance(erasedClass(element), array.size()); }
+            catch (IllegalArgumentException failure) {
+                throw new JsonDataException(path + ": cannot allocate target array type", failure);
+            }
+        }
+
+        void initializeMap(Class<?> raw) {
+            validateContainer(type, path);
+            if (!supportedMap(raw)) { throw unsupported(type, path); }
+            if (value.isNull()) { return; }
+            if (!(value instanceof JsonObject object)) { throw mismatch(value, type, path); }
+            element = parameter(type, 1);
+            result = raw == TreeMap.class || raw == SortedMap.class || raw == NavigableMap.class
+                    ? new TreeMap<String, Object>() : raw == HashMap.class ? new HashMap<String, Object>()
+                    : new LinkedHashMap<String, Object>();
+            entries = object.entrySet().iterator();
+        }
+
     }
 
-    private static void validateList(Type type, DataPath path) {
+    private static boolean supportedList(Class<?> type) {
+        return type == List.class || type == ArrayList.class || type == LinkedList.class;
+    }
+
+    private static boolean supportedMap(Class<?> type) {
+        return type == Map.class || type == HashMap.class || type == LinkedHashMap.class
+                || type == TreeMap.class || type == SortedMap.class || type == NavigableMap.class;
+    }
+
+    private static Type parameter(Type type, int index) {
+        return type instanceof ParameterizedType p ? p.getActualTypeArguments()[index] : Object.class;
+    }
+
+    private static Type component(Type type) {
+        return type instanceof GenericArrayType array ? array.getGenericComponentType() : ((Class<?>) type).getComponentType();
+    }
+
+    /** Checks the entire container type chain even for empty or null input. */
+    private static void validateContainer(Type type, DataPath path) {
         while (true) {
-            Type raw = type instanceof ParameterizedType p ? p.getRawType() : type;
-            if (raw != List.class && raw != ArrayList.class && raw != LinkedList.class) { throw unsupported(type, path); }
-            Type element = elementType(type);
-            path = path.element();
-            if (element instanceof ParameterizedType || element instanceof Class<?> c && List.class.isAssignableFrom(c)) {
-                type = element;
+            if (type instanceof GenericArrayType || type instanceof Class<?> cls && cls.isArray()) {
+                type = component(type);
             } else {
-                if (!(element instanceof Class<?> c) || c.isArray() || c.getTypeParameters().length != 0 && c != Map.class) {
-                    throw unsupported(element, path);
+                Type rawType = type instanceof ParameterizedType p ? p.getRawType() : type;
+                if (!(rawType instanceof Class<?> raw)) { throw unsupported(type, path); }
+                if (supportedList(raw)) {
+                    if (type instanceof ParameterizedType p && p.getActualTypeArguments().length != 1) { throw unsupported(type, path); }
+                    type = parameter(type, 0);
+                } else if (supportedMap(raw)) {
+                    if (type instanceof ParameterizedType p && (p.getActualTypeArguments().length != 2
+                            || p.getActualTypeArguments()[0] != String.class)) {
+                        throw new JsonDataException(path + ": map key type must be java.lang.String");
+                    }
+                    type = parameter(type, 1);
+                } else {
+                    if (!(type instanceof Class<?> cls) || cls == void.class || cls.getTypeParameters().length != 0
+                            || Collection.class.isAssignableFrom(cls) || Map.class.isAssignableFrom(cls)) {
+                        throw unsupported(type, path);
+                    }
+                    return;
                 }
-                return;
             }
+            path = path.element();
         }
     }
 
-    private static Type elementType(Type type) {
-        return type instanceof ParameterizedType p ? p.getActualTypeArguments()[0] : Object.class;
+    /** Runtime component class for generic arrays; elements still use their full Type. */
+    private static Class<?> erasedClass(Type type) {
+        int dimensions = 0;
+        while (type instanceof GenericArrayType) { dimensions++; type = component(type); }
+        Class<?> raw = type instanceof ParameterizedType p ? (Class<?>) p.getRawType() : (Class<?>) type;
+        return dimensions == 0 ? raw : Array.newInstance(raw, new int[dimensions]).getClass();
     }
 
     private static Object number(JsonElement value, Class<?> type, DataPath path) {

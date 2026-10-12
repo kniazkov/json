@@ -115,6 +115,18 @@ public abstract class JsonElement implements Cloneable {
     }
 
     /**
+     * Converts this tree to a captured generic type using the same strict mapping rules.
+     * @param type Captured target, for example a JsonType of Map of String to Integer
+     * @param <T> Target Java type
+     * @return Converted value
+     * @throws JsonDataException If the data or target type is unsupported
+     */
+    @SuppressWarnings("unchecked")
+    public final <T> T toJavaObject(JsonType<T> type) {
+        return (T) JsonMapper.convert(this, java.util.Objects.requireNonNull(type, "type").type());
+    }
+
+    /**
      * Checks if the element is a null literal.
      * @return Checking result
      */
