@@ -169,7 +169,7 @@ is not discarded. A document containing only padding has no root and throws
 
 The parser must first recognize the root: for example `42e+` is an invalid number,
 not the number `42` followed by a discarded suffix. Container recovery follows the
-rules below; the remaining JSON5 features are separate work (issue #7).
+rules below. JSON5 syntax is described in the following section.
 
 ### STRICT strings
 
@@ -180,8 +180,45 @@ hexadecimal digits. Escaped control characters, including `\u0000`, remain valid
 `\'` is not a JSON escape; an ordinary apostrophe needs no escape inside double quotes.
 Raw U+007F, U+0085, U+2028 and U+2029 are not part of the forbidden control range.
 
-These restrictions are specific to STRICT. JSON5 and EXTENDED string behavior is
-unchanged here; completing their string syntax is tracked in issue #7.
+These restrictions are specific to STRICT. JSON5 string rules are described below;
+EXTENDED retains its additional recovery behavior.
+
+### JSON5 syntax
+
+`JSON5` follows the [JSON5 1.0 syntax](https://spec.json5.org/):
+
+- Both comment forms, `//` through a line terminator/EOF and closed `/* ... */`, are
+  accepted wherever token-separating whitespace is allowed. Comments do not nest.
+- Whitespace includes TAB, VT, FF, space, Unicode Space_Separator characters, BOM,
+  LF, CR, U+2028 and U+2029. NEL is an EXTENDED addition, not JSON5 whitespace.
+- Unquoted keys are IdentifierNames, including `$`, `_`, Unicode letters/letter numbers,
+  combining marks/digits/connector punctuation in subsequent positions, and ZWNJ/ZWJ
+  after the first character. `\uXXXX` escapes must decode to a valid character in that
+  position. Unicode categories follow the Java runtime's Unicode version. Reserved
+  words such as `true`, `null`, `NaN` and `Infinity` may also be keys. Escaped keyword
+  spellings are allowed as keys, not as literal values. Numeric/signed keys require quotes.
+- Strings may use either quote character. In addition to JSON escapes they accept
+  `\xNN`, `\v`, `\0` (only when not followed by a decimal digit), and escaped non-digit
+  characters such as `\q`, which yields `q`. `\1` through `\9` and incomplete/invalid
+  hexadecimal escapes are rejected.
+- Backslash followed immediately by LF, CR, CRLF, U+2028 or U+2029 continues a string
+  without inserting a newline. Raw LF/CR inside a JSON5 string are errors. Other raw
+  controls are permitted by JSON5. Raw U+2028/U+2029 are accepted with an
+  `UnescapedLineSeparator` warning when a warnings list is supplied; serialization escapes them.
+- Numbers accept leading `+`, leading/trailing decimal points, `0x`/`0X` hexadecimal
+  integers, and signed or unsigned `NaN`/`Infinity`. Leading-zero decimal integers and
+  octal/binary literals are rejected. Finite values retain the documented BigInteger /
+  BigDecimal representation and implementation limits.
+
+To collect JSON5 diagnostics, use
+`JsonParser.parseString(text, JsonParsingMode.JSON5, warnings)`. STRICT continues to
+reject JSON5 extensions. EXTENDED supports JSON5 token syntax and additionally retains
+raw line breaks in strings, leading-zero numbers, recovery rules above, and its historical
+backslash/spaces/newline continuation. It rejects raw NUL in strings (escaped NUL is valid).
+Its arbitrary suffix is still discarded with a warning, including comment-looking suffixes.
+
+The offline tests include all 114 parser cases from `json5/json5-tests`, with pinned
+provenance and the upstream MIT license in `src/test/resources/json5-suite`.
 
 ### End-of-input diagnostics
 
@@ -647,7 +684,8 @@ Standard Java contracts remain intact: `List.get`, `Map.get`, and Throwable's
 `JsonException.getMessage()` still includes the syntax-error location.
 
 All `JsonElement` instances now expose `numberValue()` (Number) and `decimalValue()`
-(BigDecimal). Numeric nodes return their exact value; other kinds return null.
+(BigDecimal). Finite numeric nodes return their exact value; special numbers return
+Double from numberValue() and null from decimalValue(). Other kinds return null.
 `JsonInteger.numberValue()` returns BigInteger and `JsonReal.numberValue()` returns
 BigDecimal. Converting an integer to a decimal remains exact.
 
@@ -661,8 +699,8 @@ want a value or an exception, these methods are also available on `JsonElement`:
 | `intValueOrThrow()` | Exact integral numeric value within the signed 32-bit range |
 | `longValueOrThrow()` | Exact integral numeric value within the signed 64-bit range |
 | `doubleValueOrThrow()` | Numeric value convertible to finite double without underflow to zero; ordinary rounding is allowed |
-| `numberValueOrThrow()` | Any JSON number; returns BigInteger or BigDecimal |
-| `decimalValueOrThrow()` | Any JSON number; returns an exact BigDecimal |
+| `numberValueOrThrow()` | Any number; BigInteger/BigDecimal for finite values, Double for special values |
+| `decimalValueOrThrow()` | A finite number; returns an exact BigDecimal |
 | `arrayValueOrThrow()` | JSON array |
 | `objectValueOrThrow()` | JSON object |
 
@@ -858,10 +896,12 @@ Also, element can be retrieved using the `of` method.
 
 ### JsonNumber
 
-An abstract base class for two exact numeric representations:
+An abstract base class for exact finite numbers and JSON5 special values:
 
 - `JsonInteger` stores a `BigInteger` (including small integers; there is no `long` fast path).
 - `JsonReal` stores a `BigDecimal`.
+- `JsonNaN` represents NaN.
+- `JsonInfinity` represents positive or negative infinity.
 
 Create numbers through the factory:
 
@@ -874,8 +914,10 @@ JsonNumber decimal = JsonNumber.of(new BigDecimal("0.12345678901234567890"));
 ```
 
 Import `java.math.BigInteger` and `java.math.BigDecimal` for the arbitrary-precision types.
-The `long` and `BigInteger` overloads create `JsonInteger`; the `float`, `double`, and
-`BigDecimal` overloads create `JsonReal`, even for integral values such as `42.0`.
+The `long` and `BigInteger` overloads create `JsonInteger`; finite `float`/`double` and
+`BigDecimal` inputs create `JsonReal`, even for integral values such as `42.0`.
+The float/double overloads return `JsonNumber`, selecting `JsonNaN` or `JsonInfinity`
+for special values. This return-type change requires consumers to recompile.
 The `Number` overload dispatches by runtime type and supports `Byte`, `Short`, `Integer`,
 `Long`, `Float`, `Double`, `BigInteger`, and `BigDecimal`. Other implementations are rejected
 with `IllegalArgumentException`; null is rejected with `NullPointerException`.
@@ -884,7 +926,7 @@ with `IllegalArgumentException`; null is rejected with `NullPointerException`.
 Making `JsonNumber` abstract is a source and binary compatibility change; consumers must
 be recompiled. Version 2 also renames getters and introduces strict accessors described below.
 
-The existing methods retain these contracts:
+For finite numbers, the existing methods retain these contracts:
 
 | Method | Behavior |
 | --- | --- |
@@ -913,13 +955,40 @@ Real output includes a point or exponent (for example `42.0`); exponent formatti
 `.0` so it remains real on parsing. Negative zero is normalized, because neither backing
 type distinguishes its sign. Double factories use `BigDecimal.valueOf`; float factories
 use `Float.toString` without widening first. Precision already lost before the factory
-call cannot be recovered. NaN and infinities are rejected with `NumberFormatException`,
-including during Java-object serialization; no non-finite JSON5 representation is added.
+call cannot be recovered. Special floating-point inputs now create dedicated JSON5
+nodes, including through container addNumber methods and Java-object serialization.
 
 `JsonArray.addNumber` and `JsonObject.addNumber` retain the `double` overload and add
 `long`, `float`, and `Number` overloads so integers and arbitrary-precision values do not
 pass through `double`. Java-object serialization and typed mapping also support `BigInteger`
 and `BigDecimal` fields and list elements.
+
+### JsonNaN and JsonInfinity
+
+Use `JsonNumber.of(Double.NaN)`, `JsonNumber.of(Double.POSITIVE_INFINITY)` or
+`JsonNumber.of(Double.NEGATIVE_INFINITY)`. Explicit constructors are `new JsonNaN()`
+and `new JsonInfinity(negative)`. The latter's boolean selects the sign.
+
+All `JsonElement` instances expose `isNaN()`, `isInfinite()`, `isPositiveInfinity()`,
+`isNegativeInfinity()` and `isFinite()`. Non-numeric elements return false for all five.
+`isFinite()` describes the stored number, not its double conversion: a huge BigDecimal
+can be finite even when doubleValue() overflows to infinity.
+
+Special nodes are numbers but are neither 32-bit nor 64-bit integers. numberValue(),
+numberValueOrThrow(), doubleValue() and untyped toJavaObject() return the corresponding
+IEEE special value (boxed Double where an object is needed). Float/Double typed mapping
+is supported. intValue()/longValue() follow Java casts: NaN becomes zero and infinities
+saturate at the signed limits. decimalValue() and BigInteger/BigDecimal typed mapping
+return null. intValueOrThrow(), longValueOrThrow(), doubleValueOrThrow() and
+decimalValueOrThrow() reject special values with JsonDataException; the existing strict
+double getter continues to require a finite result. Cloning preserves the special kind
+and assigns the new parent in the same way as other numeric nodes.
+
+**Output containing these nodes is JSON5, not strict JSON.** toString(), toText() and
+Json.serialize() emit `NaN`, `Infinity` and `-Infinity`; they never silently replace them
+with null or strings. Signed NaN spellings normalize to `NaN`, and `+Infinity` to
+`Infinity`. Finite numeric serialization stays exact. A caller requiring strict JSON
+must reject special nodes before serialization.
 
 ### JsonString
 
@@ -984,8 +1053,7 @@ The input contract is:
     beyond the parsed value; these overloads are not a resumable multi-document API.
     The resulting JSON tree and individual token values still occupy memory.
 
-Root-tail validation and container recovery are described above. The remaining JSON5
-features are tracked separately in issue #7.
+Root-tail validation, container recovery and JSON5 syntax are described above.
 
 ### Classes for error handling
 

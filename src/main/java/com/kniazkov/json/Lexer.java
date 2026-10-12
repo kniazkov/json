@@ -5,6 +5,7 @@ package com.kniazkov.json;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.List;
 
 /**
  * Splits JSON documents into separate tokens.
@@ -19,14 +20,20 @@ final class Lexer {
      * Parsing mode.
      */
     private final JsonParsingMode mode;
+    private final List<JsonError> warnings;
 
     /**
      * Constructor.
      * @param source Object containing JSON document for parsing
      */
     public Lexer(Source source, JsonParsingMode mode) {
+        this(source, mode, null);
+    }
+
+    Lexer(Source source, JsonParsingMode mode, List<JsonError> warnings) {
         this.source = source;
         this.mode = mode;
+        this.warnings = warnings;
     }
 
     /**
@@ -44,23 +51,8 @@ final class Lexer {
 
         JsonLocation loc = source.location();
 
-        if (isLetter(ch)) {
-            StringBuilder builder = new StringBuilder();
-            do {
-                builder.append((char) ch);
-                ch = source.nextChar();
-            } while(isLetter(ch) || isDigit(ch));
-            String identifier = builder.toString();
-            if ("null".equals(identifier)) {
-                return new TokenNull(loc);
-            }
-            if ("true".equals(identifier)) {
-                return new TokenBoolean(loc, true);
-            }
-            if ("false".equals(identifier)) {
-                return new TokenBoolean(loc, false);
-            }
-            return new TokenIdentifier(loc, identifier);
+        if (isIdentifierStart(ch) || ch == '\\' || Character.isHighSurrogate((char) ch)) {
+            return parseIdentifier(loc);
         }
 
         if (ch == '-' || ch == '+' || ch == '.' || isDigit(ch)) {
@@ -116,11 +108,12 @@ final class Lexer {
         while (true) {
             int ch = source.charValue();
             while (isWhiteSpace(ch)
-                    || mode == JsonParsingMode.JSON5 && isJson5Space(ch)
+                    || mode != JsonParsingMode.STRICT && isJson5Space(ch)
                     || rootBoundary && mode == JsonParsingMode.EXTENDED && isExtendedSpace(ch)) {
                 ch = source.nextChar();
             }
-            if (mode != JsonParsingMode.JSON5 || ch != '/') {
+            if (mode == JsonParsingMode.STRICT
+                    || (rootBoundary && mode == JsonParsingMode.EXTENDED) || ch != '/') {
                 return;
             }
             JsonLocation start = source.location();
@@ -167,15 +160,6 @@ final class Lexer {
     }
 
     /**
-     * Checks if the character is a letter.
-     * @param ch Character
-     * @return Checking result
-     */
-    private static boolean isLetter(int ch) {
-        return ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z' || ch == '_';
-    }
-
-    /**
      * Checks if the character is a digit.
      * @param ch Character
      * @return Checking result
@@ -193,6 +177,71 @@ final class Lexer {
         return isDigit(ch) || ch >= 'a' && ch <= 'f' || ch >= 'A' && ch <= 'F' ;
     }
 
+    /** ECMAScript IdentifierStart categories, plus $ and _. */
+    private static boolean isIdentifierStart(int ch) {
+        int type = Character.getType(ch);
+        return ch == '$' || ch == '_' || type == Character.UPPERCASE_LETTER
+                || type == Character.LOWERCASE_LETTER || type == Character.TITLECASE_LETTER
+                || type == Character.MODIFIER_LETTER || type == Character.OTHER_LETTER
+                || type == Character.LETTER_NUMBER;
+    }
+
+    private static boolean isIdentifierPart(int ch) {
+        int type = Character.getType(ch);
+        return isIdentifierStart(ch) || type == Character.NON_SPACING_MARK
+                || type == Character.COMBINING_SPACING_MARK || type == Character.DECIMAL_DIGIT_NUMBER
+                || type == Character.CONNECTOR_PUNCTUATION || ch == 0x200c || ch == 0x200d;
+    }
+
+    private Token parseIdentifier(JsonLocation loc) throws JsonException {
+        StringBuilder name = new StringBuilder();
+        boolean first = true;
+        boolean escaped = false;
+        int ch = source.charValue();
+        while (ch != -1) {
+            JsonLocation position = source.location();
+            int point = ch;
+            if (ch == '\\') {
+                escaped = true;
+                if (source.nextChar() != 'u') {
+                    throw new JsonException(new JsonError.InvalidCharacter(position, '\\'));
+                }
+                point = readHexEscape(4, position);
+                if (!(first ? isIdentifierStart(point) : isIdentifierPart(point))) {
+                    throw new JsonException(new JsonError.InvalidCharacter(position, (char) point));
+                }
+            } else if (Character.isHighSurrogate((char) ch)) {
+                int low = source.nextChar();
+                if (low == -1 || !Character.isLowSurrogate((char) low)) {
+                    throw new JsonException(new JsonError.InvalidCharacter(position, (char) ch));
+                }
+                point = Character.toCodePoint((char) ch, (char) low);
+                if (!(first ? isIdentifierStart(point) : isIdentifierPart(point))) {
+                    throw new JsonException(new JsonError.InvalidCharacter(position, (char) ch));
+                }
+            } else if (!(first ? isIdentifierStart(point) : isIdentifierPart(point))) {
+                break;
+            }
+            name.appendCodePoint(point);
+            first = false;
+            ch = source.nextChar();
+        }
+        String identifier = name.toString();
+        // Escaped spellings are IdentifierNames for keys, never literal values.
+        if (!escaped) {
+            if ("null".equals(identifier)) { return new TokenNull(loc); }
+            if ("true".equals(identifier)) { return new TokenBoolean(loc, true); }
+            if ("false".equals(identifier)) { return new TokenBoolean(loc, false); }
+            if (mode != JsonParsingMode.STRICT) {
+                if ("NaN".equals(identifier)) { return new TokenNumber(loc, new JsonNaN(), identifier); }
+                if ("Infinity".equals(identifier)) {
+                    return new TokenNumber(loc, new JsonInfinity(false), identifier);
+                }
+            }
+        }
+        return new TokenIdentifier(loc, identifier);
+    }
+
     /** Parses a numeric lexeme without intermediate floating-point conversion. */
     private TokenNumber parseNumber(JsonLocation loc) throws JsonException {
         StringBuilder text = new StringBuilder();
@@ -204,6 +253,14 @@ final class Lexer {
             }
             text.append((char) ch);
             ch = source.nextChar();
+            if (mode != JsonParsingMode.STRICT && (ch == 'N' || ch == 'I')) {
+                Token special = parseIdentifier(source.location());
+                if (special instanceof TokenNumber number) {
+                    JsonNumber value = (JsonNumber) number.toElement(null);
+                    return new TokenNumber(loc, value.isNaN() ? new JsonNaN() : new JsonInfinity(negative));
+                }
+                throw new JsonException(new JsonError.IncorrectNumberFormat(loc));
+            }
             if (!isDigit(ch) && ch != '.') {
                 throw new JsonException(negative
                         ? new JsonError.ExpectedNumberAfterMinus(source.location())
@@ -299,88 +356,109 @@ final class Lexer {
     private TokenString parseString(JsonLocation loc, char quote) throws JsonException {
         StringBuilder value = new StringBuilder();
         int ch = source.nextChar();
-        while(ch != quote) {
+        while (ch != quote) {
+            JsonLocation position = source.location();
+            if (ch == -1) {
+                throw new JsonException(new JsonError.UnclosedString(loc));
+            }
             if (ch == '\\') {
                 ch = source.nextChar();
+                position = source.location();
                 switch (ch) {
+                    case '"': case '\\': case '/':
+                        value.append((char) ch);
+                        break;
                     case '\'':
-                        if (mode == JsonParsingMode.STRICT) {
-                            throw new JsonException(new JsonError.IncorrectStringSequence(source.location(), "'"));
-                        }
+                        requireExtendedEscape(position, ch);
                         value.append((char) ch);
                         break;
-                    case '"':
-                    case '\\':
-                    case '/':
-                        value.append((char) ch);
+                    case 'b': value.append('\b'); break;
+                    case 'f': value.append('\f'); break;
+                    case 'n': value.append('\n'); break;
+                    case 'r': value.append('\r'); break;
+                    case 't': value.append('\t'); break;
+                    case 'v':
+                        requireExtendedEscape(position, ch);
+                        value.append((char) 0x0b);
                         break;
-                    case 'b':
-                        value.append('\b');
-                        break;
-                    case 'f':
-                        value.append('\f');
-                        break;
-                    case 'n':
-                        value.append('\n');
-                        break;
-                    case 'r':
-                        value.append('\r');
-                        break;
-                    case 't':
-                        value.append('\t');
-                        break;
-                    case 'u':
-                        int hex0 = source.nextChar();
-                        int hex1 = source.nextChar();
-                        int hex2 = source.nextChar();
-                        int hex3 = source.nextChar();
-                        if (!isHexDigit(hex0) || !isHexDigit(hex1) || !isHexDigit(hex2) || !isHexDigit(hex3)) {
-                            String errorSequence = "u" + (hex0 > ' ' ? (char) hex0 : '?') + (hex1 > ' ' ? (char) hex1 : '?')
-                                    + (hex2 > ' ' ? (char) hex2 : '?') + (hex3 > ' ' ? (char) hex3 : '?');
-                            throw new JsonException(new JsonError.IncorrectStringSequence(
-                                    source.location(),
-                                    errorSequence
-                            ));
+                    case '0':
+                        requireExtendedEscape(position, ch);
+                        ch = source.nextChar();
+                        if (isDigit(ch)) {
+                            throw new JsonException(new JsonError.IncorrectStringSequence(position, "0"));
                         }
-                        value.append((char) (hexToDecimal(hex0) * 0x1000 + hexToDecimal(hex1) * 0x100
-                                + hexToDecimal(hex2) * 0x10 + hexToDecimal(hex3)));
+                        value.append((char) 0);
+                        continue;
+                    case 'u': value.append((char) readHexEscape(4, position)); break;
+                    case 'x':
+                        requireExtendedEscape(position, ch);
+                        value.append((char) readHexEscape(2, position));
                         break;
+                    case '\r': case '\n': case 0x2028: case 0x2029:
+                        requireExtendedEscape(position, ch);
+                        int lineBreak = ch;
+                        ch = source.nextChar();
+                        if (lineBreak == '\r' && ch == '\n') { ch = source.nextChar(); }
+                        continue;
                     case ' ':
-                        JsonLocation start = source.location();
-                        if (mode == JsonParsingMode.STRICT) {
-                            throw new JsonException(new JsonError.IncorrectStringSequence(start, "?"));
-                        }
-                        while (ch == ' ' || ch == '\r' || ch == '\t') {
-                            ch = source.nextChar();
-                        }
-                        if (ch != '\n') {
-                            throw new JsonException(new JsonError.IncorrectStringSequence(start, "?"));
-                        }
-                        break;
-                    case '\n':
-                        if (mode == JsonParsingMode.STRICT) {
-                            throw new JsonException(
-                                    new JsonError.IncorrectStringSequence(source.location(), "?")
-                            );
-                        }
+                        requireExtendedEscape(position, ch);
+                        // Retain the historical EXTENDED continuation with intervening spaces.
+                        if (mode == JsonParsingMode.EXTENDED) {
+                            StringBuilder spaces = new StringBuilder();
+                            while (ch == ' ' || ch == '\r' || ch == '\t') {
+                                spaces.append((char) ch);
+                                ch = source.nextChar();
+                            }
+                            if (ch != '\n') {
+                                value.append(spaces);
+                                continue;
+                            }
+                        } else { value.append(' '); }
                         break;
                     default:
-                        throw new JsonException(new JsonError.IncorrectStringSequence(
-                                source.location(),
-                                ch > ' ' ? "" + (char) ch : "?"
-                        ));
+                        requireExtendedEscape(position, ch);
+                        if (ch == -1 || isDigit(ch)) {
+                            throw new JsonException(new JsonError.IncorrectStringSequence(position, "?"));
+                        }
+                        value.append((char) ch);
                 }
-            } else if (ch == -1) {
-                throw new JsonException(new JsonError.UnclosedString(loc));
-            } else if (ch == 0 || mode == JsonParsingMode.STRICT && ch < 0x20) {
-                throw new JsonException(new JsonError.InvalidCharacter(source.location(), (char) ch));
             } else {
+                if (mode == JsonParsingMode.STRICT && ch < 0x20
+                        || mode == JsonParsingMode.JSON5 && (ch == '\r' || ch == '\n')
+                        || mode == JsonParsingMode.EXTENDED && ch == 0) {
+                    throw new JsonException(new JsonError.InvalidCharacter(position, (char) ch));
+                }
+                if (mode != JsonParsingMode.STRICT && (ch == 0x2028 || ch == 0x2029) && warnings != null) {
+                    warnings.add(new JsonError.UnescapedLineSeparator(position));
+                }
                 value.append((char) ch);
             }
             ch = source.nextChar();
         }
         source.nextChar();
         return new TokenString(loc, value.toString());
+    }
+
+    /** Rejects JSON5-only escapes in STRICT. */
+    private void requireExtendedEscape(JsonLocation loc, int ch) throws JsonException {
+        if (mode == JsonParsingMode.STRICT) {
+            throw new JsonException(new JsonError.IncorrectStringSequence(loc, ch > ' ' ? "" + (char) ch : "?"));
+        }
+    }
+
+    /** Reads exactly the requested hex digits after the current u/x, leaving the last digit current. */
+    private int readHexEscape(int digits, JsonLocation loc) throws JsonException {
+        int value = 0;
+        StringBuilder sequence = new StringBuilder().append((char) source.charValue());
+        for (int i = 0; i < digits; i++) {
+            int ch = source.nextChar();
+            sequence.append(ch > ' ' ? (char) ch : '?');
+            if (!isHexDigit(ch)) {
+                throw new JsonException(new JsonError.IncorrectStringSequence(loc, sequence.toString()));
+            }
+            value = value * 16 + hexToDecimal(ch);
+        }
+        return value;
     }
 
     /**

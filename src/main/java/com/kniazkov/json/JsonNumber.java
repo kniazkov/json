@@ -8,7 +8,7 @@ import java.math.BigInteger;
 import java.util.Objects;
 
 /**
- * Base class for exact JSON numbers. Use {@code of(...)} to create a number.
+ * Base class for exact finite numbers and JSON5 special numbers. Use {@code of(...)} to create a number.
  * Existing primitive getters truncate fractions and saturate integer overflow,
  * as Java floating-point casts did in earlier versions. Double conversion can
  * round, underflow to zero, or overflow to infinity.
@@ -48,38 +48,39 @@ public abstract class JsonNumber extends JsonElement {
 
     /**
      * Creates a real number from the canonical decimal representation of a double.
-     * @param value Finite value
-     * @return A real element, even when the value is mathematically integral
-     * @throws NumberFormatException If the value is NaN or infinite
+     * @param value Floating-point value, including NaN and infinities
+     * @return A real element for finite input, otherwise JsonNaN or JsonInfinity
      */
-    public static JsonReal of(double value) {
+    public static JsonNumber of(double value) {
         return of(null, value);
     }
 
     /** Creates a number directly with its parent, without a temporary JSON node. */
-    static JsonReal of(JsonContainer parent, double value) {
+    static JsonNumber of(JsonContainer parent, double value) {
+        if (Double.isNaN(value)) { return new JsonNaN(parent); }
+        if (Double.isInfinite(value)) { return new JsonInfinity(parent, value < 0); }
         return of(parent, BigDecimal.valueOf(value));
     }
 
     /**
      * Creates a real number without first widening a float to double.
-     * @param value Finite value
-     * @return A real element
-     * @throws NumberFormatException If the value is NaN or infinite
+     * @param value Floating-point value, including NaN and infinities
+     * @return A real element for finite input, otherwise JsonNaN or JsonInfinity
      */
-    public static JsonReal of(float value) {
+    public static JsonNumber of(float value) {
         return of(null, value);
     }
 
     /** Creates a number directly with its parent, without a temporary JSON node. */
-    static JsonReal of(JsonContainer parent, float value) {
+    static JsonNumber of(JsonContainer parent, float value) {
+        if (!Float.isFinite(value)) { return of(parent, (double) value); }
         return of(parent, new BigDecimal(Float.toString(value)));
     }
 
     /**
      * Creates an exact decimal number.
      * @param value Decimal value, not null
-     * @return A real element
+     * @return An exact real element
      */
     public static JsonReal of(BigDecimal value) {
         return of(null, value);
@@ -93,7 +94,7 @@ public abstract class JsonNumber extends JsonElement {
     /**
      * Creates a number according to its runtime Java type.
      * @param value Byte, Short, Integer, Long, Float, Double, BigInteger or BigDecimal
-     * @return The corresponding integer or real element
+     * @return The corresponding integer, real, NaN or infinity element
      * @throws IllegalArgumentException If the Number implementation is unsupported
      */
     public static JsonNumber of(Number value) {
@@ -155,6 +156,7 @@ public abstract class JsonNumber extends JsonElement {
             result = decimalValue();
         }
         else if (type == BigInteger.class) {
+            if (!isFinite()) { return null; }
             try {
                 result = numberValue() instanceof BigInteger ? numberValue() : decimalValue().toBigIntegerExact();
             } catch (ArithmeticException exception) {
@@ -169,7 +171,7 @@ public abstract class JsonNumber extends JsonElement {
     @Override
     public boolean isInteger() {
         BigDecimal value = decimalValue();
-        return value.compareTo(BigDecimal.valueOf(Integer.MIN_VALUE)) >= 0
+        return value != null && value.compareTo(BigDecimal.valueOf(Integer.MIN_VALUE)) >= 0
                 && value.compareTo(BigDecimal.valueOf(Integer.MAX_VALUE)) <= 0
                 && value.stripTrailingZeros().scale() <= 0;
     }
@@ -177,7 +179,7 @@ public abstract class JsonNumber extends JsonElement {
     @Override
     public boolean isLongInteger() {
         BigDecimal value = decimalValue();
-        return value.compareTo(BigDecimal.valueOf(Long.MIN_VALUE)) >= 0
+        return value != null && value.compareTo(BigDecimal.valueOf(Long.MIN_VALUE)) >= 0
                 && value.compareTo(BigDecimal.valueOf(Long.MAX_VALUE)) <= 0
                 && value.stripTrailingZeros().scale() <= 0;
     }
@@ -189,6 +191,7 @@ public abstract class JsonNumber extends JsonElement {
 
     @Override
     public int intValue() {
+        if (!isFinite()) { return (int) doubleValue(); }
         BigDecimal value = decimalValue();
         if (value.compareTo(BigDecimal.valueOf(Integer.MIN_VALUE)) < 0) {
             return Integer.MIN_VALUE;
@@ -201,6 +204,7 @@ public abstract class JsonNumber extends JsonElement {
 
     @Override
     public long longValue() {
+        if (!isFinite()) { return (long) doubleValue(); }
         BigDecimal value = decimalValue();
         if (value.compareTo(BigDecimal.valueOf(Long.MIN_VALUE)) < 0) {
             return Long.MIN_VALUE;

@@ -404,7 +404,7 @@ public class JsonParserTest {
     public void stringWithIncorrectSequence() {
         JsonError error = null;
         try {
-            JsonParser.parseString("\"abc\\d\"");
+            JsonParser.parseString("\"abc\\d\"", JsonParsingMode.STRICT);
         } catch (JsonException exception) {
             error = exception.error();
         }
@@ -421,7 +421,7 @@ public class JsonParserTest {
             error = exception.error();
         }
         Assert.assertTrue(error instanceof JsonError.IncorrectStringSequence);
-        Assert.assertEquals("Incorrect string sequence: '\\ujh\"?'", error.message());
+        Assert.assertEquals("Incorrect string sequence: '\\uj'", error.message());
     }
 
     @Test
