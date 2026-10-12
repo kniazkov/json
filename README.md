@@ -28,6 +28,57 @@ mvn -B -Dgpg.skip=true clean verify
 
 Release builds retain GPG signing when `gpg.skip` is not set.
 
+### Code style and Javadoc
+
+The Maven `validate` phase checks **all handwritten Java sources and tests**.
+Violations fail the build; checks never rewrite source files. CI runs the same
+rules on every pull request and push to master.
+
+- **Spotless 2.43.0 + google-java-format 1.24.0 (AOSP)** enforce deterministic
+  formatting, four-space indentation, import order, whitespace and final newlines.
+- **Checkstyle 10.21.4**, through Maven Checkstyle Plugin 3.6.0, rejects wildcard,
+  unused and redundant imports; invalid Java names; omitted braces; multiple
+  declarations/statements per line; redundant modifiers; incorrect array syntax;
+  accidental switch fall-through; and equals without hashCode. Lines are limited
+  to 120 characters, except package/import declarations and lines containing URLs.
+- Public types and public/protected API members require Javadoc. Parameters,
+  type parameters, return values and explicitly thrown exceptions must be
+  documented. Existing comments at every visibility level are checked for
+  sentence endings, nonempty descriptions, HTML, paragraphs and tag order.
+  Overrides may inherit documentation.
+- The Javadoc tool runs with **`doclint=all`** and treats **warnings as errors**.
+  Invalid references, malformed markup and missing API documentation fail CI.
+- Test fixtures need not have API comments; test methods may use their JUnit
+  annotation instead. This is the only path-based suppression. Existing test
+  Javadoc still undergoes style checks. Third-party JSON5 fixtures and generated
+  output are outside the formatter's source roots.
+
+Versions are pinned in `pom.xml`; rules and the narrow test-documentation
+exception are in `config/checkstyle.xml` and `config/checkstyle-suppressions.xml`.
+There is no baseline of ignored violations.
+
+```sh
+# Read-only formatting and code/Javadoc style checks
+mvn -B -ntp validate
+
+# Also generate and fully validate API documentation
+mvn -B -ntp validate javadoc:javadoc
+
+# Explicit opt-in autoformatting (does not invent missing documentation)
+mvn -B -ntp spotless:apply
+
+# Complete build, style checks, documentation and tests
+mvn -B -ntp -Dgpg.skip=true -DargLine=-Xss256k clean verify
+```
+
+CI also runs `python3 scripts/check-style-gate.py`: isolated project copies contain
+deliberately broken formatting, a wildcard import in test code, a missing Javadoc
+parameter tag and an unresolved Javadoc link. Each probe must fail with its
+expected diagnostic, so an unrelated build failure cannot masquerade as success.
+The script requires Python 3 and Maven on PATH (or the `MAVEN` environment variable).
+These automated checks enforce consistency, not the factual correctness of prose
+or the quality of API design.
+
 To link the library to your Maven project, add the following dependency to `pom.xml`:
 ```xml
 <dependencies>

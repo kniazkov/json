@@ -118,7 +118,8 @@ public class MappingFieldPolicyTest {
         try {
             Child value =
                     Json.parse(
-                            "{inherited:99,hiddenTransient:99,hiddenStatic:99,hiddenFinal:99,parentTransient:99,parentStatic:99}",
+                            "{inherited:99,hiddenTransient:99,hiddenStatic:99,"
+                                    + "hiddenFinal:99,parentTransient:99,parentStatic:99}",
                             Child.class);
             Assert.assertEquals(99, value.inherited);
             Assert.assertEquals(12, value.hiddenTransient);

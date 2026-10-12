@@ -243,7 +243,9 @@ public class JsonExactNumberTest {
         Random random = new Random(20261011L);
         for (int i = 0; i < 200; i++) {
             BigInteger integer = new BigInteger(256, random);
-            if (random.nextBoolean()) integer = integer.negate();
+            if (random.nextBoolean()) {
+                integer = integer.negate();
+            }
             BigDecimal real = new BigDecimal(integer, random.nextInt(101) - 50);
             Assert.assertEquals(
                     integer,

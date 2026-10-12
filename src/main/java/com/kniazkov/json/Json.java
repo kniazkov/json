@@ -12,6 +12,9 @@ import java.nio.charset.StandardCharsets;
 
 /** Class that combines all methods for parsing and serialising JSON documents. */
 public class Json {
+    /** Creates a facade instance; parsing and serialization methods are static. */
+    public Json() {}
+
     /**
      * Parses a JSON document, represented as a string, into a tree.
      *
@@ -63,8 +66,8 @@ public class Json {
      *
      * @param source JSON document
      * @param type The type descriptor
-     * @return Converted value; JSON null maps to null for reference types
      * @param <T> The type
+     * @return Converted value; JSON null maps to null for reference types
      * @throws JsonException If parsing or input fails
      */
     public static <T> T parse(String source, Class<T> type) throws JsonException {
@@ -76,8 +79,8 @@ public class Json {
      *
      * @param file File containing JSON document
      * @param type The type descriptor
-     * @return Converted value; JSON null maps to null for reference types
      * @param <T> The type
+     * @return Converted value; JSON null maps to null for reference types
      * @throws JsonException If parsing or input fails
      */
     public static <T> T parse(File file, Class<T> type) throws JsonException {
@@ -90,8 +93,8 @@ public class Json {
      * @param source JSON document
      * @param type The type descriptor
      * @param mode Parsing mode defining the allowed JSON syntax
-     * @return Converted value; JSON null maps to null for reference types
      * @param <T> The type
+     * @return Converted value; JSON null maps to null for reference types
      * @throws JsonException If parsing or input fails
      */
     public static <T> T parse(String source, Class<T> type, JsonParsingMode mode)
@@ -105,8 +108,8 @@ public class Json {
      * @param file File containing JSON document
      * @param type The type descriptor
      * @param mode Parsing mode defining the allowed JSON syntax
-     * @return Converted value; JSON null maps to null for reference types
      * @param <T> The type
+     * @return Converted value; JSON null maps to null for reference types
      * @throws JsonException If parsing or input fails
      */
     public static <T> T parse(File file, Class<T> type, JsonParsingMode mode) throws JsonException {
@@ -238,7 +241,7 @@ public class Json {
     }
 
     /**
-     * Parses a Java object and tries to represent it as string containing JSON document
+     * Parses a Java object and tries to represent it as string containing JSON document.
      *
      * @param obj Java object
      * @return String containing JSON document
@@ -249,7 +252,7 @@ public class Json {
 
     /**
      * Parses a Java object and tries to represent it as string containing JSON document, with line
-     * breaks and indentation of nested elements making it easier to read
+     * breaks and indentation of nested elements making it easier to read.
      *
      * @param obj Java object
      * @param indentation Symbols forming an indentation

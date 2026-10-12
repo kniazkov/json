@@ -22,7 +22,7 @@ final class Lexer {
      *
      * @param source Object containing JSON document for parsing
      */
-    public Lexer(Source source, JsonParsingMode mode) {
+    Lexer(Source source, JsonParsingMode mode) {
         this(source, mode, null);
     }
 
@@ -520,7 +520,7 @@ final class Lexer {
     }
 
     /**
-     * Converts hexadecimal number to decimal
+     * Converts hexadecimal number to decimal.
      *
      * @param ch Hexadecimal number
      * @return Decimal number

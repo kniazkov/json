@@ -556,7 +556,7 @@ public class JsonParserTest {
 
     /**
      * A common test for JSON parser where expected an error if parsed in STRICT mode, and success
-     * otherwise
+     * otherwise.
      *
      * @param json JSON document
      * @param json2 expected JSON document after transformation

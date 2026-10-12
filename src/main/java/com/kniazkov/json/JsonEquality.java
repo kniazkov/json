@@ -19,14 +19,16 @@ final class JsonEquality {
 
     static boolean equal(JsonElement left, Object right) {
         ArrayDeque<Pairs> stack = new ArrayDeque<>();
-        Object a = left, b = right;
+        Object a = left;
+        Object b = right;
         while (true) {
             if (a != b) {
                 if (a instanceof List<?> list) {
                     if (!(b instanceof List<?> other) || list.size() != other.size()) {
                         return false;
                     }
-                    Iterator<?> first = list.iterator(), second = other.iterator();
+                    Iterator<?> first = list.iterator();
+                    Iterator<?> second = other.iterator();
                     stack.push(
                             new Pairs() {
                                 public boolean hasNext() {

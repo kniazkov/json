@@ -11,7 +11,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Vector;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -34,6 +33,17 @@ public class JsonObjectTransformationTest {
         private Numbers() {}
 
         @Override
+        public int hashCode() {
+            return Objects.hash(
+                    byteValue,
+                    shortValue,
+                    intValue,
+                    longValue,
+                    floatValue == 0 ? 0f : floatValue,
+                    doubleValue == 0 ? 0d : doubleValue);
+        }
+
+        @Override
         public boolean equals(Object other) {
             if (!(other instanceof Numbers)) {
                 return false;
@@ -47,7 +57,6 @@ public class JsonObjectTransformationTest {
                     && doubleValue == nn.doubleValue;
         }
     }
-    ;
 
     @Test
     public void parsingNumbers() {
@@ -56,7 +65,8 @@ public class JsonObjectTransformationTest {
         try {
             obj =
                     Json.parse(
-                            "{byteValue: 3, shortValue: 5, int: 13, longValue: 17, floatValue: 19.01, doubleValue: 23.001}",
+                            "{byteValue: 3, shortValue: 5, int: 13,"
+                                    + " longValue: 17, floatValue: 19.01, doubleValue: 23.001}",
                             Numbers.class);
         } catch (JsonException ignored) {
             oops = true;
@@ -85,6 +95,12 @@ public class JsonObjectTransformationTest {
         Double doubleValue;
 
         @Override
+        public int hashCode() {
+            return Objects.hash(
+                    byteValue, shortValue, intValue, longValue, floatValue, doubleValue);
+        }
+
+        @Override
         public boolean equals(Object other) {
             if (!(other instanceof NumbersAsObjects)) {
                 return false;
@@ -98,7 +114,6 @@ public class JsonObjectTransformationTest {
                     && Objects.equals(doubleValue, nn.doubleValue);
         }
     }
-    ;
 
     @Test
     public void parsingNumbersAsObjects() {
@@ -107,7 +122,8 @@ public class JsonObjectTransformationTest {
         try {
             obj =
                     Json.parse(
-                            "{byteValue: 3, shortValue: 5, intValue: 13, longValue: 17, floatValue: 19.01, doubleValue: 23.001}",
+                            "{byteValue: 3, shortValue: 5, intValue: 13,"
+                                    + " longValue: 17, floatValue: 19.01, doubleValue: 23.001}",
                             NumbersAsObjects.class);
         } catch (JsonException ignored) {
             oops = true;
@@ -134,6 +150,11 @@ public class JsonObjectTransformationTest {
         Boolean object;
 
         Boolean anotherObject;
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(primitive, object, anotherObject);
+        }
 
         @Override
         public boolean equals(Object other) {
@@ -169,11 +190,16 @@ public class JsonObjectTransformationTest {
 
         int y;
 
-        public Vector() {}
+        Vector() {}
 
-        public Vector(int x, int y) {
+        Vector(int x, int y) {
             this.x = x;
             this.y = y;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(x, y);
         }
 
         @Override
@@ -210,6 +236,13 @@ public class JsonObjectTransformationTest {
         List<Vector> vectors;
 
         @Override
+        public int hashCode() {
+            return Objects.hash(
+                    bytes, shorts, integers, longs, floats, doubles, booleans, strings, generic,
+                    objects, vectors);
+        }
+
+        @Override
         public boolean equals(Object other) {
             if (!(other instanceof Lists)) {
                 return false;
@@ -237,7 +270,8 @@ public class JsonObjectTransformationTest {
             obj =
                     Json.parse(
                             "{bytes: [1,2,3], shorts: [1,2,3], integers: [1,2,3], longs: [1,2,3],"
-                                    + "floats: [1.01, 2.02, 3.03], doubles: [1.01, 2.02, 3.03], booleans: [true, false],"
+                                    + "floats: [1.01, 2.02, 3.03], doubles: [1.01,"
+                                    + " 2.02, 3.03], booleans: [true, false],"
                                     + "strings: ['one','two','three'], generic: ['test', 1], objects: [false, 2], "
                                     + "vectors: [{x: 1, y: 2}, {x: 3, y: 4}] }",
                             Lists.class);

@@ -22,7 +22,8 @@ public class JsonObjectTest {
         JsonObject obj = createTestObject();
         Assert.assertEquals(6, obj.size());
         Assert.assertEquals(
-                "{\"bool\": true, \"nothing\": null, \"str\": \"hello\", \"int\": 13, \"array\": [1, 2], \"obj\": {\"str\": \"test\"}}",
+                "{\"bool\": true, \"nothing\": null,"
+                        + " \"str\": \"hello\", \"int\": 13, \"array\": [1, 2], \"obj\": {\"str\": \"test\"}}",
                 obj.toString());
     }
 
@@ -44,7 +45,7 @@ public class JsonObjectTest {
     private static class TestNestedClass {
         private String str;
 
-        public TestNestedClass() {}
+        TestNestedClass() {}
 
         public String getString() {
             return str;
@@ -64,7 +65,7 @@ public class JsonObjectTest {
 
         private List<Integer> array;
 
-        public TestClass() {
+        TestClass() {
             nothing = "something";
         }
 

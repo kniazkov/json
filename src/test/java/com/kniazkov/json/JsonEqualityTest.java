@@ -57,7 +57,9 @@ public class JsonEqualityTest {
 
     @Test
     public void numbersCompareExactlyAcrossRepresentations() throws Exception {
-        JsonElement a = Json.parse("1"), b = Json.parse("1.00"), c = Json.parse("1e0");
+        JsonElement a = Json.parse("1");
+        JsonElement b = Json.parse("1.00");
+        JsonElement c = Json.parse("1e0");
         equal(a, b);
         equal(b, c);
         equal(a, c);
@@ -242,7 +244,9 @@ public class JsonEqualityTest {
     public void deepEqualityAndHashingRemainStackSafe() throws Exception {
         int depth = 20_000;
         String input = "{\"x\":[".repeat(depth) + "1" + "]}".repeat(depth);
-        JsonElement a = Json.parse(input), b = a.clone(), c = Json.parse(input.replace("1", "1.0"));
+        JsonElement a = Json.parse(input);
+        JsonElement b = a.clone();
+        JsonElement c = Json.parse(input.replace("1", "1.0"));
         equal(a, b);
         equal(b, c);
         equal(a, c);

@@ -45,6 +45,7 @@ public final class JsonSerializer {
      *
      * @param indentation JSON whitespace per level, or null for compact output
      * @return this serializer
+     * @throws IllegalArgumentException If indentation contains non-whitespace characters
      */
     public JsonSerializer setIndentation(String indentation) {
         if (indentation != null) {

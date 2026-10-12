@@ -122,7 +122,8 @@ public class ConfigurableIoTest {
                         StandardCharsets.UTF_8,
                         StandardCharsets.UTF_16LE,
                         Charset.forName("UTF-32BE"))) {
-            byte[] once = output(1, charset, true), mark = JsonEncoding.outputMark(charset);
+            byte[] once = output(1, charset, true);
+            byte[] mark = JsonEncoding.outputMark(charset);
             ByteArrayOutputStream twice = new ByteArrayOutputStream();
             twice.write(mark);
             twice.write(once);
@@ -255,7 +256,8 @@ public class ConfigurableIoTest {
     }
 
     static class TrackedOutput extends ByteArrayOutputStream {
-        boolean closed, flushed;
+        boolean closed;
+        boolean flushed;
 
         @Override
         public void close() {
@@ -406,7 +408,13 @@ public class ConfigurableIoTest {
         new JsonSerializer().setIndentation("  ").setIndentation(null).serialize(tree);
     }
 
-    /** Subprocess entry point checks content independently of the console's charset. */
+    /**
+     * Checks content independently of the console's charset in a subprocess.
+     *
+     * @param args Path to the UTF-8 input file
+     * @throws Exception If parsing or serialization fails
+     * @throws AssertionError If the charset or content differs from the expected value
+     */
     public static void main(String[] args) throws Exception {
         if (!Charset.defaultCharset().equals(CP1251)) {
             throw new AssertionError("Expected changed default charset");

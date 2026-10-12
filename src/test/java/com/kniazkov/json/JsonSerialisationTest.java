@@ -8,20 +8,20 @@ import org.junit.Test;
 
 /** Tests covering {@link JsonElement} class, method {@link JsonElement#toText(String)}}. */
 public class JsonSerialisationTest {
-    private static final String separator = System.lineSeparator();
+    private static final String SEPARATOR = System.lineSeparator();
 
     @Test
     public void object() {
         final String json = "{one: 1, two: 2, three: 3}";
         final String expected =
                 "{"
-                        + separator
+                        + SEPARATOR
                         + "  \"one\": 1,"
-                        + separator
+                        + SEPARATOR
                         + "  \"two\": 2,"
-                        + separator
+                        + SEPARATOR
                         + "  \"three\": 3"
-                        + separator
+                        + SEPARATOR
                         + "}";
         Assert.assertTrue(commonTest(json, expected));
     }
@@ -31,17 +31,17 @@ public class JsonSerialisationTest {
         final String json = "{one: 1, obj: {two: 2, three: 3}}";
         final String expected =
                 "{"
-                        + separator
+                        + SEPARATOR
                         + "  \"one\": 1,"
-                        + separator
+                        + SEPARATOR
                         + "  \"obj\": {"
-                        + separator
+                        + SEPARATOR
                         + "    \"two\": 2,"
-                        + separator
+                        + SEPARATOR
                         + "    \"three\": 3"
-                        + separator
+                        + SEPARATOR
                         + "  }"
-                        + separator
+                        + SEPARATOR
                         + "}";
         Assert.assertTrue(commonTest(json, expected));
     }
@@ -50,7 +50,7 @@ public class JsonSerialisationTest {
     public void objectWithNestedEmptyObject() {
         final String json = "{one: 1, empty: { }}";
         final String expected =
-                "{" + separator + "  \"one\": 1," + separator + "  \"empty\": {}" + separator + "}";
+                "{" + SEPARATOR + "  \"one\": 1," + SEPARATOR + "  \"empty\": {}" + SEPARATOR + "}";
         Assert.assertTrue(commonTest(json, expected));
     }
 
@@ -59,11 +59,11 @@ public class JsonSerialisationTest {
         final String json = "{one: 1, obj: {two: 2}}";
         final String expected =
                 "{"
-                        + separator
+                        + SEPARATOR
                         + "  \"one\": 1,"
-                        + separator
+                        + SEPARATOR
                         + "  \"obj\": {\"two\": 2}"
-                        + separator
+                        + SEPARATOR
                         + "}";
         Assert.assertTrue(commonTest(json, expected));
     }
@@ -72,7 +72,7 @@ public class JsonSerialisationTest {
     public void array() {
         final String json = "[1, 2, 3]";
         final String expected =
-                "[" + separator + "  1," + separator + "  2," + separator + "  3" + separator + "]";
+                "[" + SEPARATOR + "  1," + SEPARATOR + "  2," + SEPARATOR + "  3" + SEPARATOR + "]";
         Assert.assertTrue(commonTest(json, expected));
     }
 
@@ -80,8 +80,8 @@ public class JsonSerialisationTest {
     public void arrayWithNestedArray() {
         final String json = "[1, [2, 3]]";
         final String expected =
-                "[" + separator + "  1," + separator + "  [" + separator + "    2," + separator
-                        + "    3" + separator + "  ]" + separator + "]";
+                "[" + SEPARATOR + "  1," + SEPARATOR + "  [" + SEPARATOR + "    2," + SEPARATOR
+                        + "    3" + SEPARATOR + "  ]" + SEPARATOR + "]";
         Assert.assertTrue(commonTest(json, expected));
     }
 
@@ -89,7 +89,7 @@ public class JsonSerialisationTest {
     public void arrayWithNestedEmptyArray() {
         final String json = "[1, 2, []]";
         final String expected =
-                "[" + separator + "  1," + separator + "  2," + separator + "  []" + separator
+                "[" + SEPARATOR + "  1," + SEPARATOR + "  2," + SEPARATOR + "  []" + SEPARATOR
                         + "]";
         Assert.assertTrue(commonTest(json, expected));
     }
@@ -98,7 +98,7 @@ public class JsonSerialisationTest {
     public void arrayWithNestedArrayContainingOneItem() {
         final String json = "[1, 2, [3]]";
         final String expected =
-                "[" + separator + "  1," + separator + "  2," + separator + "  [3]" + separator
+                "[" + SEPARATOR + "  1," + SEPARATOR + "  2," + SEPARATOR + "  [3]" + SEPARATOR
                         + "]";
         Assert.assertTrue(commonTest(json, expected));
     }
@@ -108,29 +108,29 @@ public class JsonSerialisationTest {
         final String json = "{one: 1, two: 2, obj: {three: [3, [4]], four: [{five: null}]}}";
         final String expected =
                 "{"
-                        + separator
+                        + SEPARATOR
                         + "  \"one\": 1,"
-                        + separator
+                        + SEPARATOR
                         + "  \"two\": 2,"
-                        + separator
+                        + SEPARATOR
                         + "  \"obj\": {"
-                        + separator
+                        + SEPARATOR
                         + "    \"three\": ["
-                        + separator
+                        + SEPARATOR
                         + "      3,"
-                        + separator
+                        + SEPARATOR
                         + "      [4]"
-                        + separator
+                        + SEPARATOR
                         + "    ],"
-                        + separator
+                        + SEPARATOR
                         + "    \"four\": ["
-                        + separator
+                        + SEPARATOR
                         + "      {\"five\": null}"
-                        + separator
+                        + SEPARATOR
                         + "    ]"
-                        + separator
+                        + SEPARATOR
                         + "  }"
-                        + separator
+                        + SEPARATOR
                         + "}";
         Assert.assertTrue(commonTest(json, expected));
     }

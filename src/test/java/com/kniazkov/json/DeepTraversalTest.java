@@ -235,7 +235,8 @@ public class DeepTraversalTest {
 
     @Test
     public void deepCycleDetectionDoesNotBuildQuadraticPaths() {
-        Node root = new Node(), tail = root;
+        Node root = new Node();
+        Node tail = root;
         for (int i = 0; i < DEPTH; i++) {
             tail.next = new Node();
             tail = tail.next;

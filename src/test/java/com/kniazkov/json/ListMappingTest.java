@@ -37,7 +37,8 @@ public class ListMappingTest {
         Lists value =
                 Json.parse(
                         "{bytes:[null,1],shorts:[null,2],ints:[null,3],longs:[null,4],"
-                                + "floats:[null,1.5],doubles:[null,2.5],booleans:[null,true],strings:[null,'x'],items:[null,{value:7}]}",
+                                + "floats:[null,1.5],doubles:[null,2.5],"
+                                + "booleans:[null,true],strings:[null,'x'],items:[null,{value:7}]}",
                         Lists.class);
         List<?>[] lists = {
             value.bytes,
