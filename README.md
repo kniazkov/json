@@ -171,6 +171,18 @@ The parser must first recognize the root: for example `42e+` is an invalid numbe
 not the number `42` followed by a discarded suffix. Container recovery follows the
 rules below; the remaining JSON5 features are separate work (issue #7).
 
+### STRICT strings
+
+String values and object keys reject every unescaped control code unit U+0000–U+001F,
+including literal tabs and line breaks. Use the standard JSON escapes instead:
+`\"`, `\\`, `\/`, `\b`, `\f`, `\n`, `\r`, `\t`, or `\u` followed by exactly four
+hexadecimal digits. Escaped control characters, including `\u0000`, remain valid.
+`\'` is not a JSON escape; an ordinary apostrophe needs no escape inside double quotes.
+Raw U+007F, U+0085, U+2028 and U+2029 are not part of the forbidden control range.
+
+These restrictions are specific to STRICT. JSON5 and EXTENDED string behavior is
+unchanged here; completing their string syntax is tracked in issue #7.
+
 ### End-of-input diagnostics
 
 The internal lexer always returns a token: EOF is represented by `TokenEnd`, never
