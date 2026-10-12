@@ -57,6 +57,125 @@ Constructor failures preserve their causes. Java module/access restrictions stil
 apply. Records, constructor-parameter binding and non-static inner-class construction
 are not provided.
 
+## A document mapped to several classes
+
+An order combines five Java classes: `Order` contains a `Customer` and a list of
+`OrderLine` objects; the customer has an `Address`, and each line has a `Product`.
+The mapper follows these field types through the entire document. A single parse
+call constructs every nested object and list element.
+
+```java
+String json = """
+        {
+          "order-id": "ORD-1042",
+          "customer": {
+            "name": "Anna",
+            "address": {
+              "city": "Москва",
+              "street": "Лесная, 12",
+              "postalCode": "125047"
+            }
+          },
+          "lines": [
+            {
+              "product": {
+                "sku": "CAM-01",
+                "name": "Camera",
+                "price": 1250.75
+              },
+              "quantity": 2
+            },
+            {
+              "product": {
+                "sku": "FLT-03",
+                "name": "Red filter",
+                "price": 19.90
+              },
+              "quantity": 3
+            }
+          ],
+          "labels": {
+            "channel": "website",
+            "delivery": "courier"
+          },
+          "comment": null
+        }
+        """;
+
+class Address {
+    String city;
+    String street;
+    String postalCode;
+}
+class Customer {
+    String name;
+    Address address;
+}
+class Product {
+    String sku;
+    String name;
+    BigDecimal price;
+}
+class OrderLine {
+    Product product;
+    int quantity;
+}
+class Order {
+    @JsonProperty(name = "order-id")
+    String id;
+    Customer customer;
+    List<OrderLine> lines;
+    Map<String, String> labels;
+    String comment;
+}
+
+Order order = Json.parse(
+        json,
+        Order.class,
+        JsonParsingMode.STRICT)
+        .orElseThrow();
+
+assert order.id.equals("ORD-1042");
+assert order.customer.name.equals("Anna");
+assert order.customer.address.city.equals("Москва");
+assert order.customer.address.postalCode.equals("125047");
+assert order.lines.size() == 2;
+
+OrderLine firstLine = order.lines.get(0);
+Product camera = firstLine.product;
+assert camera.sku.equals("CAM-01");
+assert camera.price.equals(new BigDecimal("1250.75"));
+assert firstLine.quantity == 2;
+
+OrderLine secondLine = order.lines.get(1);
+assert secondLine.product.name.equals("Red filter");
+assert secondLine.product.price.equals(new BigDecimal("19.90"));
+assert secondLine.quantity == 3;
+assert order.labels.get("delivery")
+        .equals("courier");
+assert order.comment == null;
+
+BigDecimal total = BigDecimal.ZERO;
+for (OrderLine line : order.lines) {
+    BigDecimal lineTotal = line.product.price
+            .multiply(BigDecimal.valueOf(line.quantity));
+    total = total.add(lineTotal);
+}
+assert total.equals(new BigDecimal("2561.20"));
+```
+
+`List<OrderLine>` and `Map<String, String>` retain their generic field types, so
+there is no need for a `JsonType` at this root: `Order.class` is enough. Prices go
+directly into `BigDecimal`; no intermediate `double` conversion is needed. The
+explicit JSON null becomes Java null in `comment`, while the root parse result is
+an `Optional<Order>`.
+
+These local classes make the example self-contained. In application code, put the
+models in separate files or make them static nested classes. Each needs a usable
+no-argument constructor; the implicit constructors in this example satisfy that
+requirement. A field with incompatible data fails conversion with a path such as
+`$["lines"][0]["quantity"]`.
+
 ## Which fields participate?
 
 | Field | Java → JSON | JSON → Java |
