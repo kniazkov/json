@@ -114,8 +114,9 @@ public class JsonInputTest {
         try {
             Files.writeString(path, "\"Привет😀\"", StandardCharsets.UTF_8);
             Assert.assertEquals("Привет😀", Json.parse(path.toFile()).stringValue());
-            Assert.assertEquals("Привет😀", Json.parse(path.toFile(), String.class));
-            Assert.assertEquals("Привет😀", Json.parse(path.toFile(), String.class, STRICT));
+            Assert.assertEquals("Привет😀", Json.parse(path.toFile(), String.class).orElseThrow());
+            Assert.assertEquals(
+                    "Привет😀", Json.parse(path.toFile(), String.class, STRICT).orElseThrow());
             Files.write(path, "42".getBytes(StandardCharsets.UTF_16LE));
             Assert.assertEquals(
                     42, Json.parse(path.toFile(), StandardCharsets.UTF_16LE, STRICT).intValue());
@@ -139,9 +140,11 @@ public class JsonInputTest {
                 Assert.assertThrows(JsonException.class, () -> Json.parse(path.toFile()));
         Assert.assertTrue(missing.getCause() instanceof java.nio.file.NoSuchFileException);
         Assert.assertEquals(path + ", 1:1", missing.error().location().toString());
-        Assert.assertThrows(JsonException.class, () -> Json.parse(path.toFile(), String.class));
         Assert.assertThrows(
-                JsonException.class, () -> Json.parse(path.toFile(), String.class, STRICT));
+                JsonException.class, () -> Json.parse(path.toFile(), String.class).orElseThrow());
+        Assert.assertThrows(
+                JsonException.class,
+                () -> Json.parse(path.toFile(), String.class, STRICT).orElseThrow());
     }
 
     @Test

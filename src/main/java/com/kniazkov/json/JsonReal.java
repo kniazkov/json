@@ -5,6 +5,7 @@ package com.kniazkov.json;
 
 import java.math.BigDecimal;
 import java.util.Objects;
+import java.util.Optional;
 
 /** Exact JSON decimal number. */
 public final class JsonReal extends JsonNumber {
@@ -30,13 +31,13 @@ public final class JsonReal extends JsonNumber {
     }
 
     @Override
-    public BigDecimal numberValue() {
-        return value;
+    public Optional<Number> numberValue() {
+        return Optional.of(value);
     }
 
     @Override
-    public BigDecimal decimalValue() {
-        return value;
+    public Optional<BigDecimal> decimalValue() {
+        return Optional.of(value);
     }
 
     @Override

@@ -172,10 +172,10 @@ public class ContainerRecoveryTest {
     public void validNestedValuesKeepTheirParents() throws Exception {
         JsonArray root = Json.parse("[{\"a\":[1,,2] \"b\":3]").arrayValueOrThrow();
         JsonObject obj = root.get(0).objectValueOrThrow();
-        Assert.assertSame(root, obj.parent());
-        JsonArray nested = obj.element("a").arrayValueOrThrow();
-        Assert.assertSame(obj, nested.parent());
-        Assert.assertSame(nested, nested.get(1).parent());
-        Assert.assertEquals(3, obj.element("b").intValue());
+        Assert.assertSame(root, obj.parent().orElseThrow());
+        JsonArray nested = obj.element("a").orElseThrow().arrayValueOrThrow();
+        Assert.assertSame(obj, nested.parent().orElseThrow());
+        Assert.assertSame(nested, nested.get(1).parent().orElseThrow());
+        Assert.assertEquals(3, obj.element("b").orElseThrow().intValue());
     }
 }

@@ -16,25 +16,25 @@ schema, or edit only a few properties.
 JsonObject root = Json.parse("""
         {"station":{"name":"Hilltop"},"readings":[12,13],"note":null}
         """).objectValueOrThrow();
-String name = root.element("station").objectValueOrThrow()
-        .element("name").stringValueOrThrow();
-int second = root.element("readings").arrayValueOrThrow().element(1).intValueOrThrow();
+String name = root.element("station").orElseThrow().objectValueOrThrow()
+        .element("name").orElseThrow().stringValueOrThrow();
+int second = root.element("readings").orElseThrow().arrayValueOrThrow().element(1).intValueOrThrow();
 assert name.equals("Hilltop");
 assert second == 13;
-assert root.element("note").isNull();
-assert root.element("missing") == null;
+assert root.element("note").orElseThrow().isNull();
+assert root.element("missing").isEmpty();
 ```
 
-**Missing and JSON null are different.** `get(key)` and `element(key)` return Java
-null for an absent member. An explicit JSON null is a `JsonNull` node.
-Check for absence before calling an accessor; calling `isNull()` on a missing
-member is an ordinary Java `NullPointerException`.
+**Missing and JSON null are different.** `get(key)` follows `Map` and returns Java
+null for an absent member. `element(key)` returns an empty `Optional` instead.
+An explicit JSON null is a `JsonNull` node inside a present `Optional`.
 
 ```java
 JsonObject root = Json.parse("{}").objectValueOrThrow();
-JsonElement title = root.element("title");
-String displayTitle = title == null || title.isNull()
-        ? "Untitled" : title.stringValueOrThrow();
+String displayTitle = root.element("title")
+        .filter(value -> !value.isNull())
+        .map(JsonElement::stringValueOrThrow)
+        .orElse("Untitled");
 assert displayTitle.equals("Untitled");
 ```
 
@@ -48,8 +48,8 @@ Array `get(index)` and `element(index)` use normal bounds checking.
 | `booleanValue()` | `false` |
 | `intValue()`, `longValue()`, `doubleValue()` | Zero |
 | `stringValue()` | Text for numbers/booleans, `"null"` for JSON null, empty string for containers |
-| `numberValue()`, `decimalValue()` | Java null; decimal is also null for non-finite numbers |
-| `toJsonArray()`, `toJsonObject()` | Java null |
+| `numberValue()`, `decimalValue()` | Empty Optional; decimal is also empty for non-finite numbers |
+| `toJsonArray()`, `toJsonObject()` | Empty Optional |
 
 Soft numeric access may lose information; see [numeric conversion](numbers.md).
 Use `isString()`, `isNumber()`, `isBoolean()`, `isNull()` or container casts to
@@ -81,8 +81,8 @@ exposures.addNumber(new BigDecimal("0.1"));
 exposures.addNumber(new BigDecimal("0.2"));
 JsonObject metadata = root.createObject("metadata");
 metadata.addString("filter", "H-alpha");
-assert metadata.parent() == root;
-assert exposures.parent() == root;
+assert metadata.parent().orElseThrow() == root;
+assert exposures.parent().orElseThrow() == root;
 ```
 
 `addNumber` has `long`, `float`, `double` and `Number` overloads. Scalars can
@@ -102,15 +102,15 @@ template.addNumber(1);
 JsonObject root = new JsonObject();
 root.addElement("copy", template);
 template.addNumber(2);
-JsonArray stored = root.element("copy").arrayValueOrThrow();
+JsonArray stored = root.element("copy").orElseThrow().arrayValueOrThrow();
 assert stored.size() == 1;
 assert stored != template;
-assert stored.parent() == root;
-assert template.parent() == null;
+assert stored.parent().orElseThrow() == root;
+assert template.parent().isEmpty();
 
 JsonElement detachedCopy = root.clone();
 assert detachedCopy.equals(root);
-assert detachedCopy.parent() == null;
+assert detachedCopy.parent().isEmpty();
 ```
 
 For a child you intend to fill immediately, `createArray`/`createObject` avoids
@@ -128,7 +128,7 @@ clones the replacement; it never exposes an unguarded insertion path.
 JsonObject root = Json.parse("{a:1,b:2}").objectValueOrThrow();
 root.entrySet().iterator().next().setValue(JsonNumber.of(10));
 root.keySet().remove("b");
-assert root.element("a").intValueOrThrow() == 10;
+assert root.element("a").orElseThrow().intValueOrThrow() == 10;
 assert root.size() == 1;
 ```
 
@@ -165,3 +165,29 @@ while used as hash keys or set members.
 
 Built-in cloning, equality, hashing and writing use iterative traversal. Calls into
 third-party collections or user code still follow those implementations' own limits.
+
+## Null arguments and optional results
+
+Own accessors use `Optional` wherever a value may be absent: `parent()`,
+`element(String)`, `toJsonArray()`, `toJsonObject()`, `numberValue()` and
+`decimalValue()`. `element(int)` always returns a node or throws for an invalid
+index. `List`/`Map` methods retain their Java contracts. `toJavaObject` may return
+Java null; typed `Json.parse` returns an optional.
+
+Reference arguments must be non-null unless they have one of these explicit meanings:
+
+- A Java value passed to serialization or `parseJavaObject` may be null: it means
+  JSON null, including inside Java arrays, collections and objects.
+- An indentation argument may be null for compact output.
+- A source name may be null for unnamed input or the input file's path.
+- A parent passed to a node constructor may be null for a root node.
+- An exception cause may be null when there is no underlying exception.
+- Inherited `Object`, `List` and `Map` methods follow their own contracts, including
+  equality/query arguments and `sort(null)` for natural ordering.
+
+Invalid null arguments throw `NullPointerException`. In particular, string
+payloads, object keys for insertion and `element`, nodes being inserted, numeric
+payloads, mapping types, warning destinations, I/O endpoints, configuration enums,
+charsets, language identifiers, exception messages and error descriptions must
+not be null. Use `addNull` or `JsonNull.INSTANCE` to store JSON null; a
+`JsonString(null)` is not a valid string node.

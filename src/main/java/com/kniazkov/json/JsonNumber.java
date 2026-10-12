@@ -139,12 +139,12 @@ public abstract class JsonNumber extends JsonElement {
 
     @Override
     public Number toJavaObject() {
-        return numberValue();
+        return numberValueOrThrow();
     }
 
     @Override
     public boolean isInteger() {
-        BigDecimal value = decimalValue();
+        BigDecimal value = decimalValue().orElse(null);
         return value != null
                 && value.compareTo(BigDecimal.valueOf(Integer.MIN_VALUE)) >= 0
                 && value.compareTo(BigDecimal.valueOf(Integer.MAX_VALUE)) <= 0
@@ -153,7 +153,7 @@ public abstract class JsonNumber extends JsonElement {
 
     @Override
     public boolean isLongInteger() {
-        BigDecimal value = decimalValue();
+        BigDecimal value = decimalValue().orElse(null);
         return value != null
                 && value.compareTo(BigDecimal.valueOf(Long.MIN_VALUE)) >= 0
                 && value.compareTo(BigDecimal.valueOf(Long.MAX_VALUE)) <= 0
@@ -170,14 +170,14 @@ public abstract class JsonNumber extends JsonElement {
         if (!isFinite()) {
             return (int) doubleValue();
         }
-        BigDecimal value = decimalValue();
+        BigDecimal value = decimalValueOrThrow();
         if (value.compareTo(BigDecimal.valueOf(Integer.MIN_VALUE)) < 0) {
             return Integer.MIN_VALUE;
         }
         if (value.compareTo(BigDecimal.valueOf(Integer.MAX_VALUE)) > 0) {
             return Integer.MAX_VALUE;
         }
-        return numberValue().intValue();
+        return numberValueOrThrow().intValue();
     }
 
     @Override
@@ -185,19 +185,19 @@ public abstract class JsonNumber extends JsonElement {
         if (!isFinite()) {
             return (long) doubleValue();
         }
-        BigDecimal value = decimalValue();
+        BigDecimal value = decimalValueOrThrow();
         if (value.compareTo(BigDecimal.valueOf(Long.MIN_VALUE)) < 0) {
             return Long.MIN_VALUE;
         }
         if (value.compareTo(BigDecimal.valueOf(Long.MAX_VALUE)) > 0) {
             return Long.MAX_VALUE;
         }
-        return numberValue().longValue();
+        return numberValueOrThrow().longValue();
     }
 
     @Override
     public double doubleValue() {
-        return numberValue().doubleValue();
+        return numberValueOrThrow().doubleValue();
     }
 
     @Override

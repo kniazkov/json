@@ -19,10 +19,10 @@ public class JsonValueAccessTest {
         BigDecimal decimal = new BigDecimal("0.123456789012345678901234567890");
         JsonElement first = JsonNumber.of(integer);
         JsonElement second = JsonNumber.of(decimal);
-        Assert.assertSame(integer, first.numberValue());
-        Assert.assertEquals(new BigDecimal(integer), first.decimalValue());
-        Assert.assertSame(decimal, second.numberValue());
-        Assert.assertSame(decimal, second.decimalValue());
+        Assert.assertSame(integer, first.numberValue().orElseThrow());
+        Assert.assertEquals(new BigDecimal(integer), first.decimalValue().orElseThrow());
+        Assert.assertSame(decimal, second.numberValue().orElseThrow());
+        Assert.assertSame(decimal, second.decimalValue().orElseThrow());
         Assert.assertSame(integer, first.numberValueOrThrow());
         Assert.assertSame(decimal, second.decimalValueOrThrow());
         Assert.assertEquals(new BigDecimal(integer), first.decimalValueOrThrow());
@@ -34,8 +34,8 @@ public class JsonValueAccessTest {
                     new JsonArray(),
                     new JsonObject()
                 }) {
-            Assert.assertNull(value.numberValue());
-            Assert.assertNull(value.decimalValue());
+            Assert.assertTrue(value.numberValue().isEmpty());
+            Assert.assertTrue(value.decimalValue().isEmpty());
             Assert.assertThrows(JsonDataException.class, value::numberValueOrThrow);
             Assert.assertThrows(JsonDataException.class, value::decimalValueOrThrow);
         }
@@ -120,7 +120,7 @@ public class JsonValueAccessTest {
                 }
             }
         }
-        Assert.assertThrows(JsonDataException.class, new JsonString(null)::stringValueOrThrow);
+        Assert.assertThrows(NullPointerException.class, () -> new JsonString(null));
     }
 
     @Test
@@ -178,9 +178,9 @@ public class JsonValueAccessTest {
                 new BigInteger("9007199254740993"), ((Map<?, ?>) list.get(2)).get("id"));
         Assert.assertEquals(integer, Json.parse(integer.toString()).toJavaObject());
         Assert.assertEquals(real, Json.parse(real.toString()).toJavaObject());
-        Assert.assertEquals(integer, Json.parse(integer.toString(), Number.class));
-        Assert.assertEquals(real, Json.parse(real.toString(), Object.class));
-        Assert.assertEquals(Double.valueOf(0.1), Json.parse("0.1", Double.class));
+        Assert.assertEquals(integer, Json.parse(integer.toString(), Number.class).orElseThrow());
+        Assert.assertEquals(real, Json.parse(real.toString(), Object.class).orElseThrow());
+        Assert.assertEquals(Double.valueOf(0.1), Json.parse("0.1", Double.class).orElseThrow());
     }
 
     static class UntypedFields {
@@ -193,8 +193,9 @@ public class JsonValueAccessTest {
     public void untypedPojoFieldsAndListsPreserveNumbers() throws Exception {
         UntypedFields result =
                 Json.parse(
-                        "{value:9007199254740993,values:[0.12345678901234567890],raw:[42]}",
-                        UntypedFields.class);
+                                "{value:9007199254740993,values:[0.12345678901234567890],raw:[42]}",
+                                UntypedFields.class)
+                        .orElseThrow();
         Assert.assertEquals(new BigInteger("9007199254740993"), result.value);
         Assert.assertEquals(new BigDecimal("0.12345678901234567890"), result.values.get(0));
         Assert.assertEquals(BigInteger.valueOf(42), result.raw.get(0));
@@ -204,7 +205,7 @@ public class JsonValueAccessTest {
     public void renamedMetadataAndSyntaxDiagnosticsRemainUsable() {
         JsonArray array = new JsonArray();
         array.addNumber(1);
-        Assert.assertSame(array, array.element(0).parent());
+        Assert.assertSame(array, array.element(0).parent().orElseThrow());
         Assert.assertSame(JsonBoolean.TRUE, JsonBoolean.of(true));
         JsonException exception =
                 Assert.assertThrows(

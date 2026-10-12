@@ -34,13 +34,13 @@ public class JsonObjectViewsTest {
         for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
             Assert.assertEquals(keys[index++], entry.getKey());
             Assert.assertSame(object.get(entry.getKey()), entry.getValue());
-            Assert.assertSame(object, entry.getValue().parent());
+            Assert.assertSame(object, entry.getValue().parent().orElseThrow());
         }
         JsonObject copy = (JsonObject) object.clone();
         Assert.assertEquals(object.toString(), copy.toString());
         Assert.assertEquals(Arrays.asList(keys), new ArrayList<>(copy.keySet()));
         for (JsonElement value : copy.values()) {
-            Assert.assertSame(copy, value.parent());
+            Assert.assertSame(copy, value.parent().orElseThrow());
         }
         Assert.assertEquals(
                 object.toString(),
@@ -140,9 +140,10 @@ public class JsonObjectViewsTest {
         supplied.createArray("array").addNumber(7);
         Assert.assertSame(old, entry.setValue(supplied));
         Assert.assertNotSame(supplied, entry.getValue());
-        Assert.assertSame(object, entry.getValue().parent());
+        Assert.assertSame(object, entry.getValue().parent().orElseThrow());
         Assert.assertSame(
-                entry.getValue(), entry.getValue().objectValueOrThrow().get("array").parent());
+                entry.getValue(),
+                entry.getValue().objectValueOrThrow().get("array").parent().orElseThrow());
         supplied.addNumber("new", 1);
         Assert.assertFalse(entry.getValue().objectValueOrThrow().containsKey("new"));
         consistent(object, "c", "a", "b");

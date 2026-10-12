@@ -25,7 +25,7 @@ public class JsonApiTest {
         Simple obj = null;
         boolean oops = false;
         try {
-            obj = Json.parse(json, Simple.class, JsonParsingMode.JSON5);
+            obj = Json.parse(json, Simple.class, JsonParsingMode.JSON5).orElseThrow();
         } catch (JsonException ignored) {
             oops = true;
         }
@@ -35,7 +35,7 @@ public class JsonApiTest {
 
         obj = null;
         try {
-            obj = Json.parse(json, Simple.class, JsonParsingMode.STRICT);
+            obj = Json.parse(json, Simple.class, JsonParsingMode.STRICT).orElseThrow();
         } catch (JsonException ignored) {
             oops = true;
         }
@@ -54,7 +54,7 @@ public class JsonApiTest {
         }
         Assert.assertFalse(oops);
         Assert.assertNotNull(root);
-        JsonObject obj = root.toJsonObject();
+        JsonObject obj = root.toJsonObject().orElseThrow();
         Assert.assertNotNull(obj);
         Assert.assertTrue(obj.containsKey("str"));
         Assert.assertEquals("hello", obj.get("str").stringValue());
@@ -65,7 +65,7 @@ public class JsonApiTest {
         Simple obj = null;
         boolean oops = false;
         try {
-            obj = Json.parse(new File(RESOURCES + "simple.json"), Simple.class);
+            obj = Json.parse(new File(RESOURCES + "simple.json"), Simple.class).orElseThrow();
         } catch (JsonException ignored) {
             oops = true;
         }
@@ -80,7 +80,7 @@ public class JsonApiTest {
         Simple obj = null;
         boolean oops = false;
         try {
-            obj = Json.parse(file, Simple.class, JsonParsingMode.JSON5);
+            obj = Json.parse(file, Simple.class, JsonParsingMode.JSON5).orElseThrow();
         } catch (JsonException ignored) {
             oops = true;
         }
@@ -90,7 +90,7 @@ public class JsonApiTest {
 
         obj = null;
         try {
-            obj = Json.parse(file, Simple.class, JsonParsingMode.STRICT);
+            obj = Json.parse(file, Simple.class, JsonParsingMode.STRICT).orElseThrow();
         } catch (JsonException ignored) {
             oops = true;
         }

@@ -28,12 +28,12 @@ public class MappingFieldPolicyTest {
                 Json.parse(Json.serialize(new State()), JsonParsingMode.STRICT)
                         .objectValueOrThrow();
         Assert.assertEquals(3, json.size());
-        Assert.assertEquals(1, json.element("value").intValue());
-        Assert.assertEquals(7, json.element("fixed").intValue());
-        Assert.assertEquals("constructor", json.element("label").stringValue());
-        Assert.assertNull(json.element("enabled"));
-        Assert.assertNull(json.element("CONSTANT"));
-        Assert.assertNull(json.element("secret"));
+        Assert.assertEquals(1, json.element("value").orElseThrow().intValue());
+        Assert.assertEquals(7, json.element("fixed").orElseThrow().intValue());
+        Assert.assertEquals("constructor", json.element("label").orElseThrow().stringValue());
+        Assert.assertTrue(json.element("enabled").isEmpty());
+        Assert.assertTrue(json.element("CONSTANT").isEmpty());
+        Assert.assertTrue(json.element("secret").isEmpty());
     }
 
     @Test
@@ -43,8 +43,9 @@ public class MappingFieldPolicyTest {
             State.enabled = true;
             State value =
                     Json.parse(
-                            "{enabled:false,CONSTANT:'bad',secret:'bad',value:42,fixed:99,label:'bad'}",
-                            State.class);
+                                    "{enabled:false,CONSTANT:'bad',secret:'bad',value:42,fixed:99,label:'bad'}",
+                                    State.class)
+                            .orElseThrow();
             Assert.assertNotNull(value);
             Assert.assertTrue(State.enabled);
             Assert.assertEquals("SECRET", value.secret);
@@ -80,15 +81,16 @@ public class MappingFieldPolicyTest {
         try {
             Annotated.global = 10;
             Annotated value =
-                    Json.parse("{global:99,hidden:'bad',immutable:99,renamed:5}", Annotated.class);
+                    Json.parse("{global:99,hidden:'bad',immutable:99,renamed:5}", Annotated.class)
+                            .orElseThrow();
             Assert.assertEquals(10, Annotated.global);
             Assert.assertEquals("hidden", value.hidden);
             Assert.assertEquals(20, value.immutable);
             Assert.assertEquals(5, value.field);
             JsonObject json = Json.parse(Json.serialize(value)).objectValueOrThrow();
             Assert.assertEquals(2, json.size());
-            Assert.assertEquals(20, json.element("immutable").intValue());
-            Assert.assertEquals(5, json.element("renamed").intValue());
+            Assert.assertEquals(20, json.element("immutable").orElseThrow().intValue());
+            Assert.assertEquals(5, json.element("renamed").orElseThrow().intValue());
         } finally {
             Annotated.global = previous;
         }
@@ -120,9 +122,10 @@ public class MappingFieldPolicyTest {
         try {
             Child value =
                     Json.parse(
-                            "{inherited:99,hiddenTransient:99,hiddenStatic:99,"
-                                    + "hiddenFinal:99,parentTransient:99,parentStatic:99}",
-                            Child.class);
+                                    "{inherited:99,hiddenTransient:99,hiddenStatic:99,"
+                                            + "hiddenFinal:99,parentTransient:99,parentStatic:99}",
+                                    Child.class)
+                            .orElseThrow();
             Assert.assertEquals(99, value.inherited);
             Assert.assertEquals(12, value.hiddenTransient);
             Assert.assertEquals(14, value.hiddenFinal);
@@ -134,9 +137,9 @@ public class MappingFieldPolicyTest {
             Assert.assertEquals(4, base.hiddenFinal);
             Assert.assertEquals(5, base.parentTransient);
             JsonObject json = Json.parse(Json.serialize(value)).objectValueOrThrow();
-            Assert.assertNull(json.element("hiddenTransient"));
-            Assert.assertNull(json.element("hiddenStatic"));
-            Assert.assertEquals(14, json.element("hiddenFinal").intValue());
+            Assert.assertTrue(json.element("hiddenTransient").isEmpty());
+            Assert.assertTrue(json.element("hiddenStatic").isEmpty());
+            Assert.assertEquals(14, json.element("hiddenFinal").orElseThrow().intValue());
         } finally {
             Child.hiddenStatic = childStatic;
             Parent.parentStatic = parentStatic;
@@ -170,6 +173,7 @@ public class MappingFieldPolicyTest {
         Assert.assertTrue("Fixture must actually contain a synthetic outer reference", found);
         // No enclosing instance can be supplied to the existing no-argument mapper.
         Assert.assertThrows(
-                JsonDataException.class, () -> Json.parse("{value:9}", Outer.Inner.class));
+                JsonDataException.class,
+                () -> Json.parse("{value:9}", Outer.Inner.class).orElseThrow());
     }
 }

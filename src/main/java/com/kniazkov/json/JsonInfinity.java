@@ -3,6 +3,8 @@
  */
 package com.kniazkov.json;
 
+import java.util.Optional;
+
 /** Signed JSON5 infinity. Its textual representation is not strict JSON. */
 public final class JsonInfinity extends JsonNumber {
     private final boolean negative;
@@ -27,8 +29,8 @@ public final class JsonInfinity extends JsonNumber {
     }
 
     @Override
-    public Double numberValue() {
-        return negative ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+    public Optional<Number> numberValue() {
+        return Optional.of(negative ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY);
     }
 
     @Override

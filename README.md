@@ -43,7 +43,7 @@ import the named types from `com.kniazkov.json`.
 JsonObject settings = Json.parse("""
         {"name": "Observatory", "port": 8080}
         """, JsonParsingMode.STRICT).objectValueOrThrow();
-String name = settings.element("name").stringValueOrThrow();
+String name = settings.element("name").orElseThrow().stringValueOrThrow();
 settings.addBoolean("enabled", true);
 System.out.println(Json.serialize(settings, "  "));
 assert name.equals("Observatory");
@@ -56,7 +56,7 @@ class Settings {
     String name;
     int port = 8080;
 }
-Settings settings = Json.parse("{name: 'Observatory'}", Settings.class);
+Settings settings = Json.parse("{name: 'Observatory'}", Settings.class).orElseThrow();
 assert settings.port == 8080;
 ```
 

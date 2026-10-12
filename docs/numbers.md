@@ -63,8 +63,9 @@ assert exactPrice.decimalValueOrThrow().equals(new BigDecimal("0.1"));
 
 | Operation | Rule |
 | --- | --- |
-| `numberValue()` / `toJavaObject()` | Stored BigInteger/BigDecimal; boxed Double for special values |
-| `decimalValue()` | Exact finite decimal; null for special values |
+| `numberValue()` | Optional containing BigInteger/BigDecimal; boxed Double for special values |
+| `toJavaObject()` | Stored BigInteger/BigDecimal; boxed Double for special values |
+| `decimalValue()` | Optional containing the exact finite decimal; empty for special values |
 | `isInteger()` / `isLongInteger()` | Is mathematically integral and fits the signed 32-/64-bit range |
 | `intValue()` / `longValue()` | Truncate toward zero; saturate at range boundaries |
 | `doubleValue()` | May round, overflow to infinity or underflow to zero |

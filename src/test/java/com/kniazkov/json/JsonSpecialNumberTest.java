@@ -42,12 +42,14 @@ public class JsonSpecialNumberTest {
     public void gettersAndJavaConversionHaveDefinedNonfiniteBehavior() {
         for (JsonNumber value :
                 new JsonNumber[] {new JsonNaN(), new JsonInfinity(false), new JsonInfinity(true)}) {
-            Assert.assertEquals(value.numberValue(), value.numberValueOrThrow());
-            Assert.assertEquals(value.numberValue(), value.toJavaObject());
-            Assert.assertEquals(value.numberValue(), value.toJavaObject(Number.class));
-            Assert.assertEquals(value.numberValue(), value.toJavaObject(Double.class));
+            Assert.assertEquals(value.numberValue().orElseThrow(), value.numberValueOrThrow());
+            Assert.assertEquals(value.numberValue().orElseThrow(), value.toJavaObject());
+            Assert.assertEquals(
+                    value.numberValue().orElseThrow(), value.toJavaObject(Number.class));
+            Assert.assertEquals(
+                    value.numberValue().orElseThrow(), value.toJavaObject(Double.class));
             Assert.assertEquals((float) value.doubleValue(), value.toJavaObject(Float.class), 0);
-            Assert.assertNull(value.decimalValue());
+            Assert.assertTrue(value.decimalValue().isEmpty());
             Assert.assertThrows(
                     JsonDataException.class, () -> value.toJavaObject(BigDecimal.class));
             Assert.assertThrows(
@@ -70,11 +72,11 @@ public class JsonSpecialNumberTest {
         array.addNumber(Float.NEGATIVE_INFINITY);
         object.addElement("array", array);
         JsonObject copy = (JsonObject) object.clone();
-        Assert.assertTrue(copy.element("nan").isNaN());
-        Assert.assertSame(copy, copy.element("nan").parent());
-        JsonArray nested = copy.element("array").arrayValueOrThrow();
-        Assert.assertSame(copy, nested.parent());
-        Assert.assertSame(nested, nested.get(0).parent());
+        Assert.assertTrue(copy.element("nan").orElseThrow().isNaN());
+        Assert.assertSame(copy, copy.element("nan").orElseThrow().parent().orElseThrow());
+        JsonArray nested = copy.element("array").orElseThrow().arrayValueOrThrow();
+        Assert.assertSame(copy, nested.parent().orElseThrow());
+        Assert.assertSame(nested, nested.get(0).parent().orElseThrow());
         Assert.assertTrue(nested.get(1).isNegativeInfinity());
         Assert.assertEquals(
                 copy.toString(), Json.parse(copy.toString(), JsonParsingMode.JSON5).toString());

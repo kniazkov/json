@@ -97,7 +97,7 @@ final class JsonEquality {
                 return a.isPositiveInfinity() && b.isPositiveInfinity()
                         || a.isNegativeInfinity() && b.isNegativeInfinity();
             }
-            return a.decimalValue().compareTo(b.decimalValue()) == 0;
+            return a.decimalValueOrThrow().compareTo(b.decimalValueOrThrow()) == 0;
         }
         if (a instanceof JsonString && b instanceof JsonString) {
             return Objects.equals(a.stringValue(), b.stringValue());
@@ -113,7 +113,7 @@ final class JsonEquality {
             if (!value.isFinite()) {
                 return Double.hashCode(value.doubleValue());
             }
-            BigDecimal decimal = value.decimalValue();
+            BigDecimal decimal = value.decimalValueOrThrow();
             if (decimal.signum() == 0) {
                 return 0;
             }

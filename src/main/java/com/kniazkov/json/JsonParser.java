@@ -100,6 +100,7 @@ public final class JsonParser {
      * @throws JsonException If parsing fails
      */
     public JsonElement parse(String text) throws JsonException {
+        Objects.requireNonNull(text, "text");
         return parse(new StringReader(text));
     }
 
@@ -111,6 +112,7 @@ public final class JsonParser {
      * @throws JsonException If reading/parsing fails
      */
     public JsonElement parse(Reader reader) throws JsonException {
+        Objects.requireNonNull(reader, "reader");
         List<JsonError> diagnostics = begin();
         try {
             return read(JsonEncoding.characters(reader, bomPolicy), sourceName, diagnostics);
@@ -127,6 +129,7 @@ public final class JsonParser {
      * @throws JsonException If input/parsing fails
      */
     public JsonElement parse(InputStream stream) throws JsonException {
+        Objects.requireNonNull(stream, "stream");
         List<JsonError> diagnostics = begin();
         try {
             return bytes(stream, sourceName, diagnostics);
@@ -143,6 +146,7 @@ public final class JsonParser {
      * @throws JsonException If input/parsing fails
      */
     public JsonElement parse(File file) throws JsonException {
+        Objects.requireNonNull(file, "file");
         List<JsonError> diagnostics = begin();
         String name = sourceName == null ? file.getPath() : sourceName;
         try (InputStream stream = Files.newInputStream(file.toPath())) {
@@ -223,19 +227,18 @@ public final class JsonParser {
      *
      * @param source JSON text
      * @param mode Syntax mode
-     * @param warnings Optional destination retaining existing entries
+     * @param warnings Non-null destination retaining existing entries
      * @return Parsed root
      * @throws JsonException If parsing fails
      */
     public static JsonElement parseString(
             String source, JsonParsingMode mode, List<JsonError> warnings) throws JsonException {
-        JsonParser parser = new JsonParser().setMode(mode).setCollectWarnings(warnings != null);
+        Objects.requireNonNull(warnings, "warnings");
+        JsonParser parser = new JsonParser().setMode(mode).setCollectWarnings(true);
         try {
             return parser.parse(source);
         } finally {
-            if (warnings != null) {
-                warnings.addAll(parser.warnings());
-            }
+            warnings.addAll(parser.warnings());
         }
     }
 
