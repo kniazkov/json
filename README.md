@@ -765,6 +765,27 @@ A container has the following method (which are respectively inherited by JSON o
 
 ### JsonObject
 
+`JsonObject` stores fields in insertion order in a single map. Replacing a key keeps
+its position; removing and reinserting it places it at the end. `keySet()`, `values()`
+and `entrySet()` are live, mutable views in that same order (previously these views
+iterated in sorted-key order even though serialization used insertion order).
+
+Removing through a view, iterator, removeIf/removeAll/retainAll, or clear updates the
+object itself. Views do not support adding entries. `Map.Entry.setValue()` follows
+`put()` ownership rules: it deep-clones the supplied value before replacement, assigning
+the object as the clone's parent, and returns the previously stored value. Entries
+obtained through arrays, streams and spliterators have the same controlled behavior.
+`replaceAll()` and the other Map default mutation methods preserve the stored tree.
+Inserting the object itself or an ancestor stores a finite snapshot, not a cycle.
+
+Java null keys and values are rejected before modifying the affected mapping; use
+`JsonNull.INSTANCE` or `addNull()` for a JSON null. Bulk operations are not transactional:
+if a later operation fails, earlier successful changes may remain. As with existing
+remove/put operations, previously obtained removed or replaced nodes retain their
+original immutable parent reference; clone such a node to obtain an independent root.
+The object and its views are not thread-safe.
+
+
 JSON objects are sets of key-value pairs, where key is a string and value is any JSON element.
 
 The class inherits the [java.util.Map](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Map.html)
