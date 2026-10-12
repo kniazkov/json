@@ -43,6 +43,28 @@ public abstract class JsonElement implements Cloneable {
     }
 
     /**
+     * Compares JSON values, excluding their parent links.
+     * Arrays and objects follow the standard List and Map equality contracts.
+     * Finite numbers compare by mathematical value, independently of scale.
+     * @param other Value to compare
+     * @return Whether the values are equal
+     */
+    @Override
+    public final boolean equals(Object other) {
+        return JsonEquality.equal(this, other);
+    }
+
+    /**
+     * Computes a content hash compatible with value equality and List/Map contracts.
+     * Mutable containers must not be modified while used as hash keys.
+     * @return Content hash
+     */
+    @Override
+    public final int hashCode() {
+        return JsonEquality.hash(this);
+    }
+
+    /**
      * Represents the element as a string.
      * @return String representation of the element
      */
