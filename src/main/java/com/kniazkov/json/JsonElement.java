@@ -82,11 +82,15 @@ public abstract class JsonElement implements Cloneable {
     /**
      * Represents the element as a Java object of specified type.
      * @param type The type descriptor
-     * @return Object containing element data or {@code null} if element can't be represented
-     *   as an object of specified type
+     * @return Converted value, or null for a JSON null and a reference target
+     * @throws JsonDataException If the value cannot be converted to the requested type
+     * @throws IllegalArgumentException If mapping annotations contain invalid configuration
      * @param <T> The type
      */
-    public abstract <T> T toJavaObject(Class<T> type);
+    @SuppressWarnings("unchecked")
+    public final <T> T toJavaObject(Class<T> type) {
+        return (T) JsonMapper.convert(this, type, "$");
+    }
 
     /**
      * Checks if the element is a null literal.

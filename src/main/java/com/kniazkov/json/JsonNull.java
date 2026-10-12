@@ -36,11 +36,6 @@ public class JsonNull extends JsonElement {
     }
 
     @Override
-    public <T> T toJavaObject(Class<T> type) {
-        return null;
-    }
-
-    @Override
     public boolean isNull() {
         return true;
     }

@@ -321,8 +321,7 @@ including wrapper numbers, strings, booleans, objects and nested lists. An empty
 array remains an empty list; an absent field retains its constructor-provided value.
 
 Raw lists and `List<Object>` use natural Map/List values and exact BigInteger/BigDecimal
-numbers. Existing scalar conversion rules otherwise remain unchanged; strict numeric
-and scalar mapping is tracked in #14. A non-array value where a list is required, or
+numbers. Elements follow the strict scalar conversion rules below. A non-array value where a list is required, or
 a non-null element that cannot be mapped, raises `JsonDataException` with the field
 and list index rather than becoming an empty list or a substituted null.
 
@@ -333,6 +332,57 @@ is validated even for an empty array or JSON null; absent fields are not validat
 Generic type-variable substitution is not implemented. Typed maps and arrays remain
 tracked in #32. Root `List.class`, `ArrayList.class` and `LinkedList.class` conversions
 remain raw because Class alone carries no element-type information.
+
+### Strict typed conversion and field policies
+
+`toJavaObject(Class)` and typed `Json.parse` use the same strict mapper at the root,
+in object fields and in list elements, independently of the syntax parsing mode.
+Incompatible data raises `JsonDataException`, including the path such as
+`$["orders"][2]["quantity"]`. Reflection/construction failures preserve the underlying
+cause. Constructors still run normally; their side effects cannot be rolled back.
+A partially mapped result is not returned to the caller.
+
+- Absent fields retain constructor-provided values; unknown JSON properties are ignored.
+- Explicit null becomes Java null for reference types and is an error for primitives.
+- Strings and booleans require matching JSON types; there is no automatic coercion.
+- Character/char requires a string of exactly one UTF-16 code unit.
+- byte/short/int/long and BigInteger require a mathematically integral value in range:
+  `1.0` is valid, `1.5` is not. BigDecimal accepts finite numbers.
+- float/double allow ordinary rounding (including `0.1`), but reject a finite value
+  becoming infinity or a nonzero value becoming zero. Explicit JSON5 NaN and signed
+  infinities are supported for float/double, but not integer types or BigDecimal.
+- Convenience getters such as `intValue()` and the existing `*OrThrow()` getters are
+  unchanged. In particular, `doubleValueOrThrow()` still requires a finite result.
+
+`@JsonProperty` can relax handling for a specific field. `name` is optional; an empty
+name uses the Java field name. A nonempty name still renames the JSON property in both
+directions. The annotation does not make excluded fields writable.
+
+```java
+@JsonProperty(onNull = JsonMappingAction.KEEP_DEFAULT,
+              onInvalid = JsonMappingAction.KEEP_DEFAULT)
+private int count = 42;
+```
+
+| Action | Meaning |
+| --- | --- |
+| `DEFAULT` | Only for `onNull`: assign null to references, reject null for primitives |
+| `ERROR` | Throw JsonDataException |
+| `KEEP_DEFAULT` | Keep the entire field's constructor-provided value |
+| `SET_NULL` | Assign null; valid only for reference fields |
+
+Defaults are `onNull = DEFAULT`, `onInvalid = ERROR`. Null and invalid non-null data
+are separate cases: `onInvalid` never catches an explicit null rejected by `onNull`.
+A failure within a nested object or list belongs to the entire containing field:
+`KEEP_DEFAULT` does not skip elements or keep a partially converted list. A nested
+field's own policy may handle its error before it reaches the containing field.
+Assignment/access failures are not suppressed by a data fallback.
+
+`onInvalid = DEFAULT` and either `SET_NULL` action on a primitive field are invalid
+configuration. These policies are checked for the mapped class before its constructor
+runs, including absent fields. Configuration errors and duplicate JSON names raise
+`IllegalArgumentException` and cannot be hidden by `onInvalid`. No `coerce` option is
+introduced. Unsupported typed maps/arrays remain tracked separately in #32.
 
 ### Automatic Java field mapping
 
@@ -460,7 +510,8 @@ class MyClass {
 }
 ```
 
-Object fields are filled only if they have a suitable type, otherwise such a field is ignored.<br/>
+Present fields must have compatible values; otherwise mapping throws `JsonDataException`
+unless the field explicitly permits a fallback with `@JsonProperty`.<br/>
 The correlation between Java and JSON types is as follows:
 - booleans can be written to the `boolean` (`Boolean`) type;
 - strings can be written to the `String` type;
@@ -810,10 +861,10 @@ long id = root.objectValueOrThrow().element("id").longValueOrThrow();
 The conversion method remains named `toJavaObject()`. Its untyped result no longer
 rounds numbers to Double: both roots and nested Map/List values retain BigInteger or
 BigDecimal. The same applies to Object fields, raw lists and List<Object> in typed
-mapping. Explicit `toJavaObject(Double.class)` still requests a potentially lossy
-conversion. Number.class and Object.class conversions of numeric nodes return the
-exact stored number. Typed DTO mapping otherwise retains its existing conversion
-policy; strict getters do not silently change that separate policy.
+mapping. Explicit `toJavaObject(Double.class)` allows rounding but rejects overflow
+and underflow to zero. Number.class and Object.class conversions of numeric nodes
+return the stored number. Typed mapping uses the strict rules documented above;
+convenience getters keep their existing behavior.
 
 ### JsonContainer
 
@@ -1051,8 +1102,8 @@ For finite numbers, the existing methods retain these contracts:
 | `toJavaObject()` | Returns the stored `BigInteger` or `BigDecimal`, including recursively inside arrays and objects |
 | `toJavaObject(Class)` | Existing wrapper conversions remain supported; `BigInteger` and `BigDecimal` provide exact numeric access through the existing method |
 
-Conversion to `BigInteger` returns null for a fractional real or a value that cannot be
-materialized as a `BigInteger`. Byte/Short conversion retains the existing narrowing behavior.
+Typed conversion to an integer requires an exact integral value in range; otherwise
+it throws `JsonDataException`. Byte/Short mapping no longer silently narrows values.
 The predicates describe value/range, not the subclass: `JsonNumber.of(13.0).isInteger()` is true.
 
 Parsing chooses `JsonInteger` for decimal integers and JSON5 hexadecimal integers, and
@@ -1091,8 +1142,8 @@ Special nodes are numbers but are neither 32-bit nor 64-bit integers. numberValu
 numberValueOrThrow(), doubleValue() and untyped toJavaObject() return the corresponding
 IEEE special value (boxed Double where an object is needed). Float/Double typed mapping
 is supported. intValue()/longValue() follow Java casts: NaN becomes zero and infinities
-saturate at the signed limits. decimalValue() and BigInteger/BigDecimal typed mapping
-return null. intValueOrThrow(), longValueOrThrow(), doubleValueOrThrow() and
+saturate at the signed limits. decimalValue() returns null; BigInteger/BigDecimal typed
+mapping rejects these values with JsonDataException. intValueOrThrow(), longValueOrThrow(), doubleValueOrThrow() and
 decimalValueOrThrow() reject special values with JsonDataException; the existing strict
 double getter continues to require a finite result. Cloning preserves the special kind
 and assigns the new parent in the same way as other numeric nodes.

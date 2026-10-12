@@ -36,7 +36,6 @@ public class JsonStringTest {
         String strValue = elem.toJavaObject(String.class);
         Assert.assertNotNull(strValue);
         Assert.assertEquals("test", strValue);
-        Integer intValue = elem.toJavaObject(Integer.class);
-        Assert.assertNull(intValue);
+        Assert.assertThrows(JsonDataException.class, () -> elem.toJavaObject(Integer.class));
     }
 }

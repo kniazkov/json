@@ -13,6 +13,19 @@ import java.lang.annotation.RetentionPolicy;
 public @interface JsonProperty {
     /**
      * The name (key) of the property to be bound.
+     * @return JSON name; empty means the Java field name
      */
-    String name();
+    String name() default "";
+
+    /**
+     * Controls explicit JSON null.
+     * @return Action; DEFAULT follows the Java field type
+     */
+    JsonMappingAction onNull() default JsonMappingAction.DEFAULT;
+
+    /**
+     * Controls invalid non-null data for the whole field.
+     * @return Action; DEFAULT is not allowed here
+     */
+    JsonMappingAction onInvalid() default JsonMappingAction.ERROR;
 }

@@ -126,7 +126,7 @@ public class JsonExactNumberTest {
         Assert.assertEquals(Double.POSITIVE_INFINITY, JsonNumber.of(new BigDecimal("1e400")).doubleValue(), 0);
         Assert.assertEquals(0.0, JsonNumber.of(new BigDecimal("1e-400")).doubleValue(), 0);
         Assert.assertEquals(BigInteger.valueOf(13), JsonNumber.of(13).toJavaObject());
-        Assert.assertNull(JsonNumber.of(new BigDecimal("1.5")).toJavaObject(BigInteger.class));
+        Assert.assertThrows(JsonDataException.class, () -> JsonNumber.of(new BigDecimal("1.5")).toJavaObject(BigInteger.class));
         Assert.assertEquals(BigInteger.TEN, JsonNumber.of(new BigDecimal("10.0")).toJavaObject(BigInteger.class));
     }
 

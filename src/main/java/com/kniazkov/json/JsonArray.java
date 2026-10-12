@@ -3,8 +3,6 @@
  */
 package com.kniazkov.json;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.*;
 
 /**
@@ -96,14 +94,6 @@ public final class JsonArray extends JsonContainer implements List<JsonElement> 
             result.add(elem.toJavaObject());
         }
         return Collections.unmodifiableList(result);
-    }
-
-    @Override
-    public <T> T toJavaObject(Class<T> type) {
-        if (type == List.class || type == ArrayList.class || type == LinkedList.class) {
-            return (T) convertList(type, this, "$");
-        }
-        return null;
     }
 
     @Override
@@ -348,78 +338,4 @@ public final class JsonArray extends JsonContainer implements List<JsonElement> 
         return this;
     }
 
-    /** Converts supported list types without losing nulls or generic nesting. */
-    static Object convertList(Type type, JsonElement value, String path) {
-        validateListType(type, path);
-        return convertListValue(type, value, path);
-    }
-
-    private static Class<?> listClass(Type type) {
-        Type raw = type instanceof ParameterizedType parameterized ? parameterized.getRawType() : type;
-        return raw instanceof Class<?> cls ? cls : null;
-    }
-
-    private static Type elementType(Type type) {
-        return type instanceof ParameterizedType parameterized
-                ? parameterized.getActualTypeArguments()[0] : Object.class;
-    }
-
-    private static void validateListType(Type type, String path) {
-        Class<?> raw = listClass(type);
-        if (raw != List.class && raw != ArrayList.class && raw != LinkedList.class) {
-            throw unsupported(type, path);
-        }
-        Type element = elementType(type);
-        if (element instanceof ParameterizedType ||
-                element instanceof Class<?> cls && List.class.isAssignableFrom(cls)) {
-            validateListType(element, path + "[]");
-        } else if (!(element instanceof Class<?> cls) || cls.isArray() ||
-                cls.getTypeParameters().length != 0 && cls != Map.class) {
-            throw unsupported(element, path + "[]");
-        }
-    }
-
-    private static JsonDataException unsupported(Type type, String path) {
-        return new JsonDataException(path + ": unsupported list mapping type " + type.getTypeName());
-    }
-
-    private static Object convertListValue(Type type, JsonElement value, String path) {
-        if (value.isNull()) {
-            return null;
-        }
-        if (!(value instanceof JsonArray array)) {
-            throw new JsonDataException(path + ": expected JSON array for " + type.getTypeName());
-        }
-        List<Object> result = listClass(type) == LinkedList.class ? new LinkedList<>() : new ArrayList<>();
-        Type element = elementType(type);
-        for (int index = 0; index < array.size(); index++) {
-            JsonElement child = array.get(index);
-            String childPath = path + "[" + index + "]";
-            if (child.isNull()) {
-                result.add(null);
-            } else if (element instanceof ParameterizedType ||
-                    element instanceof Class<?> cls && List.class.isAssignableFrom(cls)) {
-                result.add(convertListValue(element, child, childPath));
-            } else {
-                Class<?> cls = (Class<?>) element;
-                Object converted;
-                // Preserve the existing scalar conversion policy; strict mapping is tracked separately.
-                if (cls == Byte.class) { converted = (byte) child.intValue(); }
-                else if (cls == Short.class) { converted = (short) child.intValue(); }
-                else if (cls == Integer.class) { converted = child.intValue(); }
-                else if (cls == Long.class) { converted = child.longValue(); }
-                else if (cls == Float.class) { converted = (float) child.doubleValue(); }
-                else if (cls == Double.class) { converted = child.doubleValue(); }
-                else if (cls == Boolean.class) { converted = child.booleanValue(); }
-                else if (cls == String.class) { converted = child.stringValue(); }
-                else if (cls == Object.class) { converted = child.toJavaObject(); }
-                else { converted = child.toJavaObject(cls); }
-                if (converted == null) {
-                    throw new JsonDataException(childPath + ": cannot convert non-null value to " + cls.getTypeName());
-                }
-                result.add(converted);
-            }
-        }
-        return result;
-    }
 }

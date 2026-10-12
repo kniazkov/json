@@ -129,46 +129,6 @@ public abstract class JsonNumber extends JsonElement {
     }
 
     @Override
-    public <T> T toJavaObject(Class<T> type) {
-        Object result;
-        if (type == Object.class || type == Number.class) {
-            result = numberValue();
-        }
-        else if (type == Byte.class) {
-            result = (byte) intValue();
-        }
-        else if (type == Short.class) {
-            result = (short) intValue();
-        }
-        else if (type == Integer.class) {
-            result = intValue();
-        }
-        else if (type == Long.class) {
-            result = longValue();
-        }
-        else if (type == Float.class) {
-            result = numberValue().floatValue();
-        }
-        else if (type == Double.class) {
-            result = doubleValue();
-        }
-        else if (type == BigDecimal.class) {
-            result = decimalValue();
-        }
-        else if (type == BigInteger.class) {
-            if (!isFinite()) { return null; }
-            try {
-                result = numberValue() instanceof BigInteger ? numberValue() : decimalValue().toBigIntegerExact();
-            } catch (ArithmeticException exception) {
-                return null;
-            }
-        } else {
-            return null;
-        }
-        return type.cast(result);
-    }
-
-    @Override
     public boolean isInteger() {
         BigDecimal value = decimalValue();
         return value != null && value.compareTo(BigDecimal.valueOf(Integer.MIN_VALUE)) >= 0

@@ -53,7 +53,6 @@ public class JsonNumberTest {
         Assert.assertNotNull(intValue);
         Double doubleValue = elem.toJavaObject(Double.class);
         Assert.assertNotNull(doubleValue);
-        Boolean boolValue = elem.toJavaObject(Boolean.class);
-        Assert.assertNull(boolValue);
+        Assert.assertThrows(JsonDataException.class, () -> elem.toJavaObject(Boolean.class));
     }
 }
