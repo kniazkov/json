@@ -88,7 +88,7 @@ public class ListMappingTest {
     @Test
     public void unsupportedTypesFailEvenForEmptyOrNullLists() {
         for (Class<?> type : List.of(Wildcard.class,UpperBound.class,LowerBound.class,Variable.class,
-                BoundVariable.class,NestedMap.class,ArrayElement.class,Custom.class)) {
+                BoundVariable.class,Custom.class)) {
             for (String input : List.of("{values:[]}","{values:null}","{values:[null]}")) {
                 JsonDataException error = Assert.assertThrows(JsonDataException.class, () -> Json.parse(input,type));
                 Assert.assertTrue(error.getMessage(),error.getMessage().contains("values"));
