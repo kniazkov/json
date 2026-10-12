@@ -11,12 +11,14 @@ The artifact coordinates are `com.kniazkov:json:2.0.0`.
 ## Build and test
 
 ```sh
-mvn -B -ntp -Dgpg.skip=true -DargLine=-Xss256k clean verify
+mvn -B -ntp -DargLine=-Xss256k clean verify
 ```
 
 This checks style, runs tests, and produces the binary, source and Javadoc JARs.
-GPG signing remains enabled when `gpg.skip` is not set. The small stack exercises
-the iterative traversal paths; it is not a runtime requirement for library users.
+GPG signing and Central upload are enabled only by the `release` profile.
+See [Publishing to Maven Central](publishing.md) for release preparation and upload.
+The small stack exercises the iterative traversal paths; it is not a runtime
+requirement for library users.
 
 Tests cover all three syntax modes, error recovery, exact and special numbers,
 mapping, collection contracts, encodings, BOMs, cycles and deep documents.
@@ -85,7 +87,7 @@ Use the `MAVEN` environment variable if Maven is not named `mvn` on PATH.
 ## Documentation examples
 
 ```sh
-mvn -B -ntp -Dgpg.skip=true package
+mvn -B -ntp package
 python3 scripts/check-doc-examples.py
 ```
 

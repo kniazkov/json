@@ -19,6 +19,7 @@ strictness. This library lets you choose the right one without changing your dat
 8. [Diagnostics](diagnostics.md): warnings, exceptions, locations and causes.
 9. [Public API](public-api.md): class diagrams and a compact reference.
 10. [Development](development.md): builds, examples, style checks and tests.
+11. [Publishing](publishing.md): signed releases and Maven Central.
 
 ## Three decisions, not dozens
 

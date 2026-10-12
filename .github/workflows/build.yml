@@ -43,6 +43,6 @@ jobs:
           java-version: '21'
           cache: maven
       - name: Build and test
-        run: mvn -B -ntp -Dgpg.skip=true -DargLine=-Xss256k clean verify
+        run: mvn -B -ntp -DargLine=-Xss256k clean verify
       - name: Check documentation links and examples
         run: python3 scripts/check-doc-examples.py
