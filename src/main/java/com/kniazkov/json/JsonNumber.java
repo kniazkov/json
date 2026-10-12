@@ -9,9 +9,8 @@ import java.util.Objects;
 
 /**
  * Base class for exact finite numbers and JSON5 special numbers. Use {@code of(...)} to create a
- * number. Existing primitive getters truncate fractions and saturate integer overflow, as Java
- * floating-point casts did in earlier versions. Double conversion can round, underflow to zero, or
- * overflow to infinity.
+ * number. Primitive getters truncate fractions and saturate integer overflow. Double conversion can
+ * round, underflow to zero, or overflow to infinity.
  */
 public abstract class JsonNumber extends JsonElement {
     JsonNumber(JsonContainer parent) {
