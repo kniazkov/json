@@ -18,8 +18,11 @@ an application schema. The default is `EXTENDED`. Warnings are not collected unl
 you request them.
 
 ```java
-JsonElement strict = Json.parse("{\"ready\":true}", JsonParsingMode.STRICT);
-JsonElement json5 = Json.parse("{ready:true,}", JsonParsingMode.JSON5);
+String strictJson = "{\"ready\":true}";
+String json5Text = "{ready:true,}";
+
+JsonElement strict = Json.parse(strictJson, JsonParsingMode.STRICT);
+JsonElement json5 = Json.parse(json5Text, JsonParsingMode.JSON5);
 assert strict.equals(json5);
 ```
 
@@ -63,14 +66,20 @@ including literal tabs and line breaks. Legal escapes are `\"`, `\\`, `\/`,
 An apostrophe inside a double-quoted string needs no escape; `\'` is not a JSON escape.
 
 ```java
+String firstJson = "[1,2,]";
+String secondJson = "\"line\\nbreak\"";
+
 try {
-    Json.parse("[1,2,]", JsonParsingMode.STRICT);
+    Json.parse(firstJson, JsonParsingMode.STRICT);
     throw new AssertionError("A trailing comma must fail");
 } catch (JsonException expected) {
-    assert expected.error().location().row() == 1;
+    assert expected.error()
+            .location()
+            .row() == 1;
 }
-assert Json.parse("\"line\\nbreak\"", JsonParsingMode.STRICT)
-        .stringValueOrThrow().equals("line\nbreak");
+assert Json.parse(secondJson, JsonParsingMode.STRICT)
+        .stringValueOrThrow()
+        .equals("line\nbreak");
 ```
 
 ## JSON5 for hand-written files

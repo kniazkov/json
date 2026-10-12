@@ -24,9 +24,14 @@ has finite scale/exponent bounds; a token outside them fails with `JsonException
 “Arbitrary precision” does not mean an unlimited exponent.
 
 ```java
-JsonElement value = Json.parse("9007199254740993", JsonParsingMode.STRICT);
-assert value.numberValueOrThrow().equals(new BigInteger("9007199254740993"));
-BigDecimal price = Json.parse("0.12345678901234567890").decimalValueOrThrow();
+String integerJson = "9007199254740993";
+String priceJson = "0.12345678901234567890";
+
+JsonElement value = Json.parse(integerJson, JsonParsingMode.STRICT);
+assert value.numberValueOrThrow()
+        .equals(new BigInteger("9007199254740993"));
+BigDecimal price = Json.parse(priceJson)
+        .decimalValueOrThrow();
 assert price.equals(new BigDecimal("0.12345678901234567890"));
 ```
 
@@ -56,7 +61,8 @@ JsonNumber roundedBeforeJson = JsonNumber.of(9007199254740993d); // Bad for an e
 JsonNumber exact = JsonNumber.of(9007199254740993L);            // Good: integer input.
 assert !roundedBeforeJson.equals(exact);
 JsonNumber exactPrice = JsonNumber.of(new BigDecimal("0.1"));  // Good: decimal text.
-assert exactPrice.decimalValueOrThrow().equals(new BigDecimal("0.1"));
+assert exactPrice.decimalValueOrThrow()
+        .equals(new BigDecimal("0.1"));
 ```
 
 ## Conversion is a choice
@@ -73,15 +79,19 @@ assert exactPrice.decimalValueOrThrow().equals(new BigDecimal("0.1"));
 | `doubleValueOrThrow()` | Allow rounding, reject non-finite results and nonzero-to-zero underflow |
 
 ```java
-JsonElement value = Json.parse("12.75");
+String json = "12.75";
+
+JsonElement value = Json.parse(json);
 assert value.intValue() == 12; // Deliberate loss of the fraction.
 try {
     value.intValueOrThrow();
     throw new AssertionError("An exact integer was required");
 } catch (JsonDataException expected) {
-    assert value.decimalValueOrThrow().equals(new BigDecimal("12.75"));
+    assert value.decimalValueOrThrow()
+            .equals(new BigDecimal("12.75"));
 }
-assert JsonNumber.of(13.0).isInteger(); // The predicate describes the value, not its class.
+assert JsonNumber.of(13.0)
+        .isInteger(); // The predicate describes the value, not its class.
 ```
 
 Typed Java mapping is strict: it does not use truncation/saturation to make data
@@ -91,11 +101,14 @@ float/double conversion rejects overflow and nonzero-to-zero underflow.
 ## NaN and infinity
 
 ```java
+String expectedJson = "Infinity";
+
 JsonNumber missingMeasurement = JsonNumber.of(Double.NaN);
 JsonNumber unlimited = new JsonInfinity(false);
 assert missingMeasurement.isNaN();
 assert unlimited.isPositiveInfinity();
-assert unlimited.toString().equals("Infinity");
+assert unlimited.toString()
+        .equals(expectedJson);
 assert !unlimited.isFinite();
 ```
 
