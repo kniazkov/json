@@ -55,8 +55,11 @@ public class StrictStringSyntaxTest {
         for (JsonParsingMode mode : new JsonParsingMode[] {JsonParsingMode.JSON5, JsonParsingMode.EXTENDED}) {
             Assert.assertEquals("a'b", Json.parse("\"a\\'b\"", mode).stringValue());
             Assert.assertEquals("a'b", Json.parse("'a\\'b'", mode).stringValue());
-            // Preserve existing behavior; complete JSON5 string rules are a separate task.
-            Assert.assertEquals("a\nb", Json.parse("\"a\nb\"", mode).stringValue());
+            if (mode == JsonParsingMode.EXTENDED) {
+                Assert.assertEquals("a\nb", Json.parse("\"a\nb\"", mode).stringValue());
+            } else {
+                Assert.assertThrows(JsonException.class, () -> Json.parse("\"a\nb\"", mode));
+            }
         }
         for (String input : new String[] {"\"\\u\"", "\"\\u0\"", "\"\\u00\"", "\"\\u000\"", "\"\\u00XZ\""}) {
             Assert.assertThrows(JsonException.class, () -> Json.parse(input, STRICT));

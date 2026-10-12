@@ -74,7 +74,7 @@ public abstract class JsonElement implements Cloneable {
 
     /**
      * Represents the element as a Java object.
-     * Numeric values retain their exact BigInteger or BigDecimal representation.
+     * Finite numbers retain BigInteger/BigDecimal; JSON5 special numbers use Double.
      * @return Object containing element data
      */
     public abstract Object toJavaObject();
@@ -112,6 +112,36 @@ public abstract class JsonElement implements Cloneable {
     public boolean booleanValue() {
         return false;
     }
+
+    /**
+     * Checks for the JSON5 not-a-number value.
+     * @return Whether this element represents JSON5 NaN
+     */
+    public boolean isNaN() { return false; }
+
+    /**
+     * Checks for either signed JSON5 infinity.
+     * @return Whether this element represents either JSON5 infinity
+     */
+    public boolean isInfinite() { return false; }
+
+    /**
+     * Checks for positive JSON5 infinity.
+     * @return Whether this element represents positive JSON5 infinity
+     */
+    public boolean isPositiveInfinity() { return false; }
+
+    /**
+     * Checks for negative JSON5 infinity.
+     * @return Whether this element represents negative JSON5 infinity
+     */
+    public boolean isNegativeInfinity() { return false; }
+
+    /**
+     * Checks the stored numeric value, independently of double conversion overflow.
+     * @return Whether this element is a finite number, regardless of double conversion overflow
+     */
+    public boolean isFinite() { return isNumber() && !isNaN() && !isInfinite(); }
 
     /**
      * Checks if the element is a 32-bit integer.
@@ -202,14 +232,14 @@ public abstract class JsonElement implements Cloneable {
 
     /**
      * Returns the exact stored number, or null for a non-numeric element.
-     * @return BigInteger for an integer, BigDecimal for a real, or null
+     * @return BigInteger for an integer, BigDecimal for a real, Double for a special number, or null
      */
     public Number numberValue() {
         return null;
     }
 
     /**
-     * Returns the exact decimal representation, or null for a non-numeric element.
+     * Returns the exact decimal representation, or null for non-numeric or non-finite values.
      * @return The decimal value, or null
      */
     public BigDecimal decimalValue() {
@@ -282,7 +312,7 @@ public abstract class JsonElement implements Cloneable {
 
     /**
      * Returns the exact stored number.
-     * @return BigInteger or BigDecimal value
+     * @return BigInteger or BigDecimal for finite values, Double for NaN or infinities
      * @throws JsonDataException If the element is not numeric
      */
     public final Number numberValueOrThrow() {
@@ -294,14 +324,14 @@ public abstract class JsonElement implements Cloneable {
     }
 
     /**
-     * Returns the exact decimal representation of a number.
+     * Returns the exact decimal representation of a finite number.
      * @return Decimal value
-     * @throws JsonDataException If the element is not numeric
+     * @throws JsonDataException If the element is not a finite number
      */
     public final BigDecimal decimalValueOrThrow() {
         BigDecimal value = decimalValue();
         if (value == null) {
-            throw invalidData("a number");
+            throw invalidData("a finite number");
         }
         return value;
     }

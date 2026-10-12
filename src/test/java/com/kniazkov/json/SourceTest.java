@@ -106,7 +106,7 @@ public class SourceTest {
         for (String text : new String[] {"\"abc", "\"\\", "\"\\u", "\"\\u0", "\"\\u00", "\"\\u000"}) {
             Assert.assertThrows(JsonException.class, () -> Json.parse(text));
         }
-        JsonException badEscape = Assert.assertThrows(JsonException.class, () -> Json.parse("\"\\q\""));
+        JsonException badEscape = Assert.assertThrows(JsonException.class, () -> Json.parse("\"\\q\"", JsonParsingMode.STRICT));
         Assert.assertTrue(badEscape.getMessage().contains("\\q"));
     }
 }

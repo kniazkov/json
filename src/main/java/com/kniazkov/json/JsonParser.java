@@ -73,6 +73,19 @@ public final class JsonParser {
         return parser.parseRoot();
     }
 
+    /**
+     * Parses a string while collecting diagnostics for the selected mode.
+     * @param source JSON document
+     * @param mode Parsing mode
+     * @param warnings Destination for warnings, or null
+     * @return Root element
+     * @throws JsonException If parsing fails
+     */
+    public static JsonElement parseString(String source, JsonParsingMode mode, List<JsonError> warnings)
+            throws JsonException {
+        return new JsonParser(new Source(source), mode, warnings).parseRoot();
+    }
+
     /** Parses an already opened source without closing it. */
     static JsonElement parseSource(Source source, JsonParsingMode mode) throws JsonException {
         return new JsonParser(source, mode, null).parseRoot();
@@ -93,7 +106,7 @@ public final class JsonParser {
      */
     private JsonParser(Source src, JsonParsingMode mode, List<JsonError> warnings) {
         this.source = src;
-        this.lexer = new Lexer(src, mode);
+        this.lexer = new Lexer(src, mode, warnings);
         this.mode = mode;
         this.warnings = warnings;
     }
@@ -265,8 +278,8 @@ public final class JsonParser {
             String key;
             if (token instanceof TokenString string) {
                 key = string.value();
-            } else if (token instanceof TokenIdentifier identifier && mode != JsonParsingMode.STRICT) {
-                key = identifier.identifier();
+            } else if (mode != JsonParsingMode.STRICT && token.identifierName() != null) {
+                key = token.identifierName();
             } else {
                 throw new JsonException(new JsonError.ExpectedKey(token.location()));
             }

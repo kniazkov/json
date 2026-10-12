@@ -36,13 +36,7 @@ public class JsonExactNumberTest {
         Assert.assertThrows(NullPointerException.class, () -> JsonNumber.of((BigInteger) null));
         Assert.assertThrows(NullPointerException.class, () -> JsonNumber.of((BigDecimal) null));
         Assert.assertThrows(IllegalArgumentException.class, () -> JsonNumber.of(new AtomicInteger(1)));
-        for (double value : new double[]{Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY}) {
-            Assert.assertThrows(NumberFormatException.class, () -> JsonNumber.of(value));
-            Assert.assertThrows(NumberFormatException.class, () -> Json.serialize(value));
-        }
-        Assert.assertThrows(NumberFormatException.class, () -> JsonNumber.of(Float.NaN));
-        Assert.assertThrows(NumberFormatException.class, () -> JsonNumber.of(Float.POSITIVE_INFINITY));
-        Assert.assertThrows(NumberFormatException.class, () -> JsonNumber.of(Float.NEGATIVE_INFINITY));
+
     }
 
     @Test

@@ -23,6 +23,9 @@ final class TokenIdentifier extends Token {
     }
 
     @Override
+    String identifierName() { return identifier; }
+
+    @Override
     public String toString() {
         return identifier;
     }

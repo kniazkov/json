@@ -41,7 +41,7 @@ final class Utils {
                         result.append("\\t");
                         break;
                     default:
-                        if (ch < 0x20) {
+                        if (ch < 0x20 || ch == 0x2028 || ch == 0x2029) {
                             result.append("\\u").append(String.format("%04x", (int)ch));
                         } else {
                             result.append(ch);

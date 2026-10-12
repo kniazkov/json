@@ -21,6 +21,9 @@ abstract class Token {
         this.loc = loc;
     }
 
+    /** Returns an IdentifierName spelling when this token may be an unquoted JSON5 key. */
+    String identifierName() { return null; }
+
     /**
      * Represents the token as a string.
      * @return String representation of the token

@@ -120,6 +120,17 @@ public abstract class JsonError {
         }
     }
 
+    /** An unescaped line/paragraph separator accepted by JSON5, but discouraged for portability. */
+    public static final class UnescapedLineSeparator extends JsonError {
+        UnescapedLineSeparator(JsonLocation loc) { super(loc); }
+
+        @Override
+        public String localizedMessage(String lang) {
+            return "ru".equals(lang) ? "Неэкранированный разделитель строк или абзацев"
+                    : "Unescaped line or paragraph separator";
+        }
+    }
+
     /** An input could not be opened, read, decoded or closed. */
     public static final class InputFailure extends JsonError {
         InputFailure(JsonLocation loc) {

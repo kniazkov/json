@@ -16,6 +16,9 @@ final class TokenNull extends TokenLiteral {
     }
 
     @Override
+    String identifierName() { return toString(); }
+
+    @Override
     public String toString() {
         return "null";
     }
