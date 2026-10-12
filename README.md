@@ -171,6 +171,19 @@ The parser must first recognize the root: for example `42e+` is an invalid numbe
 not the number `42` followed by a discarded suffix. Container recovery follows the
 rules below; the remaining JSON5 features are separate work (issue #7).
 
+### End-of-input diagnostics
+
+The internal lexer always returns a token: EOF is represented by `TokenEnd`, never
+Java null. Its immutable location identifies the position after the input (including
+skipped padding/comments) and retains the source name. Repeated EOF reads keep the
+same coordinates; its diagnostic text is `<EOF>`. At the character level, `Source`
+still uses -1 for EOF and 0 for an actual NUL.
+
+The parser uses the EOF token's location when reporting an absent root, missing colon
+or value, or incomplete container. Unexpected EOF raises `JsonException`, or triggers
+only the explicitly allowed EXTENDED recovery below. It is never handled by catching
+`NullPointerException`. Unfinished lexical tokens retain their specific syntax errors.
+
 ### Container recovery in EXTENDED
 
 Recovery is determined by the parser state, not by guessing intended values. STRICT

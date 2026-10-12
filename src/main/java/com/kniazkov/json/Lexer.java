@@ -31,7 +31,7 @@ final class Lexer {
 
     /**
      * Returns the next token from a sequence.
-     * @return A token.
+     * @return A token, including TokenEnd at EOF; never null.
      * @throws JsonException If parsing fails
      */
     public Token token() throws JsonException {
@@ -39,7 +39,7 @@ final class Lexer {
         int ch = source.charValue();
 
         if (ch == -1) {
-            return null;
+            return new TokenEnd(source.location());
         }
 
         JsonLocation loc = source.location();
