@@ -49,12 +49,12 @@ final class Utils {
     }
 
     private static void collectFields(Class<?> type, Map<String, Field> fields) {
-        if (type == null || type == Object.class) {
-            return;
+        java.util.ArrayDeque<Class<?>> hierarchy = new java.util.ArrayDeque<>();
+        for (Class<?> cls = type; cls != null && cls != Object.class; cls = cls.getSuperclass()) {
+            hierarchy.push(cls);
         }
-        collectFields(type.getSuperclass(), fields);
-        for (Field field : type.getDeclaredFields()) {
-            fields.put(field.getName(), field);
+        while (!hierarchy.isEmpty()) {
+            for (Field field : hierarchy.pop().getDeclaredFields()) { fields.put(field.getName(), field); }
         }
     }
 
@@ -111,6 +111,7 @@ final class Utils {
      * @param count Number of repetitions
      */
     static void addRepeatingString(StringBuilder builder, String string, int count) {
+        if (string.isEmpty()) { return; }
         for (int i = 0; i < count; i++) {
             builder.append(string);
         }

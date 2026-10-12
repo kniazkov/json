@@ -282,6 +282,42 @@ The exact rules are:
    Warnings are appended in recovery order. Without a supplied list, the same recovery
    occurs without collecting warnings. Input/decoding failures remain exceptions.
 
+### Deep documents and cyclic Java graphs
+
+There is no fixed nesting-depth limit. Built-in JSON parsing, compact and formatted
+writing, cloning (including container insertion), Java-object serialization, and both
+natural and typed Java conversion use iterative traversal with heap-backed frames.
+Call-stack usage does not grow with document depth. All syntax-mode recovery rules,
+parent ownership, field policies and collection ordering remain in effect.
+
+Java → JSON serialization detects cycles by **object identity on the active ancestor
+path** and raises `JsonDataException`, naming both the offending path and its ancestor:
+
+```text
+$[0]["back"]: cycle refers to $
+```
+
+The same object may occur in separate completed branches: each occurrence produces
+its own JSON subtree. Equality/hashCode methods are not used for cycle detection.
+Nulls and scalar values remain ordinary leaves. Reflective field-read failures now
+raise a path-bearing JsonDataException with the cause instead of returning a partial
+object. No cycle placeholders or reference IDs are emitted.
+
+Traversal state and diagnostic paths use linear space in the active depth. Paths are
+stored as linked segments and rendered only when reporting errors. Tree output uses
+one StringBuilder rather than building and copying a string for every subtree.
+This is not an unlimited-resource guarantee: heap availability, JVM string/collection
+sizes, numeric representations and output size still apply. Pretty printing a deep
+chain with nonempty indentation inherently produces quadratic-size output; expanding
+a heavily shared acyclic Java graph can also produce much more data than its input.
+The library does not catch OutOfMemoryError or roll back user constructor side effects.
+User-supplied constructors, iterators and custom methods remain outside this stack-safety
+contract, as do operations performed by callers on returned Java collections.
+
+Regression tests exercise 20,000 levels, mixed containers, deep POJO/list mapping,
+formatting, clones, recovery, error-policy unwinding, cycles and shared references.
+The depth suite also runs with `-Xss256k` to avoid relying on a large JVM call stack.
+
 ### Serializing Java arrays and maps
 
 `Json.serialize` and `JsonParser.parseJavaObject` support these types at the root,
@@ -308,8 +344,7 @@ accessed through their public APIs, without reflective access to JDK internals.
 Numeric values retain the existing exact-number and JSON5 non-finite-number policy.
 
 This support is for serialization. It does not add typed deserialization into Java
-arrays or concrete map classes, support for arbitrary `Iterable`/`Set` types, or
-cycle detection (tracked separately in issue #15).
+arrays or concrete map classes, or support for arbitrary `Iterable`/`Set` types.
 
 ### Mapping JSON to Java lists
 

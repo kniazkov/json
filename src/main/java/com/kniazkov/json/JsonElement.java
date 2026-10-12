@@ -89,7 +89,7 @@ public abstract class JsonElement implements Cloneable {
      */
     @SuppressWarnings("unchecked")
     public final <T> T toJavaObject(Class<T> type) {
-        return (T) JsonMapper.convert(this, type, "$");
+        return (T) JsonMapper.convert(this, type);
     }
 
     /**

@@ -32,68 +32,24 @@ public final class JsonArray extends JsonContainer implements List<JsonElement> 
 
     @Override
     JsonElement clone(JsonContainer anotherParent) {
-        JsonArray copy = new JsonArray(anotherParent);
-        for (JsonElement elem : list) {
-            copy.addElement(elem);
-        }
-        return copy;
+        return TreeTraversal.copy(this, anotherParent);
     }
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append('[');
-        boolean flag = false;
-        for (JsonElement element : list) {
-            if (flag) {
-                builder.append(", ");
-            }
-            flag = true;
-            builder.append(element.toString());
-        }
-        builder.append(']');
+        StringBuilder builder = new StringBuilder();
+        TreeTraversal.write(this, builder, null, 0);
         return builder.toString();
     }
 
     @Override
     protected void toText(StringBuilder builder, String indentation, int level) {
-        final String separator = System.lineSeparator();
-        final int size = list.size();
-        boolean converted = false;
-        if (size == 0) {
-            builder.append("[]");
-            converted = true;
-        } else if (size == 1) {
-            final JsonElement child = list.get(0);
-            if (child.toJsonArray() == null && child.toJsonObject() == null) {
-                builder.append('[').append(child.toString()).append(']');
-                converted = true;
-            }
-        }
-        if (!converted) {
-            builder.append('[').append(separator);
-            boolean flag = false;
-            for (JsonElement element : list) {
-                if (flag) {
-                    builder.append(',').append(separator);
-                }
-                flag = true;
-                Utils.addRepeatingString(builder, indentation, level + 1);
-                element.toText(builder, indentation, level + 1);
-            }
-            builder.append(separator);
-            Utils.addRepeatingString(builder, indentation, level);
-            builder.append(']');
-        }
+        TreeTraversal.write(this, builder, indentation, level);
     }
 
     @Override
     public Object toJavaObject() {
-        List<Object> result = new ArrayList<>(list.size());
-        for (JsonElement elem : list) {
-            result.add(elem.toJavaObject());
-        }
-        return Collections.unmodifiableList(result);
+        return TreeTraversal.natural(this);
     }
 
     @Override
