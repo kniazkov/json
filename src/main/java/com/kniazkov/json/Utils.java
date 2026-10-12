@@ -3,10 +3,24 @@
  */
 package com.kniazkov.json;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+
 /**
  * Some auxiliary procedures.
  */
 final class Utils {
+    /** Whether an instance field participates in automatic serialization. */
+    static boolean isReadableField(Field field) {
+        int modifiers = field.getModifiers();
+        return !Modifier.isStatic(modifiers) && !Modifier.isTransient(modifiers) && !field.isSynthetic();
+    }
+
+    /** Final instance fields may be read, but must retain their constructor-provided values. */
+    static boolean isWritableField(Field field) {
+        return isReadableField(field) && !Modifier.isFinal(field.getModifiers());
+    }
+
     /**
      * Escapes entities that are not allowed in a string into special sequences.
      * @param value A string
