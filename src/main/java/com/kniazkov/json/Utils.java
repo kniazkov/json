@@ -8,14 +8,14 @@ import java.lang.reflect.Modifier;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Some auxiliary procedures.
- */
+/** Some auxiliary procedures. */
 final class Utils {
     /** Whether an instance field participates in automatic serialization. */
     static boolean isReadableField(Field field) {
         int modifiers = field.getModifiers();
-        return !Modifier.isStatic(modifiers) && !Modifier.isTransient(modifiers) && !field.isSynthetic();
+        return !Modifier.isStatic(modifiers)
+                && !Modifier.isTransient(modifiers)
+                && !field.isSynthetic();
     }
 
     /** Final instance fields may be read, but must retain their constructor-provided values. */
@@ -24,8 +24,9 @@ final class Utils {
     }
 
     /**
-     * Resolves Java-name hiding before filtering, then maps readable fields to JSON names.
-     * Both directions validate the same schema, including final fields.
+     * Resolves Java-name hiding before filtering, then maps readable fields to JSON names. Both
+     * directions validate the same schema, including final fields.
+     *
      * @throws IllegalArgumentException if distinct visible fields have the same JSON name
      */
     static Map<String, Field> mappedFields(Class<?> type) {
@@ -37,12 +38,23 @@ final class Utils {
                 continue;
             }
             JsonProperty annotation = field.getAnnotation(JsonProperty.class);
-            String name = annotation == null || annotation.name().isEmpty() ? field.getName() : annotation.name();
+            String name =
+                    annotation == null || annotation.name().isEmpty()
+                            ? field.getName()
+                            : annotation.name();
             Field previous = result.putIfAbsent(name, field);
             if (previous != null) {
-                throw new IllegalArgumentException("Duplicate JSON property '" + name + "': "
-                        + previous.getDeclaringClass().getName() + "." + previous.getName()
-                        + " and " + field.getDeclaringClass().getName() + "." + field.getName());
+                throw new IllegalArgumentException(
+                        "Duplicate JSON property '"
+                                + name
+                                + "': "
+                                + previous.getDeclaringClass().getName()
+                                + "."
+                                + previous.getName()
+                                + " and "
+                                + field.getDeclaringClass().getName()
+                                + "."
+                                + field.getName());
             }
         }
         return result;
@@ -54,22 +66,29 @@ final class Utils {
             hierarchy.push(cls);
         }
         while (!hierarchy.isEmpty()) {
-            for (Field field : hierarchy.pop().getDeclaredFields()) { fields.put(field.getName(), field); }
+            for (Field field : hierarchy.pop().getDeclaredFields()) {
+                fields.put(field.getName(), field);
+            }
         }
     }
 
     /** Escapes each non-ASCII UTF-16 code unit when requested, including surrogate pairs. */
     static String escapeEntities(String value, boolean nonAscii) {
         String escaped = escapeEntities(value);
-        if (!nonAscii) { return escaped; }
+        if (!nonAscii) {
+            return escaped;
+        }
         StringBuilder result = new StringBuilder();
         final String digits = "0123456789abcdef";
         for (int i = 0; i < escaped.length(); i++) {
             char ch = escaped.charAt(i);
-            if (ch <= 0x7f) { result.append(ch); }
-            else {
+            if (ch <= 0x7f) {
+                result.append(ch);
+            } else {
                 result.append('\\').append('u');
-                for (int shift = 12; shift >= 0; shift -= 4) { result.append(digits.charAt((ch >> shift) & 15)); }
+                for (int shift = 12; shift >= 0; shift -= 4) {
+                    result.append(digits.charAt((ch >> shift) & 15));
+                }
             }
         }
         return result.toString();
@@ -77,6 +96,7 @@ final class Utils {
 
     /**
      * Escapes entities that are not allowed in a string into special sequences.
+     *
      * @param value A string
      * @return String with escaped entities
      */
@@ -110,7 +130,7 @@ final class Utils {
                         break;
                     default:
                         if (ch < 0x20 || ch == 0x2028 || ch == 0x2029) {
-                            result.append("\\u").append(String.format("%04x", (int)ch));
+                            result.append("\\u").append(String.format("%04x", (int) ch));
                         } else {
                             result.append(ch);
                         }
@@ -123,15 +143,17 @@ final class Utils {
 
     /**
      * Adds a repeating string to a StringBuilder.
+     *
      * @param builder Builder
      * @param string String
      * @param count Number of repetitions
      */
     static void addRepeatingString(StringBuilder builder, String string, int count) {
-        if (string.isEmpty()) { return; }
+        if (string.isEmpty()) {
+            return;
+        }
         for (int i = 0; i < count; i++) {
             builder.append(string);
         }
     }
-
 }

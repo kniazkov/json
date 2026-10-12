@@ -6,9 +6,7 @@ package com.kniazkov.json;
 import org.junit.Assert;
 import org.junit.Test;
 
-/**
- * Tests covering {@link JsonBoolean} class.
- */
+/** Tests covering {@link JsonBoolean} class. */
 public class JsonBooleanTest {
     @Test
     public void booleanToObject() {

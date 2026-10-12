@@ -1,4 +1,6 @@
-/* Copyright (c) 2026 Ivan Kniazkov */
+/*
+ * Copyright (c) 2026 Ivan Kniazkov
+ */
 package com.kniazkov.json;
 
 import org.junit.Assert;
@@ -7,15 +9,25 @@ import org.junit.Test;
 public class InheritedFieldsTest {
     static class Base {
         private int alpha = 1;
-        @JsonProperty(name="renamed") private String label = "initial";
+
+        @JsonProperty(name = "renamed")
+        private String label = "initial";
+
         final int fixed = 17;
     }
-    static class Middle extends Base { protected long beta = 2; }
-    static class Derived extends Middle { int gamma = 3; }
+
+    static class Middle extends Base {
+        protected long beta = 2;
+    }
+
+    static class Derived extends Middle {
+        int gamma = 3;
+    }
 
     @Test
     public void threeLevelRoundTripIncludesPrivateAnnotatedAndFinalFields() throws Exception {
-        Derived original = Json.parse("{alpha:10,renamed:'changed',beta:20,gamma:30}", Derived.class);
+        Derived original =
+                Json.parse("{alpha:10,renamed:'changed',beta:20,gamma:30}", Derived.class);
         String text = Json.serialize(original);
         JsonObject json = Json.parse(text, JsonParsingMode.STRICT).objectValueOrThrow();
         Assert.assertEquals(5, json.size());
@@ -33,10 +45,13 @@ public class InheritedFieldsTest {
     }
 
     static class HiddenBase {
-        @JsonProperty(name="oldName") private int value = 1;
+        @JsonProperty(name = "oldName")
+        private int value = 1;
     }
+
     static class HiddenChild extends HiddenBase {
-        @JsonProperty(name="newName") String value = "child";
+        @JsonProperty(name = "newName")
+        String value = "child";
     }
 
     @Test
@@ -48,8 +63,11 @@ public class InheritedFieldsTest {
     }
 
     static class ExcludedChild extends HiddenBase {
-        @JsonProperty(name="ignored") transient int value = 2;
-        @JsonProperty(name="oldName") int replacement = 3;
+        @JsonProperty(name = "ignored")
+        transient int value = 2;
+
+        @JsonProperty(name = "oldName")
+        int replacement = 3;
     }
 
     @Test
@@ -63,23 +81,32 @@ public class InheritedFieldsTest {
 
     static class SameClassCollision {
         int duplicate;
-        @JsonProperty(name="duplicate") int other;
+
+        @JsonProperty(name = "duplicate")
+        int other;
     }
+
     static class CollisionBase {
-        @JsonProperty(name="duplicate") int first;
+        @JsonProperty(name = "duplicate")
+        int first;
     }
+
     static class InheritedCollision extends CollisionBase {
-        @JsonProperty(name="duplicate") int second;
+        @JsonProperty(name = "duplicate")
+        int second;
     }
+
     static class FinalCollision extends CollisionBase {
-        @JsonProperty(name="duplicate") final int second = 7;
+        @JsonProperty(name = "duplicate")
+        final int second = 7;
     }
 
     private void assertCollision(Object value, String first, String second) throws Exception {
-        IllegalArgumentException serialize = Assert.assertThrows(IllegalArgumentException.class,
-                () -> Json.serialize(value));
-        IllegalArgumentException parse = Assert.assertThrows(IllegalArgumentException.class,
-                () -> Json.parse("{}", value.getClass()));
+        IllegalArgumentException serialize =
+                Assert.assertThrows(IllegalArgumentException.class, () -> Json.serialize(value));
+        IllegalArgumentException parse =
+                Assert.assertThrows(
+                        IllegalArgumentException.class, () -> Json.parse("{}", value.getClass()));
         Assert.assertEquals(serialize.getMessage(), parse.getMessage());
         Assert.assertTrue(serialize.getMessage().contains("'duplicate'"));
         Assert.assertTrue(serialize.getMessage().contains(first));
@@ -88,25 +115,36 @@ public class InheritedFieldsTest {
 
     @Test
     public void duplicateJsonNamesAreRejectedInBothDirections() throws Exception {
-        assertCollision(new SameClassCollision(), "SameClassCollision.duplicate", "SameClassCollision.other");
-        assertCollision(new InheritedCollision(), "CollisionBase.first", "InheritedCollision.second");
+        assertCollision(
+                new SameClassCollision(),
+                "SameClassCollision.duplicate",
+                "SameClassCollision.other");
+        assertCollision(
+                new InheritedCollision(), "CollisionBase.first", "InheritedCollision.second");
         assertCollision(new FinalCollision(), "CollisionBase.first", "FinalCollision.second");
     }
 
     static class ConstructorCollision extends CollisionBase {
-        @JsonProperty(name="duplicate") int second;
-        ConstructorCollision() { throw new AssertionError("Must validate before construction"); }
+        @JsonProperty(name = "duplicate")
+        int second;
+
+        ConstructorCollision() {
+            throw new AssertionError("Must validate before construction");
+        }
     }
 
     @Test
     public void collisionIsDetectedBeforeTargetConstructorRuns() {
-        Assert.assertThrows(IllegalArgumentException.class,
-                () -> Json.parse("{}", ConstructorCollision.class));
+        Assert.assertThrows(
+                IllegalArgumentException.class, () -> Json.parse("{}", ConstructorCollision.class));
     }
 
     static class IgnoredCollisions extends Base {
-        @JsonProperty(name="renamed") static int global;
-        @JsonProperty(name="renamed") transient int temporary;
+        @JsonProperty(name = "renamed")
+        static int global;
+
+        @JsonProperty(name = "renamed")
+        transient int temporary;
     }
 
     @Test

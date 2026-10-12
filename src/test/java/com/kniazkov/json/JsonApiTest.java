@@ -3,24 +3,20 @@
  */
 package com.kniazkov.json;
 
+import java.io.File;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.File;
-
-/**
- * Tests covering {@link Json} class.
- */
+/** Tests covering {@link Json} class. */
 public class JsonApiTest {
-    private static final String resources = "src/test/resources/";
+    private static final String RESOURCES = "src/test/resources/";
 
-    private static final String separator = System.lineSeparator();
+    private static final String SEPARATOR = System.lineSeparator();
 
     static class Simple {
         String str;
 
-        private Simple() {
-        }
+        private Simple() {}
     }
 
     @Test
@@ -52,7 +48,7 @@ public class JsonApiTest {
         JsonElement root = null;
         boolean oops = false;
         try {
-            root = Json.parse(new File(resources + "simple.json"));
+            root = Json.parse(new File(RESOURCES + "simple.json"));
         } catch (JsonException ignored) {
             oops = true;
         }
@@ -69,7 +65,7 @@ public class JsonApiTest {
         Simple obj = null;
         boolean oops = false;
         try {
-            obj = Json.parse(new File(resources + "simple.json"), Simple.class);
+            obj = Json.parse(new File(RESOURCES + "simple.json"), Simple.class);
         } catch (JsonException ignored) {
             oops = true;
         }
@@ -80,7 +76,7 @@ public class JsonApiTest {
 
     @Test
     public void parsingFileInDifferentModes() {
-        final File file = new File(resources + "simple.json");
+        final File file = new File(RESOURCES + "simple.json");
         Simple obj = null;
         boolean oops = false;
         try {
@@ -112,11 +108,16 @@ public class JsonApiTest {
 
     @Test
     public void serialization() {
-        String expected = "{" + separator +
-                "  \"x\": 100.0,"  + separator +
-                "  \"y\": 200.0,"  + separator +
-                "  \"z\": 300.0"  + separator +
-                "}";
+        String expected =
+                "{"
+                        + SEPARATOR
+                        + "  \"x\": 100.0,"
+                        + SEPARATOR
+                        + "  \"y\": 200.0,"
+                        + SEPARATOR
+                        + "  \"z\": 300.0"
+                        + SEPARATOR
+                        + "}";
         Vector v = new Vector();
         v.x = 100;
         v.y = 200;

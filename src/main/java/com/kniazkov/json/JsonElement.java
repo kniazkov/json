@@ -5,17 +5,14 @@ package com.kniazkov.json;
 
 import java.math.BigDecimal;
 
-/**
- * Some JSON element, which can be an object, array, string, number, or literal.
- */
+/** Some JSON element, which can be an object, array, string, number, or literal. */
 public abstract class JsonElement implements Cloneable {
-    /**
-     * The parent of this element, that is, the element that contains this element.
-     */
+    /** The parent of this element, that is, the element that contains this element. */
     private final JsonContainer parent;
 
     /**
      * Constructor.
+     *
      * @param parent The parent of this element
      */
     public JsonElement(final JsonContainer parent) {
@@ -24,6 +21,7 @@ public abstract class JsonElement implements Cloneable {
 
     /**
      * Returns the parent of this element, that is, the element that contains this element.
+     *
      * @return The parent of this element
      */
     public JsonContainer parent() {
@@ -32,6 +30,7 @@ public abstract class JsonElement implements Cloneable {
 
     /**
      * Makes a clone (copy) of this element with a different parent.
+     *
      * @param anotherParent Another parent
      * @return A clone of this element
      */
@@ -43,9 +42,10 @@ public abstract class JsonElement implements Cloneable {
     }
 
     /**
-     * Compares JSON values, excluding their parent links.
-     * Arrays and objects follow the standard List and Map equality contracts.
-     * Finite numbers compare by mathematical value, independently of scale.
+     * Compares JSON values, excluding their parent links. Arrays and objects follow the standard
+     * List and Map equality contracts. Finite numbers compare by mathematical value, independently
+     * of scale.
+     *
      * @param other Value to compare
      * @return Whether the values are equal
      */
@@ -55,8 +55,9 @@ public abstract class JsonElement implements Cloneable {
     }
 
     /**
-     * Computes a content hash compatible with value equality and List/Map contracts.
-     * Mutable containers must not be modified while used as hash keys.
+     * Computes a content hash compatible with value equality and List/Map contracts. Mutable
+     * containers must not be modified while used as hash keys.
+     *
      * @return Content hash
      */
     @Override
@@ -66,14 +67,16 @@ public abstract class JsonElement implements Cloneable {
 
     /**
      * Represents the element as a string.
+     *
      * @return String representation of the element
      */
     @Override
     public abstract String toString();
 
     /**
-     * Represents the element as text with line breaks and indentation of nested elements,
-     *   making it easier to read.
+     * Represents the element as text with line breaks and indentation of nested elements, making it
+     * easier to read.
+     *
      * @param indentation Symbols forming an indentation
      * @return Text representation of the element
      */
@@ -84,8 +87,9 @@ public abstract class JsonElement implements Cloneable {
     }
 
     /**
-     * Represents the element as text with line breaks and indentation of nested elements,
-     *   making it easier to read (internal method).
+     * Represents the element as text with line breaks and indentation of nested elements, making it
+     * easier to read (internal method).
+     *
      * @param builder Where to build text representation
      * @param indentation Symbols forming an indentation
      * @param level Current indentation level
@@ -95,19 +99,21 @@ public abstract class JsonElement implements Cloneable {
     }
 
     /**
-     * Represents the element as a Java object.
-     * Finite numbers retain BigInteger/BigDecimal; JSON5 special numbers use Double.
+     * Represents the element as a Java object. Finite numbers retain BigInteger/BigDecimal; JSON5
+     * special numbers use Double.
+     *
      * @return Object containing element data
      */
     public abstract Object toJavaObject();
 
     /**
      * Represents the element as a Java object of specified type.
+     *
+     * @param <T> The type
      * @param type The type descriptor
      * @return Converted value, or null for a JSON null and a reference target
      * @throws JsonDataException If the value cannot be converted to the requested type
      * @throws IllegalArgumentException If mapping annotations contain invalid configuration
-     * @param <T> The type
      */
     @SuppressWarnings("unchecked")
     public final <T> T toJavaObject(Class<T> type) {
@@ -116,6 +122,7 @@ public abstract class JsonElement implements Cloneable {
 
     /**
      * Converts this tree to a captured generic type using the same strict mapping rules.
+     *
      * @param type Captured target, for example a JsonType of Map of String to Integer
      * @param <T> Target Java type
      * @return Converted value
@@ -128,6 +135,7 @@ public abstract class JsonElement implements Cloneable {
 
     /**
      * Checks if the element is a null literal.
+     *
      * @return Checking result
      */
     public boolean isNull() {
@@ -136,6 +144,7 @@ public abstract class JsonElement implements Cloneable {
 
     /**
      * Checks if the element contains boolean value.
+     *
      * @return Checking result
      */
     public boolean isBoolean() {
@@ -144,8 +153,9 @@ public abstract class JsonElement implements Cloneable {
 
     /**
      * Tries to represent the value of the element as a boolean.
-     * @return The value of the element represented as a boolean,
-     *   or {@code false} if the element is not boolean
+     *
+     * @return The value of the element represented as a boolean, or {@code false} if the element is
+     *     not boolean
      */
     public boolean booleanValue() {
         return false;
@@ -153,36 +163,52 @@ public abstract class JsonElement implements Cloneable {
 
     /**
      * Checks for the JSON5 not-a-number value.
+     *
      * @return Whether this element represents JSON5 NaN
      */
-    public boolean isNaN() { return false; }
+    public boolean isNaN() {
+        return false;
+    }
 
     /**
      * Checks for either signed JSON5 infinity.
+     *
      * @return Whether this element represents either JSON5 infinity
      */
-    public boolean isInfinite() { return false; }
+    public boolean isInfinite() {
+        return false;
+    }
 
     /**
      * Checks for positive JSON5 infinity.
+     *
      * @return Whether this element represents positive JSON5 infinity
      */
-    public boolean isPositiveInfinity() { return false; }
+    public boolean isPositiveInfinity() {
+        return false;
+    }
 
     /**
      * Checks for negative JSON5 infinity.
+     *
      * @return Whether this element represents negative JSON5 infinity
      */
-    public boolean isNegativeInfinity() { return false; }
+    public boolean isNegativeInfinity() {
+        return false;
+    }
 
     /**
      * Checks the stored numeric value, independently of double conversion overflow.
+     *
      * @return Whether this element is a finite number, regardless of double conversion overflow
      */
-    public boolean isFinite() { return isNumber() && !isNaN() && !isInfinite(); }
+    public boolean isFinite() {
+        return isNumber() && !isNaN() && !isInfinite();
+    }
 
     /**
      * Checks if the element is a 32-bit integer.
+     *
      * @return Checking result
      */
     public boolean isInteger() {
@@ -191,6 +217,7 @@ public abstract class JsonElement implements Cloneable {
 
     /**
      * Checks if the element is a 64-bit integer.
+     *
      * @return Checking result
      */
     public boolean isLongInteger() {
@@ -199,6 +226,7 @@ public abstract class JsonElement implements Cloneable {
 
     /**
      * Checks if the element is a number.
+     *
      * @return Checking result
      */
     public boolean isNumber() {
@@ -206,30 +234,33 @@ public abstract class JsonElement implements Cloneable {
     }
 
     /**
-     * Tries to convert the value of the element to a 32-bit integer.
-     * Numeric fractions are truncated toward zero and overflow saturates at the range boundaries.
-     * @return The value of the element converted to a 32-bit integer,
-     *   or 0 if no such conversion is possible
+     * Tries to convert the value of the element to a 32-bit integer. Numeric fractions are
+     * truncated toward zero and overflow saturates at the range boundaries.
+     *
+     * @return The value of the element converted to a 32-bit integer, or 0 if no such conversion is
+     *     possible
      */
     public int intValue() {
         return 0;
     }
 
     /**
-     * Tries to convert the value of the element to a 64-bit integer.
-     * Numeric fractions are truncated toward zero and overflow saturates at the range boundaries.
-     * @return The value of the element converted to a 64-bit integer,
-     *   or 0 if no such conversion is possible
+     * Tries to convert the value of the element to a 64-bit integer. Numeric fractions are
+     * truncated toward zero and overflow saturates at the range boundaries.
+     *
+     * @return The value of the element converted to a 64-bit integer, or 0 if no such conversion is
+     *     possible
      */
     public long longValue() {
         return 0;
     }
 
     /**
-     * Tries to represent the value of the element as a double-precision real number.
-     * Exact numeric values may round, underflow to zero, or overflow to infinity.
-     * @return The value of the element represented as a double-precision real number,
-     *   or 0 if no such conversion is possible.
+     * Tries to represent the value of the element as a double-precision real number. Exact numeric
+     * values may round, underflow to zero, or overflow to infinity.
+     *
+     * @return The value of the element represented as a double-precision real number, or 0 if no
+     *     such conversion is possible.
      */
     public double doubleValue() {
         return 0;
@@ -237,6 +268,7 @@ public abstract class JsonElement implements Cloneable {
 
     /**
      * Checks if the element is a string.
+     *
      * @return Checking result
      */
     public boolean isString() {
@@ -245,8 +277,9 @@ public abstract class JsonElement implements Cloneable {
 
     /**
      * Tries to represent the value of the element as a string.
-     * @return The value of the element represented as a string,
-     *   or empty string if no such conversion is possible
+     *
+     * @return The value of the element represented as a string, or empty string if no such
+     *     conversion is possible
      */
     public String stringValue() {
         return "";
@@ -254,6 +287,7 @@ public abstract class JsonElement implements Cloneable {
 
     /**
      * Safely casts an element to the "array" type.
+     *
      * @return JSON array or {@code null} if the element is not an array.
      */
     public JsonArray toJsonArray() {
@@ -262,6 +296,7 @@ public abstract class JsonElement implements Cloneable {
 
     /**
      * Safely casts an element to the "object" type.
+     *
      * @return JSON object or {@code null} if the element is not an object.
      */
     public JsonObject toJsonObject() {
@@ -270,7 +305,9 @@ public abstract class JsonElement implements Cloneable {
 
     /**
      * Returns the exact stored number, or null for a non-numeric element.
-     * @return BigInteger for an integer, BigDecimal for a real, Double for a special number, or null
+     *
+     * @return BigInteger for an integer, BigDecimal for a real, Double for a special number, or
+     *     null
      */
     public Number numberValue() {
         return null;
@@ -278,6 +315,7 @@ public abstract class JsonElement implements Cloneable {
 
     /**
      * Returns the exact decimal representation, or null for non-numeric or non-finite values.
+     *
      * @return The decimal value, or null
      */
     public BigDecimal decimalValue() {
@@ -286,6 +324,7 @@ public abstract class JsonElement implements Cloneable {
 
     /**
      * Returns a boolean without coercing other JSON types.
+     *
      * @return Boolean value
      * @throws JsonDataException If this element is not a boolean
      */
@@ -298,6 +337,7 @@ public abstract class JsonElement implements Cloneable {
 
     /**
      * Returns an exactly representable signed 32-bit integer.
+     *
      * @return Integer value
      * @throws JsonDataException If the type, fraction or range does not fit
      */
@@ -310,6 +350,7 @@ public abstract class JsonElement implements Cloneable {
 
     /**
      * Returns an exactly representable signed 64-bit integer.
+     *
      * @return Long value
      * @throws JsonDataException If the type, fraction or range does not fit
      */
@@ -322,8 +363,10 @@ public abstract class JsonElement implements Cloneable {
 
     /**
      * Returns a double, permitting rounding but rejecting overflow and underflow to zero.
+     *
      * @return Finite double value
-     * @throws JsonDataException If the element is not numeric or its magnitude cannot be represented
+     * @throws JsonDataException If the element is not numeric or its magnitude cannot be
+     *     represented
      */
     public final double doubleValueOrThrow() {
         if (!isNumber()) {
@@ -331,13 +374,15 @@ public abstract class JsonElement implements Cloneable {
         }
         double value = doubleValue();
         if (!Double.isFinite(value) || (value == 0.0 && decimalValue().signum() != 0)) {
-            throw invalidData("a number representable as a finite double without underflow to zero");
+            throw invalidData(
+                    "a number representable as a finite double without underflow to zero");
         }
         return value;
     }
 
     /**
      * Returns a JSON string without converting numbers, booleans or null to text.
+     *
      * @return String value
      * @throws JsonDataException If the element is not a JSON string or has a null string payload
      */
@@ -350,6 +395,7 @@ public abstract class JsonElement implements Cloneable {
 
     /**
      * Returns the exact stored number.
+     *
      * @return BigInteger or BigDecimal for finite values, Double for NaN or infinities
      * @throws JsonDataException If the element is not numeric
      */
@@ -363,6 +409,7 @@ public abstract class JsonElement implements Cloneable {
 
     /**
      * Returns the exact decimal representation of a finite number.
+     *
      * @return Decimal value
      * @throws JsonDataException If the element is not a finite number
      */
@@ -376,6 +423,7 @@ public abstract class JsonElement implements Cloneable {
 
     /**
      * Returns this element as a JSON array.
+     *
      * @return JSON array
      * @throws JsonDataException If the element is not an array
      */
@@ -389,6 +437,7 @@ public abstract class JsonElement implements Cloneable {
 
     /**
      * Returns this element as a JSON object.
+     *
      * @return JSON object
      * @throws JsonDataException If the element is not an object
      */
@@ -402,8 +451,7 @@ public abstract class JsonElement implements Cloneable {
 
     private JsonDataException invalidData(String expected) {
         // Do not serialize the value: it may be sensitive, very large, or cyclic.
-        return new JsonDataException("Expected " + expected + "; actual element: "
-                + getClass().getSimpleName());
+        return new JsonDataException(
+                "Expected " + expected + "; actual element: " + getClass().getSimpleName());
     }
-
 }

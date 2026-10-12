@@ -3,17 +3,14 @@
  */
 package com.kniazkov.json;
 
-/**
- * An error occurred while parsing a JSON document.
- */
+/** An error occurred while parsing a JSON document. */
 public abstract class JsonError {
-    /**
-     * Specifies the location in the document where the error was found.
-     */
+    /** Specifies the location in the document where the error was found. */
     private final JsonLocation loc;
 
     /**
      * Constructor.
+     *
      * @param loc Position in the document where the error was found
      */
     JsonError(JsonLocation loc) {
@@ -22,6 +19,7 @@ public abstract class JsonError {
 
     /**
      * Returns the location in the document where the error was found.
+     *
      * @return Location
      */
     public JsonLocation location() {
@@ -30,6 +28,7 @@ public abstract class JsonError {
 
     /**
      * Returns the text description of the error (in English).
+     *
      * @return Text description of the error
      */
     public String message() {
@@ -38,6 +37,7 @@ public abstract class JsonError {
 
     /**
      * Returns the localized text description of the error.
+     *
      * @param lang Language of message ('en', 'ru'...)
      * @return Text description of the error
      */
@@ -56,7 +56,9 @@ public abstract class JsonError {
 
         @Override
         public String localizedMessage(String lang) {
-            return "ru".equals(lang) ? "Лишние данные после корневого значения" : "Unexpected content after the root value";
+            return "ru".equals(lang)
+                    ? "Лишние данные после корневого значения"
+                    : "Unexpected content after the root value";
         }
     }
 
@@ -86,7 +88,9 @@ public abstract class JsonError {
 
     /** Unexpected end of input. */
     public static final class UnexpectedEnd extends JsonError {
-        UnexpectedEnd(JsonLocation loc) { super(loc); }
+        UnexpectedEnd(JsonLocation loc) {
+            super(loc);
+        }
 
         @Override
         public String localizedMessage(String lang) {
@@ -96,7 +100,9 @@ public abstract class JsonError {
 
     /** Missing array element. */
     public static final class MissingArrayElement extends JsonError {
-        MissingArrayElement(JsonLocation loc) { super(loc); }
+        MissingArrayElement(JsonLocation loc) {
+            super(loc);
+        }
 
         @Override
         public String localizedMessage(String lang) {
@@ -115,18 +121,23 @@ public abstract class JsonError {
 
         @Override
         public String localizedMessage(String lang) {
-            return ("ru".equals(lang) ? "Пропущена закрывающая скобка: " : "Missing closing bracket: ")
+            return ("ru".equals(lang)
+                            ? "Пропущена закрывающая скобка: "
+                            : "Missing closing bracket: ")
                     + bracket;
         }
     }
 
     /** An unescaped line/paragraph separator accepted by JSON5, but discouraged for portability. */
     public static final class UnescapedLineSeparator extends JsonError {
-        UnescapedLineSeparator(JsonLocation loc) { super(loc); }
+        UnescapedLineSeparator(JsonLocation loc) {
+            super(loc);
+        }
 
         @Override
         public String localizedMessage(String lang) {
-            return "ru".equals(lang) ? "Неэкранированный разделитель строк или абзацев"
+            return "ru".equals(lang)
+                    ? "Неэкранированный разделитель строк или абзацев"
                     : "Unescaped line or paragraph separator";
         }
     }
@@ -143,12 +154,11 @@ public abstract class JsonError {
         }
     }
 
-    /**
-     * Error 'A number after the minus sign is expected'.
-     */
-    public final static class ExpectedNumberAfterMinus extends IncorrectNumberFormat {
+    /** Error 'A number after the minus sign is expected'. */
+    public static final class ExpectedNumberAfterMinus extends IncorrectNumberFormat {
         /**
          * Constructor.
+         *
          * @param loc Position in the document where the error was found
          */
         ExpectedNumberAfterMinus(JsonLocation loc) {
@@ -164,12 +174,11 @@ public abstract class JsonError {
         }
     }
 
-    /**
-     * Error 'A number after the plus sign is expected'.
-     */
-    public final static class ExpectedNumberAfterPlus extends IncorrectNumberFormat {
+    /** Error 'A number after the plus sign is expected'. */
+    public static final class ExpectedNumberAfterPlus extends IncorrectNumberFormat {
         /**
          * Constructor.
+         *
          * @param loc Position in the document where the error was found
          */
         ExpectedNumberAfterPlus(JsonLocation loc) {
@@ -185,12 +194,11 @@ public abstract class JsonError {
         }
     }
 
-    /**
-     * Error 'A number after the decimal point is expected'.
-     */
-    public final static class ExpectedNumberAfterPoint extends IncorrectNumberFormat {
+    /** Error 'A number after the decimal point is expected'. */
+    public static final class ExpectedNumberAfterPoint extends IncorrectNumberFormat {
         /**
          * Constructor.
+         *
          * @param loc Position in the document where the error was found
          */
         ExpectedNumberAfterPoint(JsonLocation loc) {
@@ -206,12 +214,11 @@ public abstract class JsonError {
         }
     }
 
-    /**
-     * Error 'Incorrect exponent notation'.
-     */
-    public final static class IncorrectExponentNotation extends IncorrectNumberFormat {
+    /** Error 'Incorrect exponent notation'. */
+    public static final class IncorrectExponentNotation extends IncorrectNumberFormat {
         /**
          * Constructor.
+         *
          * @param loc Position in the document where the error was found
          */
         IncorrectExponentNotation(JsonLocation loc) {
@@ -227,12 +234,11 @@ public abstract class JsonError {
         }
     }
 
-    /**
-     * Error 'Hexadecimal digit after 'x' is expected'.
-     */
-    public final static class ExpectedHexDigit extends IncorrectNumberFormat {
+    /** Error 'Hexadecimal digit after 'x' is expected'. */
+    public static final class ExpectedHexDigit extends IncorrectNumberFormat {
         /**
          * Constructor.
+         *
          * @param loc Position in the document where the error was found
          */
         ExpectedHexDigit(JsonLocation loc) {
@@ -248,12 +254,11 @@ public abstract class JsonError {
         }
     }
 
-    /**
-     * Error 'Incorrect number format' (common error related to numbers parsing).
-     */
+    /** Error 'Incorrect number format' (common error related to numbers parsing). */
     public static class IncorrectNumberFormat extends JsonError {
         /**
          * Constructor.
+         *
          * @param loc Position in the document where the error was found
          */
         IncorrectNumberFormat(JsonLocation loc) {
@@ -269,16 +274,14 @@ public abstract class JsonError {
         }
     }
 
-    /**
-     * Error 'Invalid character'.
-     */
-    public final static class InvalidCharacter extends JsonError {
-        /**
-         * The symbol.
-         */
+    /** Error 'Invalid character'. */
+    public static final class InvalidCharacter extends JsonError {
+        /** The symbol. */
         private final char ch;
+
         /**
          * Constructor.
+         *
          * @param ch The symbol
          * @param loc Position in the document where the error was found
          */
@@ -296,12 +299,11 @@ public abstract class JsonError {
         }
     }
 
-    /**
-     * Error 'Some element after the comma is expected'.
-     */
-    public final static class ExpectedElementAfterComma extends JsonError {
+    /** Error 'Some element after the comma is expected'. */
+    public static final class ExpectedElementAfterComma extends JsonError {
         /**
          * Constructor.
+         *
          * @param loc Position in the document where the error was found
          */
         ExpectedElementAfterComma(JsonLocation loc) {
@@ -317,12 +319,11 @@ public abstract class JsonError {
         }
     }
 
-    /**
-     * Error 'Unclosed string'.
-     */
-    public final static class UnclosedString extends JsonError {
+    /** Error 'Unclosed string'. */
+    public static final class UnclosedString extends JsonError {
         /**
          * Constructor.
+         *
          * @param loc Position in the document where the error was found
          */
         UnclosedString(JsonLocation loc) {
@@ -338,16 +339,14 @@ public abstract class JsonError {
         }
     }
 
-    /**
-     * Error 'Incorrect string sequence'.
-     */
-    public final static class IncorrectStringSequence extends JsonError {
-        /**
-         * The sequence.
-         */
+    /** Error 'Incorrect string sequence'. */
+    public static final class IncorrectStringSequence extends JsonError {
+        /** The sequence. */
         private final String sequence;
+
         /**
          * Constructor.
+         *
          * @param sequence The sequence.
          * @param loc Position in the document where the error was found
          */
@@ -365,12 +364,11 @@ public abstract class JsonError {
         }
     }
 
-    /**
-     * Error 'A key:value pair after the comma is expected'.
-     */
-    public final static class ExpectedPairAfterComma extends JsonError {
+    /** Error 'A key:value pair after the comma is expected'. */
+    public static final class ExpectedPairAfterComma extends JsonError {
         /**
          * Constructor.
+         *
          * @param loc Position in the document where the error was found
          */
         ExpectedPairAfterComma(JsonLocation loc) {
@@ -386,12 +384,11 @@ public abstract class JsonError {
         }
     }
 
-    /**
-     * Error 'A key (string) is expected'.
-     */
-    public final static class ExpectedKey extends JsonError {
+    /** Error 'A key (string) is expected'. */
+    public static final class ExpectedKey extends JsonError {
         /**
          * Constructor.
+         *
          * @param loc Position in the document where the error was found
          */
         ExpectedKey(JsonLocation loc) {
@@ -407,12 +404,11 @@ public abstract class JsonError {
         }
     }
 
-    /**
-     * Error 'A colon as a separator after the key is expected'.
-     */
-    public final static class ExpectedSeparator extends JsonError {
+    /** Error 'A colon as a separator after the key is expected'. */
+    public static final class ExpectedSeparator extends JsonError {
         /**
          * Constructor.
+         *
          * @param loc Position in the document where the error was found
          */
         ExpectedSeparator(JsonLocation loc) {
@@ -428,12 +424,11 @@ public abstract class JsonError {
         }
     }
 
-    /**
-     * Error 'Some element after the separator is expected'.
-     */
-    public final static class ExpectedElementAfterSeparator extends JsonError {
+    /** Error 'Some element after the separator is expected'. */
+    public static final class ExpectedElementAfterSeparator extends JsonError {
         /**
          * Constructor.
+         *
          * @param loc Position in the document where the error was found
          */
         ExpectedElementAfterSeparator(JsonLocation loc) {
@@ -449,12 +444,11 @@ public abstract class JsonError {
         }
     }
 
-    /**
-     * Error 'Missing a comma'.
-     */
-    public final static class MissingComma extends JsonError {
+    /** Error 'Missing a comma'. */
+    public static final class MissingComma extends JsonError {
         /**
          * Constructor.
+         *
          * @param loc Position in the document where the error was found
          */
         MissingComma(JsonLocation loc) {
@@ -470,13 +464,9 @@ public abstract class JsonError {
         }
     }
 
-    /**
-     * Error 'Incorrect sequence starting with the ... token'.
-     */
-    public final static class UnexpectedToken extends JsonError {
-        /**
-         * A token.
-         */
+    /** Error 'Incorrect sequence starting with the ... token'. */
+    public static final class UnexpectedToken extends JsonError {
+        /** A token. */
         private final Token token;
 
         /**
@@ -494,14 +484,11 @@ public abstract class JsonError {
         public String localizedMessage(String lang) {
             if ("ru".equals(lang)) {
                 return String.format(
-                    "Неправильная последовательность, начинающаяся с токена '%s'",
-                    token.toString()
-                );
+                        "Неправильная последовательность, начинающаяся с токена '%s'",
+                        token.toString());
             }
             return String.format(
-                "Incorrect sequence starting with the '%s' token",
-                token.toString()
-            );
+                    "Incorrect sequence starting with the '%s' token", token.toString());
         }
     }
 }

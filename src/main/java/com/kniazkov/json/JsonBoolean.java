@@ -3,27 +3,20 @@
  */
 package com.kniazkov.json;
 
-/**
- * JSON element representing a boolean value.
- */
+/** JSON element representing a boolean value. */
 public final class JsonBoolean extends JsonElement {
-    /**
-     * The instance of {@code true} literal.
-     */
+    /** The instance of {@code true} literal. */
     public static final JsonBoolean TRUE = new JsonBoolean(null, true);
 
-    /**
-     * The instance of {@code false} literal.
-     */
+    /** The instance of {@code false} literal. */
     public static final JsonBoolean FALSE = new JsonBoolean(null, false);
 
-    /**
-     * Boolean value.
-     */
+    /** Boolean value. */
     private final boolean value;
 
     /**
      * Returns an instance of Boolean element.
+     *
      * @param value Boolean value
      * @return An instance
      */
@@ -33,6 +26,7 @@ public final class JsonBoolean extends JsonElement {
 
     /**
      * Constructor (for internal use).
+     *
      * @param parent The parent of this element
      * @param value Boolean value
      */

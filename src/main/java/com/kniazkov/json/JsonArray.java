@@ -3,28 +3,30 @@
  */
 package com.kniazkov.json;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
-/**
- * Array of JSON elements.
- */
+/** Array of JSON elements. */
 public final class JsonArray extends JsonContainer implements List<JsonElement> {
-    /**
-     * List of elements.
-     */
+    /** List of elements. */
     private final List<JsonElement> list;
 
-    /**
-     * Constructor.
-     */
+    /** Constructor. */
     public JsonArray() {
         this(null);
     }
 
     /**
      * Constructor (for internal use).
+     *
      * @param parent The parent of this element
      */
     JsonArray(JsonContainer parent) {
@@ -112,7 +114,8 @@ public final class JsonArray extends JsonContainer implements List<JsonElement> 
     @Override
     public void replaceAll(UnaryOperator<JsonElement> operator) {
         Objects.requireNonNull(operator, "operator");
-        list.replaceAll(value -> Objects.requireNonNull(operator.apply(value), "value").clone(this));
+        list.replaceAll(
+                value -> Objects.requireNonNull(operator.apply(value), "value").clone(this));
     }
 
     @Override
@@ -199,6 +202,7 @@ public final class JsonArray extends JsonContainer implements List<JsonElement> 
 
     /**
      * Returns a child element by its index.
+     *
      * @param index Index
      * @return Child element
      * @throws IndexOutOfBoundsException If the index goes out of bounds
@@ -209,21 +213,21 @@ public final class JsonArray extends JsonContainer implements List<JsonElement> 
 
     /**
      * Makes a copy of the JSON element and appends this copy to the end of the array.
+     *
      * @param elem Element
      */
     public void addElement(JsonElement elem) {
         add(elem);
     }
 
-    /**
-     * Creates a child element of the 'null' type and adds it to the end of the array.
-     */
+    /** Creates a child element of the 'null' type and adds it to the end of the array. */
     public void addNull() {
         list.add(new JsonNull(this));
     }
 
     /**
      * Creates a child element of the 'boolean' type and adds it to the end of the array.
+     *
      * @param value Boolean value
      */
     public void addBoolean(boolean value) {
@@ -232,6 +236,7 @@ public final class JsonArray extends JsonContainer implements List<JsonElement> 
 
     /**
      * Creates a child element of the 'number' type and adds it to the end of the array.
+     *
      * @param value Value of the number
      */
     public void addNumber(double value) {
@@ -240,6 +245,7 @@ public final class JsonArray extends JsonContainer implements List<JsonElement> 
 
     /**
      * Adds an exact number using its Java type.
+     *
      * @param value Numeric value
      */
     public void addNumber(float value) {
@@ -248,6 +254,7 @@ public final class JsonArray extends JsonContainer implements List<JsonElement> 
 
     /**
      * Adds an exact number using its Java type.
+     *
      * @param value Numeric value
      */
     public void addNumber(long value) {
@@ -256,6 +263,7 @@ public final class JsonArray extends JsonContainer implements List<JsonElement> 
 
     /**
      * Adds an exact number using its Java type.
+     *
      * @param value Numeric value
      */
     public void addNumber(Number value) {
@@ -264,6 +272,7 @@ public final class JsonArray extends JsonContainer implements List<JsonElement> 
 
     /**
      * Creates a child element of the 'string' type and adds it to the end of the array.
+     *
      * @param value Value of the string
      */
     public void addString(String value) {
@@ -271,8 +280,9 @@ public final class JsonArray extends JsonContainer implements List<JsonElement> 
     }
 
     /**
-     * Creates an empty array as a child of this array.
-     * The child is then added to the end of the parent array.
+     * Creates an empty array as a child of this array. The child is then added to the end of the
+     * parent array.
+     *
      * @return The empty array created, so that it can be filled.
      */
     public JsonArray createArray() {
@@ -282,8 +292,9 @@ public final class JsonArray extends JsonContainer implements List<JsonElement> 
     }
 
     /**
-     * Creates an empty object as a child of this array.
-     * The child is then added to the end of the array.
+     * Creates an empty object as a child of this array. The child is then added to the end of the
+     * array.
+     *
      * @return The empty object created, so that it can be filled.
      */
     public JsonObject createObject() {
@@ -294,6 +305,7 @@ public final class JsonArray extends JsonContainer implements List<JsonElement> 
 
     /**
      * Adds a child element (for internal use).
+     *
      * @param elem Element
      */
     void addChild(JsonElement elem) {
@@ -305,5 +317,4 @@ public final class JsonArray extends JsonContainer implements List<JsonElement> 
     public JsonArray toJsonArray() {
         return this;
     }
-
 }

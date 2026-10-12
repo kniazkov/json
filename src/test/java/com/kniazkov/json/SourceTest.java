@@ -35,8 +35,10 @@ public class SourceTest {
     @Test
     public void coordinatesDoNotDependOnPeeking() throws Exception {
         String text = "a\r\nb\rc\nd\u2028e\u2029\t\ud83d\ude00";
-        String[] positions = {"1:1", "1:2", "2:1", "2:1", "2:2", "3:1", "3:2",
-            "4:1", "4:2", "5:1", "5:2", "6:1", "6:2", "6:3", "6:4"};
+        String[] positions = {
+            "1:1", "1:2", "2:1", "2:1", "2:2", "3:1", "3:2", "4:1", "4:2", "5:1", "5:2", "6:1",
+            "6:2", "6:3", "6:4"
+        };
         Source peeked = new Source(text);
         Source advanced = new Source(text);
         for (String position : positions) {
@@ -50,7 +52,7 @@ public class SourceTest {
         Assert.assertEquals(-1, advanced.charValue());
         for (String ending : new String[] {"\r", "\n", "\r\n", "\u2028", "\u2029"}) {
             Source source = new Source(ending);
-            while (source.nextChar() != -1) { }
+            while (source.nextChar() != -1) {}
             Assert.assertEquals("2:1", source.location().toString());
         }
     }
@@ -70,17 +72,24 @@ public class SourceTest {
     @Test
     public void readFailureIsNotEofAndRetainsCauseAndPosition() throws Exception {
         IOException cause = new IOException("broken reader");
-        Reader reader = new Reader() {
-            int reads;
-            @Override public int read(char[] data, int off, int len) throws IOException {
-                if (reads++ == 0) {
-                    data[off] = 'a';
-                    return 1;
-                }
-                throw cause;
-            }
-            @Override public void close() { Assert.fail("Source must not close its reader"); }
-        };
+        Reader reader =
+                new Reader() {
+                    int reads;
+
+                    @Override
+                    public int read(char[] data, int off, int len) throws IOException {
+                        if (reads++ == 0) {
+                            data[off] = 'a';
+                            return 1;
+                        }
+                        throw cause;
+                    }
+
+                    @Override
+                    public void close() {
+                        Assert.fail("Source must not close its reader");
+                    }
+                };
         Source source = new Source(reader, "response");
         JsonException error = Assert.assertThrows(JsonException.class, source::nextChar);
         Assert.assertSame(cause, error.getCause());
@@ -97,16 +106,21 @@ public class SourceTest {
         Assert.assertTrue(Json.parse("true").booleanValue());
         Assert.assertEquals(123, Json.parse("123").intValue());
         Assert.assertEquals(255, Json.parse("0xff").intValue());
-        Assert.assertEquals("\0\uffff\ud83d\ude00", Json.parse("\"\\u0000\\uffff😀\"").stringValue());
+        Assert.assertEquals(
+                "\0\uffff\ud83d\ude00", Json.parse("\"\\u0000\\uffff😀\"").stringValue());
         for (String text : new String[] {"\0", "[1,\0]", "\"a\0b\""}) {
-            JsonException error = Assert.assertThrows(JsonException.class,
-                    () -> Json.parse(text, JsonParsingMode.STRICT));
+            JsonException error =
+                    Assert.assertThrows(
+                            JsonException.class, () -> Json.parse(text, JsonParsingMode.STRICT));
             Assert.assertTrue(error.error() instanceof JsonError.InvalidCharacter);
         }
-        for (String text : new String[] {"\"abc", "\"\\", "\"\\u", "\"\\u0", "\"\\u00", "\"\\u000"}) {
+        for (String text :
+                new String[] {"\"abc", "\"\\", "\"\\u", "\"\\u0", "\"\\u00", "\"\\u000"}) {
             Assert.assertThrows(JsonException.class, () -> Json.parse(text));
         }
-        JsonException badEscape = Assert.assertThrows(JsonException.class, () -> Json.parse("\"\\q\"", JsonParsingMode.STRICT));
+        JsonException badEscape =
+                Assert.assertThrows(
+                        JsonException.class, () -> Json.parse("\"\\q\"", JsonParsingMode.STRICT));
         Assert.assertTrue(badEscape.getMessage().contains("\\q"));
     }
 }

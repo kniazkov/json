@@ -3,15 +3,12 @@
  */
 package com.kniazkov.json;
 
+import java.util.List;
+import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.List;
-import java.util.Map;
-
-/**
- * Tests covering {@link JsonObject} class.
- */
+/** Tests covering {@link JsonObject} class. */
 public class JsonObjectTest {
     @Test
     public void emptyObject() {
@@ -24,7 +21,10 @@ public class JsonObjectTest {
     public void objectWithData() {
         JsonObject obj = createTestObject();
         Assert.assertEquals(6, obj.size());
-        Assert.assertEquals("{\"bool\": true, \"nothing\": null, \"str\": \"hello\", \"int\": 13, \"array\": [1, 2], \"obj\": {\"str\": \"test\"}}", obj.toString());
+        Assert.assertEquals(
+                "{\"bool\": true, \"nothing\": null,"
+                        + " \"str\": \"hello\", \"int\": 13, \"array\": [1, 2], \"obj\": {\"str\": \"test\"}}",
+                obj.toString());
     }
 
     @Test
@@ -45,8 +45,7 @@ public class JsonObjectTest {
     private static class TestNestedClass {
         private String str;
 
-        public TestNestedClass() {
-        }
+        TestNestedClass() {}
 
         public String getString() {
             return str;
@@ -66,7 +65,7 @@ public class JsonObjectTest {
 
         private List<Integer> array;
 
-        public TestClass() {
+        TestClass() {
             nothing = "something";
         }
 
@@ -107,11 +106,12 @@ public class JsonObjectTest {
         Assert.assertEquals("test", obj.getNested().getString());
         Assert.assertNotNull(obj.getArray());
         Assert.assertEquals(2, obj.getArray().size());
-        Assert.assertEquals(1, (int)obj.getArray().get(0));
+        Assert.assertEquals(1, (int) obj.getArray().get(0));
     }
 
     /**
      * Creates a JSON object containing test data.
+     *
      * @return JSON object
      */
     private JsonObject createTestObject() {
@@ -126,5 +126,6 @@ public class JsonObjectTest {
         JsonObject childObj = obj.createObject("obj");
         childObj.addString("str", "test");
         return obj;
-    };
+    }
+    ;
 }

@@ -22,8 +22,9 @@ public final class JsonLocation {
     }
 
     /**
-     * Returns the one-based line number. CRLF is one break; CR, LF, U+2028 and U+2029
-     * are also breaks. This does not imply that the parser accepts these characters.
+     * Returns the one-based line number. CRLF is one break; CR, LF, U+2028 and U+2029 are also
+     * breaks. This does not imply that the parser accepts these characters.
+     *
      * @return Line number
      */
     public int row() {
@@ -31,8 +32,9 @@ public final class JsonLocation {
     }
 
     /**
-     * Returns the one-based column in UTF-16 code units, not display cells.
-     * A tab counts as one unit and a surrogate pair as two.
+     * Returns the one-based column in UTF-16 code units, not display cells. A tab counts as one
+     * unit and a surrogate pair as two.
+     *
      * @return Column number
      */
     public int column() {
@@ -41,6 +43,7 @@ public final class JsonLocation {
 
     /**
      * Returns the diagnostic source name, if supplied.
+     *
      * @return Source name, or an empty optional for unnamed input
      */
     public Optional<String> sourceName() {

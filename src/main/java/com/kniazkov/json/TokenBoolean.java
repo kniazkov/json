@@ -3,17 +3,14 @@
  */
 package com.kniazkov.json;
 
-/**
- * Token representing a boolean value.
- */
+/** Token representing a boolean value. */
 final class TokenBoolean extends TokenLiteral {
-    /**
-     * Boolean value.
-     */
+    /** Boolean value. */
     private final boolean value;
 
     /**
      * Constructor.
+     *
      * @param loc Location of the first character of the token
      * @param value Boolean value
      */
@@ -23,7 +20,9 @@ final class TokenBoolean extends TokenLiteral {
     }
 
     @Override
-    String identifierName() { return toString(); }
+    String identifierName() {
+        return toString();
+    }
 
     @Override
     public String toString() {

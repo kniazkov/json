@@ -3,18 +3,14 @@
  */
 package com.kniazkov.json;
 
-/**
- * A token, i.e. minimum indivisible entity of JSON document.
- */
+/** A token, i.e. minimum indivisible entity of JSON document. */
 abstract class Token {
-    /**
-     * Location of the first character of the token.
-     */
+    /** Location of the first character of the token. */
     private final JsonLocation loc;
-
 
     /**
      * Constructor.
+     *
      * @param loc Location of the first character of the token
      */
     Token(JsonLocation loc) {
@@ -22,10 +18,13 @@ abstract class Token {
     }
 
     /** Returns an IdentifierName spelling when this token may be an unquoted JSON5 key. */
-    String identifierName() { return null; }
+    String identifierName() {
+        return null;
+    }
 
     /**
      * Represents the token as a string.
+     *
      * @return String representation of the token
      */
     @Override
@@ -33,6 +32,7 @@ abstract class Token {
 
     /**
      * Returns the location of the first character of the token.
+     *
      * @return Location
      */
     JsonLocation location() {

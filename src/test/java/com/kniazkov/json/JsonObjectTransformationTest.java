@@ -3,17 +3,18 @@
  */
 package com.kniazkov.json;
 
-import java.math.BigInteger;
 import java.math.BigDecimal;
-
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.*;
-
-/**
- * Tests covering {@link JsonObject} class, method {@link JsonObject#toJavaObject(Class)}.
- */
+/** Tests covering {@link JsonObject} class, method {@link JsonObject#toJavaObject(Class)}. */
 public class JsonObjectTransformationTest {
     private static class Numbers {
         byte byteValue;
@@ -29,7 +30,17 @@ public class JsonObjectTransformationTest {
 
         double doubleValue;
 
-        private Numbers() {
+        private Numbers() {}
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(
+                    byteValue,
+                    shortValue,
+                    intValue,
+                    longValue,
+                    floatValue == 0 ? 0f : floatValue,
+                    doubleValue == 0 ? 0d : doubleValue);
         }
 
         @Override
@@ -38,17 +49,25 @@ public class JsonObjectTransformationTest {
                 return false;
             }
             Numbers nn = (Numbers) other;
-            return byteValue == nn.byteValue && shortValue == nn.shortValue && intValue == nn.intValue &&
-                    longValue == nn.longValue && floatValue == nn.floatValue && doubleValue == nn.doubleValue;
+            return byteValue == nn.byteValue
+                    && shortValue == nn.shortValue
+                    && intValue == nn.intValue
+                    && longValue == nn.longValue
+                    && floatValue == nn.floatValue
+                    && doubleValue == nn.doubleValue;
         }
-    };
+    }
 
     @Test
     public void parsingNumbers() {
         Numbers obj = null;
         boolean oops = false;
         try {
-            obj = Json.parse("{byteValue: 3, shortValue: 5, int: 13, longValue: 17, floatValue: 19.01, doubleValue: 23.001}", Numbers.class);
+            obj =
+                    Json.parse(
+                            "{byteValue: 3, shortValue: 5, int: 13,"
+                                    + " longValue: 17, floatValue: 19.01, doubleValue: 23.001}",
+                            Numbers.class);
         } catch (JsonException ignored) {
             oops = true;
         }
@@ -58,7 +77,7 @@ public class JsonObjectTransformationTest {
         Assert.assertEquals(5, obj.shortValue);
         Assert.assertEquals(13, obj.intValue);
         Assert.assertEquals(17, obj.longValue);
-        Assert.assertEquals((float)19.01, obj.floatValue, 0);
+        Assert.assertEquals((float) 19.01, obj.floatValue, 0);
         Assert.assertEquals(23.001, obj.doubleValue, 0);
     }
 
@@ -75,6 +94,11 @@ public class JsonObjectTransformationTest {
 
         Double doubleValue;
 
+        @Override
+        public int hashCode() {
+            return Objects.hash(
+                    byteValue, shortValue, intValue, longValue, floatValue, doubleValue);
+        }
 
         @Override
         public boolean equals(Object other) {
@@ -82,18 +106,25 @@ public class JsonObjectTransformationTest {
                 return false;
             }
             NumbersAsObjects nn = (NumbersAsObjects) other;
-            return Objects.equals(byteValue, nn.byteValue) && Objects.equals(shortValue, nn.shortValue) &&
-                    Objects.equals(intValue, nn.intValue) && Objects.equals(longValue, nn.longValue) &&
-                    Objects.equals(floatValue, nn.floatValue) && Objects.equals(doubleValue, nn.doubleValue);
+            return Objects.equals(byteValue, nn.byteValue)
+                    && Objects.equals(shortValue, nn.shortValue)
+                    && Objects.equals(intValue, nn.intValue)
+                    && Objects.equals(longValue, nn.longValue)
+                    && Objects.equals(floatValue, nn.floatValue)
+                    && Objects.equals(doubleValue, nn.doubleValue);
         }
-    };
+    }
 
     @Test
     public void parsingNumbersAsObjects() {
         NumbersAsObjects obj = null;
         boolean oops = false;
         try {
-            obj = Json.parse("{byteValue: 3, shortValue: 5, intValue: 13, longValue: 17, floatValue: 19.01, doubleValue: 23.001}", NumbersAsObjects.class);
+            obj =
+                    Json.parse(
+                            "{byteValue: 3, shortValue: 5, intValue: 13,"
+                                    + " longValue: 17, floatValue: 19.01, doubleValue: 23.001}",
+                            NumbersAsObjects.class);
         } catch (JsonException ignored) {
             oops = true;
         }
@@ -108,7 +139,7 @@ public class JsonObjectTransformationTest {
         Assert.assertNotNull(obj.longValue);
         Assert.assertEquals(17, obj.longValue.longValue());
         Assert.assertNotNull(obj.floatValue);
-        Assert.assertEquals((float)19.01, obj.floatValue.floatValue(), 0);
+        Assert.assertEquals((float) 19.01, obj.floatValue.floatValue(), 0);
         Assert.assertNotNull(obj.doubleValue);
         Assert.assertEquals(23.001, obj.doubleValue.doubleValue(), 0);
     }
@@ -121,13 +152,19 @@ public class JsonObjectTransformationTest {
         Boolean anotherObject;
 
         @Override
+        public int hashCode() {
+            return Objects.hash(primitive, object, anotherObject);
+        }
+
+        @Override
         public boolean equals(Object other) {
             if (!(other instanceof Booleans)) {
                 return false;
             }
             Booleans bb = (Booleans) other;
-            return primitive == bb.primitive && Objects.equals(object, bb.object) &&
-                    Objects.equals(anotherObject, bb.anotherObject);
+            return primitive == bb.primitive
+                    && Objects.equals(object, bb.object)
+                    && Objects.equals(anotherObject, bb.anotherObject);
         }
     }
 
@@ -153,12 +190,16 @@ public class JsonObjectTransformationTest {
 
         int y;
 
-        public Vector() {
-        }
+        Vector() {}
 
-        public Vector(int x, int y) {
+        Vector(int x, int y) {
             this.x = x;
             this.y = y;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(x, y);
         }
 
         @Override
@@ -194,6 +235,12 @@ public class JsonObjectTransformationTest {
 
         List<Vector> vectors;
 
+        @Override
+        public int hashCode() {
+            return Objects.hash(
+                    bytes, shorts, integers, longs, floats, doubles, booleans, strings, generic,
+                    objects, vectors);
+        }
 
         @Override
         public boolean equals(Object other) {
@@ -201,12 +248,17 @@ public class JsonObjectTransformationTest {
                 return false;
             }
             Lists ll = (Lists) other;
-            return compareTwoLists(bytes, ll.bytes) && compareTwoLists(shorts, ll.shorts) &&
-                    compareTwoLists(integers, ll.integers) && compareTwoLists(longs, ll.longs) &&
-                    compareTwoLists(floats, ll.floats) && compareTwoLists(doubles, ll.doubles) &&
-                    compareTwoLists(booleans, ll.booleans) && compareTwoLists(strings, ll.strings) &&
-                    compareTwoLists(generic, ll.generic) && compareTwoLists(objects, ll.objects) &&
-                    compareTwoLists(vectors, ll.vectors);
+            return compareTwoLists(bytes, ll.bytes)
+                    && compareTwoLists(shorts, ll.shorts)
+                    && compareTwoLists(integers, ll.integers)
+                    && compareTwoLists(longs, ll.longs)
+                    && compareTwoLists(floats, ll.floats)
+                    && compareTwoLists(doubles, ll.doubles)
+                    && compareTwoLists(booleans, ll.booleans)
+                    && compareTwoLists(strings, ll.strings)
+                    && compareTwoLists(generic, ll.generic)
+                    && compareTwoLists(objects, ll.objects)
+                    && compareTwoLists(vectors, ll.vectors);
         }
     }
 
@@ -215,25 +267,36 @@ public class JsonObjectTransformationTest {
         Lists obj = null;
         boolean oops = false;
         try {
-            obj = Json.parse("{bytes: [1,2,3], shorts: [1,2,3], integers: [1,2,3], longs: [1,2,3]," +
-                    "floats: [1.01, 2.02, 3.03], doubles: [1.01, 2.02, 3.03], booleans: [true, false]," +
-                    "strings: ['one','two','three'], generic: ['test', 1], objects: [false, 2], " +
-                    "vectors: [{x: 1, y: 2}, {x: 3, y: 4}] }", Lists.class);
+            obj =
+                    Json.parse(
+                            "{bytes: [1,2,3], shorts: [1,2,3], integers: [1,2,3], longs: [1,2,3],"
+                                    + "floats: [1.01, 2.02, 3.03], doubles: [1.01,"
+                                    + " 2.02, 3.03], booleans: [true, false],"
+                                    + "strings: ['one','two','three'], generic: ['test', 1], objects: [false, 2], "
+                                    + "vectors: [{x: 1, y: 2}, {x: 3, y: 4}] }",
+                            Lists.class);
         } catch (JsonException ignored) {
             oops = true;
         }
         Assert.assertFalse(oops);
         Assert.assertNotNull(obj);
-        Assert.assertTrue(compareTwoLists(Arrays.asList((byte)1,(byte)2,(byte)3), obj.bytes));
-        Assert.assertTrue(compareTwoLists(Arrays.asList((short)1,(short)2,(short)3), obj.shorts));
-        Assert.assertTrue(compareTwoLists(Arrays.asList(1,2,3), obj.integers));
-        Assert.assertTrue(compareTwoLists(Arrays.asList((long)1,(long)2,(long)3), obj.longs));
-        Assert.assertTrue(compareTwoLists(Arrays.asList((float)1.01,(float)2.02,(float)3.03), obj.floats));
-        Assert.assertTrue(compareTwoLists(Arrays.asList(1.01,2.02,3.03), obj.doubles));
+        Assert.assertTrue(compareTwoLists(Arrays.asList((byte) 1, (byte) 2, (byte) 3), obj.bytes));
+        Assert.assertTrue(
+                compareTwoLists(Arrays.asList((short) 1, (short) 2, (short) 3), obj.shorts));
+        Assert.assertTrue(compareTwoLists(Arrays.asList(1, 2, 3), obj.integers));
+        Assert.assertTrue(compareTwoLists(Arrays.asList((long) 1, (long) 2, (long) 3), obj.longs));
+        Assert.assertTrue(
+                compareTwoLists(
+                        Arrays.asList((float) 1.01, (float) 2.02, (float) 3.03), obj.floats));
+        Assert.assertTrue(compareTwoLists(Arrays.asList(1.01, 2.02, 3.03), obj.doubles));
         Assert.assertTrue(compareTwoLists(Arrays.asList(true, false), obj.booleans));
         Assert.assertTrue(compareTwoLists(Arrays.asList("one", "two", "three"), obj.strings));
-        Assert.assertTrue(compareTwoLists(Arrays.asList((Object)"test", (Object)BigInteger.ONE), obj.generic));
-        Assert.assertTrue(compareTwoLists(Arrays.asList((Object)false, (Object)BigInteger.TWO), obj.objects));
+        Assert.assertTrue(
+                compareTwoLists(
+                        Arrays.asList((Object) "test", (Object) BigInteger.ONE), obj.generic));
+        Assert.assertTrue(
+                compareTwoLists(
+                        Arrays.asList((Object) false, (Object) BigInteger.TWO), obj.objects));
         Assert.assertTrue(serializeAndThenParse(obj));
     }
 
@@ -255,11 +318,11 @@ public class JsonObjectTransformationTest {
 
     @Test
     public void serializePrimitives() {
-        Assert.assertTrue(serializeAndThenParse((byte)13));
-        Assert.assertTrue(serializeAndThenParse((short)13));
+        Assert.assertTrue(serializeAndThenParse((byte) 13));
+        Assert.assertTrue(serializeAndThenParse((short) 13));
         Assert.assertTrue(serializeAndThenParse(13));
-        Assert.assertTrue(serializeAndThenParse((long)13));
-        Assert.assertTrue(serializeAndThenParse((float)13.01));
+        Assert.assertTrue(serializeAndThenParse((long) 13));
+        Assert.assertTrue(serializeAndThenParse((float) 13.01));
         Assert.assertTrue(serializeAndThenParse(13.01));
         Assert.assertTrue(serializeAndThenParse(true));
         Assert.assertTrue(serializeAndThenParse(false));
@@ -282,7 +345,7 @@ public class JsonObjectTransformationTest {
         obj.shortValue = -5;
         obj.intValue = 7;
         obj.longValue = 13;
-        obj.floatValue = (float)17.01;
+        obj.floatValue = (float) 17.01;
         obj.doubleValue = 19.0001;
         Assert.assertTrue(serializeAndThenParse(obj));
     }
@@ -293,8 +356,8 @@ public class JsonObjectTransformationTest {
         obj.byteValue = 3;
         obj.shortValue = -5;
         obj.intValue = 7;
-        obj.longValue = (long)13;
-        obj.floatValue = (float)17.01;
+        obj.longValue = (long) 13;
+        obj.floatValue = (float) 17.01;
         obj.doubleValue = 19.0001;
         Assert.assertTrue(serializeAndThenParse(obj));
     }
@@ -316,7 +379,7 @@ public class JsonObjectTransformationTest {
         try {
             String json = Json.serialize(before);
             Object actual = Json.parse(json, expectedAfter.getClass());
-            return  expectedAfter.equals(actual);
+            return expectedAfter.equals(actual);
         } catch (JsonException ignored) {
             return false;
         }

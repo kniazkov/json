@@ -13,6 +13,7 @@ public final class JsonInteger extends JsonNumber {
 
     /**
      * Creates a number.
+     *
      * @param value Exact value, not null
      */
     public JsonInteger(BigInteger value) {

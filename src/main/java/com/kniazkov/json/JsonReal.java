@@ -12,6 +12,7 @@ public final class JsonReal extends JsonNumber {
 
     /**
      * Creates a number.
+     *
      * @param value Exact value, not null
      */
     public JsonReal(BigDecimal value) {

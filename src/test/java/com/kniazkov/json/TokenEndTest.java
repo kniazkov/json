@@ -1,4 +1,6 @@
-/* Copyright (c) 2026 Ivan Kniazkov */
+/*
+ * Copyright (c) 2026 Ivan Kniazkov
+ */
 package com.kniazkov.json;
 
 import java.io.StringReader;
@@ -11,7 +13,10 @@ public class TokenEndTest {
     @Test
     public void lexerAlwaysReturnsLocatedEndTokens() throws Exception {
         for (String input : new String[] {"", " \r\n", "42 \r\n", "[] \r\n", "{} \r\n"}) {
-            Lexer lexer = new Lexer(new Source(new StringReader(input), "source.json"), JsonParsingMode.STRICT);
+            Lexer lexer =
+                    new Lexer(
+                            new Source(new StringReader(input), "source.json"),
+                            JsonParsingMode.STRICT);
             Token end;
             do {
                 end = lexer.token();
@@ -43,9 +48,29 @@ public class TokenEndTest {
 
     @Test
     public void structuralEofUsesItsTokenLocationInEveryMode() throws Exception {
-        String[] incomplete = {"", " ", "[", "{", "[1", "[1,", "{\"a\"", "{\"a\":",
-            "{\"a\":1", "{\"a\":1,", "[[", "[[1", "[[1,", "[{", "[{\"a\"",
-            "[{\"a\":", "[{\"a\":1", "[{\"a\":1,", "{\"a\":[", "{\"a\":[1,", "[[]"};
+        String[] incomplete = {
+            "",
+            " ",
+            "[",
+            "{",
+            "[1",
+            "[1,",
+            "{\"a\"",
+            "{\"a\":",
+            "{\"a\":1",
+            "{\"a\":1,",
+            "[[",
+            "[[1",
+            "[[1,",
+            "[{",
+            "[{\"a\"",
+            "[{\"a\":",
+            "[{\"a\":1",
+            "[{\"a\":1,",
+            "{\"a\":[",
+            "{\"a\":[1,",
+            "[[]"
+        };
         List<String> recoverable = List.of("[", "{", "[1", "[1,", "{\"a\":1", "{\"a\":1,", "[[]");
         for (JsonParsingMode mode : JsonParsingMode.values()) {
             for (String prefix : incomplete) {
@@ -57,8 +82,11 @@ public class TokenEndTest {
                     Assert.assertTrue(warnings.get(0) instanceof JsonError.MissingClosingBracket);
                     Assert.assertEquals("2:3", warnings.get(0).location().toString());
                 } else {
-                    JsonException error = Assert.assertThrows(prefix + " / " + mode, JsonException.class,
-                            () -> Json.parse(input, "cut.json", mode));
+                    JsonException error =
+                            Assert.assertThrows(
+                                    prefix + " / " + mode,
+                                    JsonException.class,
+                                    () -> Json.parse(input, "cut.json", mode));
                     Assert.assertEquals("cut.json, 2:3", error.error().location().toString());
                     Assert.assertFalse(error.getMessage().isEmpty());
                 }
@@ -75,7 +103,8 @@ public class TokenEndTest {
                 try {
                     JsonElement value = Json.parse(prefix, mode);
                     Assert.assertNotNull(value);
-                    Assert.assertTrue(mode == JsonParsingMode.EXTENDED || length == document.length());
+                    Assert.assertTrue(
+                            mode == JsonParsingMode.EXTENDED || length == document.length());
                     // Recovered output must itself remain valid JSON.
                     Assert.assertNotNull(Json.parse(value.toString(), JsonParsingMode.STRICT));
                 } catch (JsonException error) {

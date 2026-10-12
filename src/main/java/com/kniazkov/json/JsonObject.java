@@ -3,26 +3,27 @@
  */
 package com.kniazkov.json;
 
-import java.util.*;
+import java.util.AbstractSet;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
-/**
- * JSON object.
- */
+/** JSON object. */
 public final class JsonObject extends JsonContainer implements Map<String, JsonElement> {
-    /**
-     * Collection of elements.
-     */
+    /** Collection of elements. */
     private final Map<String, JsonElement> elements;
 
-    /**
-     * Constructor.
-     */
+    /** Constructor. */
     public JsonObject() {
         this(null);
     }
 
     /**
      * Constructor (for internal use).
+     *
      * @param parent The parent of this element
      */
     JsonObject(JsonContainer parent) {
@@ -93,32 +94,45 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
     public Set<Entry<String, JsonElement>> entrySet() {
         return new AbstractSet<>() {
             @Override
-            public int size() { return elements.size(); }
+            public int size() {
+                return elements.size();
+            }
 
             @Override
-            public void clear() { elements.clear(); }
+            public void clear() {
+                elements.clear();
+            }
 
             @Override
             public Iterator<Entry<String, JsonElement>> iterator() {
                 Iterator<Entry<String, JsonElement>> iterator = elements.entrySet().iterator();
                 return new Iterator<>() {
                     @Override
-                    public boolean hasNext() { return iterator.hasNext(); }
+                    public boolean hasNext() {
+                        return iterator.hasNext();
+                    }
 
                     @Override
                     public Entry<String, JsonElement> next() {
                         Entry<String, JsonElement> entry = iterator.next();
-                        // Never expose the backing entry: setValue must follow put's ownership rules.
+                        // Never expose the backing entry: setValue must follow put's ownership
+                        // rules.
                         return new Entry<>() {
                             @Override
-                            public String getKey() { return entry.getKey(); }
+                            public String getKey() {
+                                return entry.getKey();
+                            }
 
                             @Override
-                            public JsonElement getValue() { return entry.getValue(); }
+                            public JsonElement getValue() {
+                                return entry.getValue();
+                            }
 
                             @Override
                             public JsonElement setValue(JsonElement value) {
-                                JsonElement child = Objects.requireNonNull(value, "value").clone(JsonObject.this);
+                                JsonElement child =
+                                        Objects.requireNonNull(value, "value")
+                                                .clone(JsonObject.this);
                                 return entry.setValue(child);
                             }
 
@@ -135,12 +149,16 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
                             }
 
                             @Override
-                            public String toString() { return getKey() + "=" + getValue(); }
+                            public String toString() {
+                                return getKey() + "=" + getValue();
+                            }
                         };
                     }
 
                     @Override
-                    public void remove() { iterator.remove(); }
+                    public void remove() {
+                        iterator.remove();
+                    }
                 };
             }
         };
@@ -170,6 +188,7 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
 
     /**
      * Returns a child element by its key.
+     *
      * @param key Key
      * @return Child element
      */
@@ -179,6 +198,7 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
 
     /**
      * Makes a copy of a JSON element and adds a key-value pair to the object.
+     *
      * @param key Key
      * @param elem Element
      */
@@ -188,6 +208,7 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
 
     /**
      * Creates a child element of the 'null' type and adds a key-value pair to the object.
+     *
      * @param key Key
      */
     public void addNull(String key) {
@@ -196,8 +217,9 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
 
     /**
      * Creates a child element of the 'boolean' type and adds a key-value pair to the object.
+     *
      * @param key Key
-     @param value Boolean value
+     * @param value Boolean value
      */
     public void addBoolean(String key, boolean value) {
         addChild(key, new JsonBoolean(this, value));
@@ -205,6 +227,7 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
 
     /**
      * Creates a child element of the 'number' type and adds a key-value pair to the object.
+     *
      * @param key Key
      * @param value Value of the number
      */
@@ -214,6 +237,7 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
 
     /**
      * Adds an exact number using its Java type.
+     *
      * @param key Property key
      * @param value Numeric value
      */
@@ -223,6 +247,7 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
 
     /**
      * Adds an exact number using its Java type.
+     *
      * @param key Property key
      * @param value Numeric value
      */
@@ -232,6 +257,7 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
 
     /**
      * Adds an exact number using its Java type.
+     *
      * @param key Property key
      * @param value Numeric value
      */
@@ -241,6 +267,7 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
 
     /**
      * Creates a child element of the 'string' type and adds a key-value pair to the object.
+     *
      * @param key Key
      * @param value Value of the string
      */
@@ -250,6 +277,7 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
 
     /**
      * Creates an empty array as a child of this object.
+     *
      * @param key Key
      * @return The empty array created, so that it can be filled.
      */
@@ -261,6 +289,7 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
 
     /**
      * Creates an empty object as a child of this object.
+     *
      * @param key Key
      * @return The empty object created, so that it can be filled.
      */
@@ -272,6 +301,7 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
 
     /**
      * Adds a child element (for internal use).
+     *
      * @param key Key
      * @param elem Element
      */
@@ -283,5 +313,4 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
     public JsonObject toJsonObject() {
         return this;
     }
-
 }

@@ -3,17 +3,14 @@
  */
 package com.kniazkov.json;
 
-/**
- * Token representing an identifier.
- */
+/** Token representing an identifier. */
 final class TokenIdentifier extends Token {
-    /**
-     * Identifier.
-     */
+    /** Identifier. */
     private final String identifier;
 
     /**
      * Constructor.
+     *
      * @param loc Location of the first character of the token
      * @param identifier Identifier
      */
@@ -23,7 +20,9 @@ final class TokenIdentifier extends Token {
     }
 
     @Override
-    String identifierName() { return identifier; }
+    String identifierName() {
+        return identifier;
+    }
 
     @Override
     public String toString() {
@@ -32,6 +31,7 @@ final class TokenIdentifier extends Token {
 
     /**
      * Returns identifier.
+     *
      * @return An identifier
      */
     String identifier() {

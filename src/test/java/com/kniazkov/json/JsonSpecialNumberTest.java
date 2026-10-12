@@ -1,4 +1,6 @@
-/* Copyright (c) 2026 Ivan Kniazkov */
+/*
+ * Copyright (c) 2026 Ivan Kniazkov
+ */
 package com.kniazkov.json;
 
 import java.math.BigDecimal;
@@ -9,7 +11,8 @@ import org.junit.Test;
 public class JsonSpecialNumberTest {
     @Test
     public void specialLiteralsAndFactoriesUseDedicatedClasses() throws Exception {
-        for (String literal : new String[] {"NaN", "+NaN", "-NaN", "Infinity", "+Infinity", "-Infinity"}) {
+        for (String literal :
+                new String[] {"NaN", "+NaN", "-NaN", "Infinity", "+Infinity", "-Infinity"}) {
             JsonElement value = Json.parse(literal, JsonParsingMode.JSON5);
             boolean nan = literal.endsWith("NaN");
             Assert.assertEquals(nan, value instanceof JsonNaN);
@@ -23,8 +26,10 @@ public class JsonSpecialNumberTest {
             Assert.assertFalse(value.isInteger());
             Assert.assertFalse(value.isLongInteger());
             Assert.assertEquals(value.toString(), JsonNumber.of(value.doubleValue()).toString());
-            Assert.assertEquals(value.toString(), JsonNumber.of((float) value.doubleValue()).toString());
-            Assert.assertEquals(value.toString(), JsonNumber.of((Number) value.doubleValue()).toString());
+            Assert.assertEquals(
+                    value.toString(), JsonNumber.of((float) value.doubleValue()).toString());
+            Assert.assertEquals(
+                    value.toString(), JsonNumber.of((Number) value.doubleValue()).toString());
             Assert.assertEquals(value.toString(), Json.serialize(value.doubleValue()));
         }
         Assert.assertTrue(JsonNumber.of(new BigDecimal("1e400")).isFinite());
@@ -35,15 +40,18 @@ public class JsonSpecialNumberTest {
 
     @Test
     public void gettersAndJavaConversionHaveDefinedNonfiniteBehavior() {
-        for (JsonNumber value : new JsonNumber[] {new JsonNaN(), new JsonInfinity(false), new JsonInfinity(true)}) {
+        for (JsonNumber value :
+                new JsonNumber[] {new JsonNaN(), new JsonInfinity(false), new JsonInfinity(true)}) {
             Assert.assertEquals(value.numberValue(), value.numberValueOrThrow());
             Assert.assertEquals(value.numberValue(), value.toJavaObject());
             Assert.assertEquals(value.numberValue(), value.toJavaObject(Number.class));
             Assert.assertEquals(value.numberValue(), value.toJavaObject(Double.class));
             Assert.assertEquals((float) value.doubleValue(), value.toJavaObject(Float.class), 0);
             Assert.assertNull(value.decimalValue());
-            Assert.assertThrows(JsonDataException.class, () -> value.toJavaObject(BigDecimal.class));
-            Assert.assertThrows(JsonDataException.class, () -> value.toJavaObject(BigInteger.class));
+            Assert.assertThrows(
+                    JsonDataException.class, () -> value.toJavaObject(BigDecimal.class));
+            Assert.assertThrows(
+                    JsonDataException.class, () -> value.toJavaObject(BigInteger.class));
             Assert.assertEquals((int) value.doubleValue(), value.intValue());
             Assert.assertEquals((long) value.doubleValue(), value.longValue());
             Assert.assertThrows(JsonDataException.class, value::intValueOrThrow);
@@ -68,10 +76,14 @@ public class JsonSpecialNumberTest {
         Assert.assertSame(copy, nested.parent());
         Assert.assertSame(nested, nested.get(0).parent());
         Assert.assertTrue(nested.get(1).isNegativeInfinity());
-        Assert.assertEquals(copy.toString(), Json.parse(copy.toString(), JsonParsingMode.JSON5).toString());
-        Assert.assertEquals(copy.toString(), Json.parse(copy.toText("  "), JsonParsingMode.JSON5).toString());
+        Assert.assertEquals(
+                copy.toString(), Json.parse(copy.toString(), JsonParsingMode.JSON5).toString());
+        Assert.assertEquals(
+                copy.toString(), Json.parse(copy.toText("  "), JsonParsingMode.JSON5).toString());
         java.util.Map<?, ?> javaObject = (java.util.Map<?, ?>) copy.toJavaObject();
         Assert.assertEquals(Double.NaN, javaObject.get("nan"));
-        Assert.assertEquals(java.util.List.of(Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY), javaObject.get("array"));
+        Assert.assertEquals(
+                java.util.List.of(Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY),
+                javaObject.get("array"));
     }
 }

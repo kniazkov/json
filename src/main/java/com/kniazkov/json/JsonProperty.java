@@ -1,30 +1,35 @@
+/*
+ * Copyright (c) 2026 Ivan Kniazkov
+ */
 package com.kniazkov.json;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * Annotation added to a class field stating that this field can be mapped to a property
- * of some JSON object, with the name being the key of that property.
- * Allows binding properties with keys that are not allowed in Java, such as reserved
- * (“class”, “interface”), and so on.
+ * Annotation added to a class field stating that this field can be mapped to a property of some
+ * JSON object, with the name being the key of that property. Allows binding properties with keys
+ * that are not allowed in Java, such as reserved (“class”, “interface”), and so on.
  */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface JsonProperty {
     /**
      * The name (key) of the property to be bound.
+     *
      * @return JSON name; empty means the Java field name
      */
     String name() default "";
 
     /**
      * Controls explicit JSON null.
+     *
      * @return Action; DEFAULT follows the Java field type
      */
     JsonMappingAction onNull() default JsonMappingAction.DEFAULT;
 
     /**
      * Controls invalid non-null data for the whole field.
+     *
      * @return Action; DEFAULT is not allowed here
      */
     JsonMappingAction onInvalid() default JsonMappingAction.ERROR;

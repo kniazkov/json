@@ -3,17 +3,14 @@
  */
 package com.kniazkov.json;
 
-/**
- * JSON element representing a string.
- */
+/** JSON element representing a string. */
 public final class JsonString extends JsonElement {
-    /**
-     * Value of the string.
-     */
+    /** Value of the string. */
     private final String value;
 
     /**
      * Constructor.
+     *
      * @param value Value of the string
      */
     public JsonString(String value) {
@@ -22,6 +19,7 @@ public final class JsonString extends JsonElement {
 
     /**
      * Constructor (for internal use).
+     *
      * @param parent The parent of this element
      * @param value Value of the string
      */

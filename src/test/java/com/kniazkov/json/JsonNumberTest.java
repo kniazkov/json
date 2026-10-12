@@ -6,9 +6,7 @@ package com.kniazkov.json;
 import org.junit.Assert;
 import org.junit.Test;
 
-/**
- * Tests covering {@link JsonNumber} class.
- */
+/** Tests covering {@link JsonNumber} class. */
 public class JsonNumberTest {
     @Test
     public void integer() {
@@ -25,12 +23,12 @@ public class JsonNumberTest {
 
     @Test
     public void longInteger() {
-        JsonNumber elem = JsonNumber.of( 10000000000L);
+        JsonNumber elem = JsonNumber.of(10000000000L);
         Assert.assertFalse(elem.isInteger());
         Assert.assertTrue(elem.isLongInteger());
         Assert.assertTrue(elem.isNumber());
         Assert.assertEquals(10000000000L, elem.longValue());
-        Assert.assertEquals((double)10000000000L, elem.doubleValue(), 0);
+        Assert.assertEquals((double) 10000000000L, elem.doubleValue(), 0);
         Assert.assertEquals("10000000000", elem.toString());
     }
 

@@ -10,12 +10,14 @@ import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-/**
- * Class that combines all methods for parsing and serialising JSON documents.
- */
+/** Class that combines all methods for parsing and serialising JSON documents. */
 public class Json {
+    /** Creates a facade instance; parsing and serialization methods are static. */
+    public Json() {}
+
     /**
      * Parses a JSON document, represented as a string, into a tree.
+     *
      * @param source JSON document
      * @return JSON element, root of the tree
      * @throws JsonException If parsing or input fails
@@ -26,6 +28,7 @@ public class Json {
 
     /**
      * Parses a JSON document from a file into a tree.
+     *
      * @param file File containing JSON document
      * @return JSON element, root of the tree
      * @throws JsonException If parsing or input fails
@@ -36,6 +39,7 @@ public class Json {
 
     /**
      * Parses a JSON document, represented as a string, into a tree.
+     *
      * @param source JSON document
      * @param mode Parsing mode defining the allowed JSON syntax
      * @return JSON element, root of the tree
@@ -47,6 +51,7 @@ public class Json {
 
     /**
      * Parses a JSON document from a file into a tree.
+     *
      * @param file File containing JSON document
      * @param mode Parsing mode defining the allowed JSON syntax
      * @return JSON element, root of the tree
@@ -58,10 +63,11 @@ public class Json {
 
     /**
      * Parses a JSON document, represented as a string, into Java object of specified type.
+     *
      * @param source JSON document
      * @param type The type descriptor
-     * @return Converted value; JSON null maps to null for reference types
      * @param <T> The type
+     * @return Converted value; JSON null maps to null for reference types
      * @throws JsonException If parsing or input fails
      */
     public static <T> T parse(String source, Class<T> type) throws JsonException {
@@ -70,10 +76,11 @@ public class Json {
 
     /**
      * Parses a JSON document from a file into Java object of specified type.
+     *
      * @param file File containing JSON document
      * @param type The type descriptor
-     * @return Converted value; JSON null maps to null for reference types
      * @param <T> The type
+     * @return Converted value; JSON null maps to null for reference types
      * @throws JsonException If parsing or input fails
      */
     public static <T> T parse(File file, Class<T> type) throws JsonException {
@@ -82,24 +89,27 @@ public class Json {
 
     /**
      * Parses a JSON document, represented as a string, into Java object of specified type.
+     *
      * @param source JSON document
      * @param type The type descriptor
      * @param mode Parsing mode defining the allowed JSON syntax
-     * @return Converted value; JSON null maps to null for reference types
      * @param <T> The type
+     * @return Converted value; JSON null maps to null for reference types
      * @throws JsonException If parsing or input fails
      */
-    public static <T> T parse(String source, Class<T> type, JsonParsingMode mode) throws JsonException {
+    public static <T> T parse(String source, Class<T> type, JsonParsingMode mode)
+            throws JsonException {
         return parse(source, mode).toJavaObject(type);
     }
 
     /**
      * Parses a JSON document from a file into Java object of specified type.
+     *
      * @param file File containing JSON document
      * @param type The type descriptor
      * @param mode Parsing mode defining the allowed JSON syntax
-     * @return Converted value; JSON null maps to null for reference types
      * @param <T> The type
+     * @return Converted value; JSON null maps to null for reference types
      * @throws JsonException If parsing or input fails
      */
     public static <T> T parse(File file, Class<T> type, JsonParsingMode mode) throws JsonException {
@@ -108,6 +118,7 @@ public class Json {
 
     /**
      * Parses a named string.
+     *
      * @param source JSON document
      * @param sourceName Diagnostic name, or null for unnamed input
      * @param mode Parsing mode
@@ -121,6 +132,7 @@ public class Json {
 
     /**
      * Parses a reader in extended mode without closing it.
+     *
      * @param reader Character input
      * @return Root element
      * @throws JsonException If parsing or input fails
@@ -131,6 +143,7 @@ public class Json {
 
     /**
      * Parses a reader without closing it. Buffering may read ahead.
+     *
      * @param reader Character input
      * @param mode Parsing mode
      * @return Root element
@@ -142,6 +155,7 @@ public class Json {
 
     /**
      * Parses a named reader without closing it. Buffering may read ahead.
+     *
      * @param reader Character input
      * @param sourceName Diagnostic name, or null for unnamed input
      * @param mode Parsing mode
@@ -155,6 +169,7 @@ public class Json {
 
     /**
      * Parses UTF-8 input in extended mode without closing it.
+     *
      * @param stream Byte input
      * @return Root element
      * @throws JsonException If parsing or input fails
@@ -165,6 +180,7 @@ public class Json {
 
     /**
      * Parses UTF-8 input without closing it. Invalid byte sequences are reported.
+     *
      * @param stream Byte input
      * @param mode Parsing mode
      * @return Root element
@@ -176,6 +192,7 @@ public class Json {
 
     /**
      * Parses bytes in an explicit encoding without closing the stream.
+     *
      * @param stream Byte input
      * @param charset Input encoding
      * @param mode Parsing mode
@@ -188,8 +205,9 @@ public class Json {
     }
 
     /**
-     * Parses named bytes without closing the stream. Invalid byte sequences are reported;
-     * buffering may read ahead beyond the parsed value.
+     * Parses named bytes without closing the stream. Invalid byte sequences are reported; buffering
+     * may read ahead beyond the parsed value.
+     *
      * @param stream Byte input
      * @param sourceName Diagnostic name, or null for unnamed input
      * @param charset Input encoding
@@ -197,14 +215,20 @@ public class Json {
      * @return Root element
      * @throws JsonException If parsing or input fails
      */
-    public static JsonElement parse(InputStream stream, String sourceName, Charset charset,
-            JsonParsingMode mode) throws JsonException {
-        return new JsonParser().setMode(mode).setCharset(charset).setSourceName(sourceName).parse(stream);
+    public static JsonElement parse(
+            InputStream stream, String sourceName, Charset charset, JsonParsingMode mode)
+            throws JsonException {
+        return new JsonParser()
+                .setMode(mode)
+                .setCharset(charset)
+                .setSourceName(sourceName)
+                .parse(stream);
     }
 
     /**
-     * Parses a file in an explicit encoding and closes the owned input on every exit path.
-     * The diagnostic source name is the supplied file path. Invalid bytes are reported.
+     * Parses a file in an explicit encoding and closes the owned input on every exit path. The
+     * diagnostic source name is the supplied file path. Invalid bytes are reported.
+     *
      * @param file JSON file
      * @param charset Input encoding
      * @param mode Parsing mode
@@ -217,7 +241,8 @@ public class Json {
     }
 
     /**
-     * Parses a Java object and tries to represent it as string containing JSON document
+     * Parses a Java object and tries to represent it as string containing JSON document.
+     *
      * @param obj Java object
      * @return String containing JSON document
      */
@@ -226,8 +251,9 @@ public class Json {
     }
 
     /**
-     * Parses a Java object and tries to represent it as string containing JSON document,
-     *   with line breaks and indentation of nested elements making it easier to read
+     * Parses a Java object and tries to represent it as string containing JSON document, with line
+     * breaks and indentation of nested elements making it easier to read.
+     *
      * @param obj Java object
      * @param indentation Symbols forming an indentation
      * @return String containing JSON document
