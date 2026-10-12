@@ -18,6 +18,9 @@ public final class JsonParser {
     /** Input shared with the lexer, used to validate or discard the document tail. */
     private final Source source;
 
+    /** Closing token retained for an enclosing container during recovery. */
+    private Token pendingToken;
+
     /**
      * Parsing mode.
      */
@@ -132,6 +135,9 @@ public final class JsonParser {
      * @throws JsonException If parsing fails
      */
     private JsonElement parseJsonElement(JsonContainer parent, Token firstToken) throws JsonException {
+        if (firstToken == null) {
+            throw new JsonException(new JsonError.UnexpectedEnd(source.location()));
+        }
         if (firstToken instanceof TokenLiteral) {
             return ((TokenLiteral) firstToken).toElement(parent);
         }
@@ -144,101 +150,143 @@ public final class JsonParser {
         throw new JsonException(new JsonError.UnexpectedToken(firstToken.location(), firstToken));
     }
 
-    /**
-     * Parses a sequence of tokens as a JSON array.
-     * @param parent The container that will contain the parsed array
-     * @return JSON array
-     * @throws JsonException If parsing fails
-     */
-    private JsonArray parseJsonArray(JsonContainer parent) throws JsonException {
-        final JsonArray array = new JsonArray(parent);
-        Token token = lexer.token();
-        if (token instanceof TokenClosingSquareBracket) {
-            // empty
-            return array;
+    /** Returns a token, including a closing bracket left for an enclosing container. */
+    private Token nextToken() throws JsonException {
+        if (pendingToken != null) {
+            Token token = pendingToken;
+            pendingToken = null;
+            return token;
         }
-        while (true) {
-            JsonElement child = parseJsonElement(array, token);
-            assert child != null;
-            array.addChild(child);
-            token = lexer.token();
-            if (token instanceof TokenClosingSquareBracket) {
-                return array;
-            }
-            if (token instanceof TokenComma) {
-                token = lexer.token();
-                if (token instanceof TokenClosingSquareBracket) {
-                    // extra comma
-                    if (mode == JsonParsingMode.STRICT) {
-                        throw new JsonException(
-                                new JsonError.ExpectedElementAfterComma(token.location())
-                        );
-                    }
-                    return array;
-                }
-            }
-            else {
-                JsonError error = new JsonError.MissingComma(token.location());
-                if (mode != JsonParsingMode.EXTENDED) {
-                    throw new JsonException(error);
-                }
-                if (warnings != null) {
-                    warnings.add(error);
-                }
-            }
+        return lexer.token();
+    }
+
+    /** Reports a recoverable syntax error, or rejects it in the strict modes. */
+    private void recover(JsonError error) throws JsonException {
+        if (mode != JsonParsingMode.EXTENDED) {
+            throw new JsonException(error);
+        }
+        if (warnings != null) {
+            warnings.add(error);
         }
     }
 
+    /** Whether a closing token belongs to this container. */
+    private static boolean matches(JsonContainer container, Token token) {
+        return container instanceof JsonArray && token instanceof TokenClosingSquareBracket
+                || container instanceof JsonObject && token instanceof TokenClosingCurlyBracket;
+    }
+
     /**
-     * Parses a sequence of tokens as a JSON object.
-     * @param parent The container that will contain the parsed object
-     * @return JSON object
-     * @throws JsonException If parsing fails
+     * Called only at positions where a container may end. At EOF only the root may be
+     * completed. A foreign bracket may close an ancestor, but is never swallowed here.
      */
-    private JsonObject parseJsonObject(JsonContainer parent) throws JsonException {
-        final JsonObject obj = new JsonObject(parent);
-        Token token = lexer.token();
-        boolean expectedElement = false;
-        do {
-            if (token instanceof TokenClosingCurlyBracket) {
-                if (expectedElement && mode == JsonParsingMode.STRICT) {
-                    throw new JsonException(
-                            new JsonError.ExpectedPairAfterComma(token.location())
-                    );
+    private boolean closeContainer(JsonContainer container, Token token) throws JsonException {
+        if (matches(container, token)) {
+            return true;
+        }
+        char bracket = container instanceof JsonArray ? ']' : '}';
+        if (token == null) {
+            if (container.parent() != null) {
+                throw new JsonException(new JsonError.UnexpectedEnd(source.location()));
+            }
+            recover(new JsonError.MissingClosingBracket(source.location(), bracket));
+            return true;
+        }
+        if (token instanceof TokenClosingSquareBracket || token instanceof TokenClosingCurlyBracket) {
+            for (JsonContainer ancestor = container.parent(); ancestor != null; ancestor = ancestor.parent()) {
+                if (matches(ancestor, token)) {
+                    recover(new JsonError.MissingClosingBracket(token.location(), bracket));
+                    pendingToken = token;
+                    return true;
                 }
+            }
+            throw new JsonException(new JsonError.UnexpectedToken(token.location(), token));
+        }
+        return false;
+    }
+
+    /** Whether a token can start an array value, without guessing a malformed token's meaning. */
+    private static boolean startsValue(Token token) {
+        return token instanceof TokenLiteral || token instanceof TokenOpeningSquareBracket
+                || token instanceof TokenOpeningCurlyBracket;
+    }
+
+    /** Parses array elements and separators without manufacturing values for empty slots. */
+    private JsonArray parseJsonArray(JsonContainer parent) throws JsonException {
+        JsonArray array = new JsonArray(parent);
+        boolean expectValue = true;
+        boolean afterComma = false;
+        Token token = nextToken();
+        while (true) {
+            if (matches(array, token) && afterComma && mode == JsonParsingMode.STRICT) {
+                throw new JsonException(new JsonError.ExpectedElementAfterComma(token.location()));
+            }
+            if (closeContainer(array, token)) {
+                return array;
+            }
+            if (token instanceof TokenComma) {
+                if (expectValue) {
+                    recover(new JsonError.MissingArrayElement(token.location()));
+                }
+                expectValue = true;
+                afterComma = true;
+                token = nextToken();
+                continue;
+            }
+            if (!expectValue && startsValue(token)) {
+                recover(new JsonError.MissingComma(token.location()));
+            }
+            array.addChild(parseJsonElement(array, token));
+            expectValue = false;
+            afterComma = false;
+            token = nextToken();
+        }
+    }
+
+    /** Parses complete key:value pairs; missing keys, colons and values are never invented. */
+    private JsonObject parseJsonObject(JsonContainer parent) throws JsonException {
+        JsonObject obj = new JsonObject(parent);
+        boolean expectPair = true;
+        boolean afterComma = false;
+        Token token = nextToken();
+        while (true) {
+            if (matches(obj, token) && afterComma && mode == JsonParsingMode.STRICT) {
+                throw new JsonException(new JsonError.ExpectedPairAfterComma(token.location()));
+            }
+            if (closeContainer(obj, token)) {
                 return obj;
             }
-            String key = null;
-            if (token instanceof TokenString) {
-                key = ((TokenString)token).value();
+            if (!expectPair && token instanceof TokenComma) {
+                expectPair = true;
+                afterComma = true;
+                token = nextToken();
+                continue;
             }
-            else if (token instanceof TokenIdentifier && mode != JsonParsingMode.STRICT) {
-                key = ((TokenIdentifier)token).identifier();
-            }
-            if (key == null) {
+            String key;
+            if (token instanceof TokenString string) {
+                key = string.value();
+            } else if (token instanceof TokenIdentifier identifier && mode != JsonParsingMode.STRICT) {
+                key = identifier.identifier();
+            } else {
                 throw new JsonException(new JsonError.ExpectedKey(token.location()));
             }
-
-            token = lexer.token();
+            if (!expectPair) {
+                recover(new JsonError.MissingComma(token.location()));
+            }
+            token = nextToken();
             if (!(token instanceof TokenColon)) {
-                throw new JsonException(new JsonError.ExpectedSeparator(token.location()));
+                throw new JsonException(new JsonError.ExpectedSeparator(
+                        token == null ? source.location() : token.location()));
             }
-
-            token = lexer.token();
-            JsonElement value = parseJsonElement(obj, token);
-            if (value != null) {
-                obj.addChild(key, value);
-                expectedElement = false;
-                token = lexer.token();
-                if (token instanceof TokenComma) {
-                    expectedElement = true;
-                    token = lexer.token();
-                }
-            } else {
-                throw new JsonException(new JsonError.ExpectedElementAfterSeparator(token.location()));
+            token = nextToken();
+            if (token == null) {
+                throw new JsonException(new JsonError.ExpectedElementAfterSeparator(source.location()));
             }
-        } while(expectedElement);
-        return obj;
+            obj.addChild(key, parseJsonElement(obj, token));
+            expectPair = false;
+            afterComma = false;
+            token = nextToken();
+        }
     }
 
     /**
