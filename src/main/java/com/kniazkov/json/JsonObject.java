@@ -300,15 +300,9 @@ public final class JsonObject extends JsonContainer implements Map<String, JsonE
                         else if (fieldType == java.lang.Object.class) {
                             field.set(result, child.toJavaObject());
                         }
-                        else if (fieldType == java.util.List.class || fieldType == java.util.ArrayList.class) {
-                            List<Object> list = new ArrayList<>();
-                            JsonArray.createListFromJsonArray(field.getGenericType(), list, child.toJsonArray());
-                            field.set(result, list);
-                        }
-                        else if (fieldType == java.util.LinkedList.class) {
-                            List<Object> list = new LinkedList<>();
-                            JsonArray.createListFromJsonArray(field.getGenericType(), list, child.toJsonArray());
-                            field.set(result, list);
+                        else if (List.class.isAssignableFrom(fieldType)) {
+                            field.set(result, JsonArray.convertList(field.getGenericType(), child,
+                                    "$[" + new JsonString(propertyName).toString() + "]"));
                         }
                         else {
                             field.set(result, child.toJavaObject(fieldType));

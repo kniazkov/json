@@ -311,6 +311,29 @@ This support is for serialization. It does not add typed deserialization into Ja
 arrays or concrete map classes, support for arbitrary `Iterable`/`Set` types, or
 cycle detection (tracked separately in issue #15).
 
+### Mapping JSON to Java lists
+
+List fields support `List<E>`, `ArrayList<E>` and `LinkedList<E>`, recursively nested
+in any combination. `List` and `ArrayList` produce mutable ArrayLists; `LinkedList`
+produces a mutable LinkedList. The element order and number of elements are preserved.
+JSON null becomes Java null for both the field itself and individual elements,
+including wrapper numbers, strings, booleans, objects and nested lists. An empty
+array remains an empty list; an absent field retains its constructor-provided value.
+
+Raw lists and `List<Object>` use natural Map/List values and exact BigInteger/BigDecimal
+numbers. Existing scalar conversion rules otherwise remain unchanged; strict numeric
+and scalar mapping is tracked in #14. A non-array value where a list is required, or
+a non-null element that cannot be mapped, raises `JsonDataException` with the field
+and list index rather than becoming an empty list or a substituted null.
+
+Wildcard types (including `?`), unresolved type variables (including inherited `T`),
+custom List subclasses, array element types and parameterized element types other
+than supported lists are rejected with `JsonDataException`. The declared list type
+is validated even for an empty array or JSON null; absent fields are not validated.
+Generic type-variable substitution is not implemented. Typed maps and arrays remain
+tracked in #32. Root `List.class`, `ArrayList.class` and `LinkedList.class` conversions
+remain raw because Class alone carries no element-type information.
+
 ### Automatic Java field mapping
 
 Automatic mapping applies the same eligibility policy before accessing a field or
