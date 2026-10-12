@@ -106,8 +106,8 @@ public final class JsonParser {
     private JsonElement parseRoot() throws JsonException {
         lexer.skipPadding(true);
         Token first = lexer.token();
-        if (first == null) {
-            throw new JsonException(new JsonError.ExpectedRoot(source.location()));
+        if (first instanceof TokenEnd) {
+            throw new JsonException(new JsonError.ExpectedRoot(first.location()));
         }
         JsonElement root = parseJsonElement(null, first);
         lexer.skipPadding(true);
@@ -135,8 +135,8 @@ public final class JsonParser {
      * @throws JsonException If parsing fails
      */
     private JsonElement parseJsonElement(JsonContainer parent, Token firstToken) throws JsonException {
-        if (firstToken == null) {
-            throw new JsonException(new JsonError.UnexpectedEnd(source.location()));
+        if (firstToken instanceof TokenEnd) {
+            throw new JsonException(new JsonError.UnexpectedEnd(firstToken.location()));
         }
         if (firstToken instanceof TokenLiteral) {
             return ((TokenLiteral) firstToken).toElement(parent);
@@ -185,11 +185,11 @@ public final class JsonParser {
             return true;
         }
         char bracket = container instanceof JsonArray ? ']' : '}';
-        if (token == null) {
+        if (token instanceof TokenEnd) {
             if (container.parent() != null) {
-                throw new JsonException(new JsonError.UnexpectedEnd(source.location()));
+                throw new JsonException(new JsonError.UnexpectedEnd(token.location()));
             }
-            recover(new JsonError.MissingClosingBracket(source.location(), bracket));
+            recover(new JsonError.MissingClosingBracket(token.location(), bracket));
             return true;
         }
         if (token instanceof TokenClosingSquareBracket || token instanceof TokenClosingCurlyBracket) {
@@ -276,11 +276,11 @@ public final class JsonParser {
             token = nextToken();
             if (!(token instanceof TokenColon)) {
                 throw new JsonException(new JsonError.ExpectedSeparator(
-                        token == null ? source.location() : token.location()));
+                        token.location()));
             }
             token = nextToken();
-            if (token == null) {
-                throw new JsonException(new JsonError.ExpectedElementAfterSeparator(source.location()));
+            if (token instanceof TokenEnd) {
+                throw new JsonException(new JsonError.ExpectedElementAfterSeparator(token.location()));
             }
             obj.addChild(key, parseJsonElement(obj, token));
             expectPair = false;
