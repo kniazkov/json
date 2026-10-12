@@ -211,6 +211,8 @@ while used as hash keys or set members.
 Built-in cloning, equality, hashing and writing use iterative traversal. Calls into
 third-party collections or user code still follow those implementations' own limits.
 
+For constructing a large tree through chained calls, see [Builders](builders.md).
+
 ## Null arguments and optional results
 
 Own accessors use `Optional` wherever a value may be absent: `parent()`,

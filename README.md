@@ -87,3 +87,5 @@ Start with the [user guide](docs/README.md), or jump to a task:
 | Explain a failure to a user | [Diagnostics](docs/diagnostics.md) |
 | See how the public classes fit together | [Public API diagrams](docs/public-api.md) |
 | Build, test or contribute | [Development](docs/development.md) |
+
+Build nested documents with [fluent object and array builders](docs/builders.md).

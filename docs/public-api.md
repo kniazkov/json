@@ -227,3 +227,39 @@ JsonError is a warning.
 Source, lexer tokens, parsing sessions, traversal frames and mapping helpers are
 package-private implementation details. Application code uses the public parser,
 tree and diagnostics instead. Generate [Javadoc](development.md) for full signatures.
+
+## Fluent construction
+
+```mermaid
+classDiagram
+    direction TB
+    class Json {
+        +object() JsonObjectBuilder
+        +array() JsonArrayBuilder
+    }
+    class JsonObjectBuilder {
+        +put(key, value) JsonObjectBuilder
+        +putNull(key) JsonObjectBuilder
+        +object(key, callback) JsonObjectBuilder
+        +array(key, callback) JsonObjectBuilder
+        +build() JsonObject
+    }
+    class JsonArrayBuilder {
+        +add(value) JsonArrayBuilder
+        +addNull() JsonArrayBuilder
+        +addAll(values) JsonArrayBuilder
+        +object(callback) JsonArrayBuilder
+        +array(callback) JsonArrayBuilder
+        +build() JsonArray
+    }
+    Json ..> JsonObjectBuilder : creates
+    Json ..> JsonArrayBuilder : creates
+    JsonObjectBuilder ..> JsonArrayBuilder : nested array
+    JsonArrayBuilder ..> JsonObjectBuilder : nested object
+    JsonObjectBuilder ..> JsonObject : copies into
+    JsonArrayBuilder ..> JsonArray : copies into
+```
+
+Both builders have public no-argument constructors. Their callbacks receive a
+fresh nested builder; `build()` returns an independent tree. See
+[Builders](builders.md) for value types, null handling, ownership and failure behavior.

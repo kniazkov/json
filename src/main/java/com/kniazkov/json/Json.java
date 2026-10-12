@@ -17,6 +17,24 @@ public class Json {
     public Json() {}
 
     /**
+     * Creates an empty fluent object builder.
+     *
+     * @return New object builder
+     */
+    public static JsonObjectBuilder object() {
+        return new JsonObjectBuilder();
+    }
+
+    /**
+     * Creates an empty fluent array builder.
+     *
+     * @return New array builder
+     */
+    public static JsonArrayBuilder array() {
+        return new JsonArrayBuilder();
+    }
+
+    /**
      * Parses a JSON document, represented as a string, into a tree.
      *
      * @param source JSON document
