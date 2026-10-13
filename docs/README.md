@@ -14,7 +14,8 @@ strictness. This library lets you choose the right one without changing your dat
 3. [Recovery](recovery.md): damaged inputs, exact repairs and hard failures.
 4. [The tree](tree.md): navigation, mutation, ownership and collection contracts.
 5. [Numbers](numbers.md): exact storage and deliberate conversions.
-6. [Java mapping](java-mapping.md): POJOs, arrays, maps, generics and field policies.
+6. [Java mapping](java-mapping.md): POJOs, arrays, maps, generics and field policies,
+   including [a nested document mapped to five classes](java-mapping.md#a-document-mapped-to-several-classes).
 7. [Input and output](io.md): reusable configuration, files, charsets and Unicode.
 8. [Diagnostics](diagnostics.md): warnings, exceptions, locations and causes.
 9. [Public API](public-api.md): class diagrams and a compact reference.
